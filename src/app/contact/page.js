@@ -12,18 +12,18 @@ export default function ContactPage() {
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-[#001F5B] mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold text-blue-700 mb-4">
               Get in Touch
             </h1>
-            <p className="text-lg text-gray-600">
+            <p className="text-lg text-gray-700 font-medium">
               We'd love to hear from you. Send us a message and we'll respond as soon as possible.
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Contact Form */}
-            <div className="bg-white p-8 rounded-lg shadow-lg">
-              <h2 className="text-2xl font-bold text-[#001F5B] mb-6">Send us a Message</h2>
+            <div className="bg-white p-8 rounded-lg shadow-xl border-t-4 border-blue-600">
+              <h2 className="text-2xl font-bold text-blue-700 mb-6">Send us a Message</h2>
               <form className="space-y-6">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
@@ -33,7 +33,7 @@ export default function ContactPage() {
                     type="text"
                     id="name"
                     name="name"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-900 focus:border-transparent"
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all"
                     placeholder="John Doe"
                   />
                 </div>
@@ -46,7 +46,7 @@ export default function ContactPage() {
                     type="email"
                     id="email"
                     name="email"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-900 focus:border-transparent"
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all"
                     placeholder="john@example.com"
                   />
                 </div>
@@ -59,7 +59,7 @@ export default function ContactPage() {
                     type="tel"
                     id="phone"
                     name="phone"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-900 focus:border-transparent"
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all"
                     placeholder="+234 813 939 9978"
                   />
                 </div>
@@ -72,7 +72,7 @@ export default function ContactPage() {
                     type="text"
                     id="subject"
                     name="subject"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-900 focus:border-transparent"
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all"
                     placeholder="How can we help?"
                   />
                 </div>
@@ -85,14 +85,14 @@ export default function ContactPage() {
                     id="message"
                     name="message"
                     rows="5"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-900 focus:border-transparent"
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all"
                     placeholder="Tell us more about your inquiry..."
                   ></textarea>
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full bg-blue-900 text-white px-6 py-3 rounded-md hover:bg-blue-800 flex items-center justify-center gap-2 font-medium"
+                  className="w-full bg-red-600 text-white px-6 py-3 rounded-md hover:bg-red-700 hover:shadow-lg flex items-center justify-center gap-2 font-semibold transition-all duration-300"
                 >
                   <Send size={20} />
                   Send Message
@@ -102,40 +102,40 @@ export default function ContactPage() {
 
             {/* Contact Information */}
             <div className="space-y-8">
-              <div className="bg-white p-8 rounded-lg shadow-lg">
-                <h2 className="text-2xl font-bold text-[#001F5B] mb-6">Contact Information</h2>
+              <div className="bg-white p-8 rounded-lg shadow-xl border-t-4 border-red-600">
+                <h2 className="text-2xl font-bold text-red-600 mb-6">Contact Information</h2>
                 
                 <div className="space-y-6">
                   {/* Email */}
                   <div className="flex items-start gap-4">
-                    <div className="bg-blue-100 p-3 rounded-full">
-                      <Mail className="text-blue-900" size={24} />
+                    <div className="bg-blue-600 p-3 rounded-lg shadow-md">
+                      <Mail className="text-white" size={24} />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-[#001F5B] mb-1">Email</h3>
-                      <p className="text-gray-600">support@apicts.com</p>
+                      <h3 className="font-semibold text-blue-700 mb-1">Email</h3>
+                      <p className="text-gray-700">support@apicts.com</p>
                     </div>
                   </div>
 
                   {/* Phone */}
                   <div className="flex items-start gap-4">
-                    <div className="bg-blue-100 p-3 rounded-full">
-                      <Phone className="text-blue-900" size={24} />
+                    <div className="bg-red-600 p-3 rounded-lg shadow-md">
+                      <Phone className="text-white" size={24} />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-[#001F5B] mb-1">Phone</h3>
-                      <p className="text-gray-600">+2348139399978</p>
+                      <h3 className="font-semibold text-red-600 mb-1">Phone</h3>
+                      <p className="text-gray-700">+2348139399978</p>
                     </div>
                   </div>
 
                   {/* Address */}
                   <div className="flex items-start gap-4">
-                    <div className="bg-blue-100 p-3 rounded-full">
-                      <MapPin className="text-blue-900" size={24} />
+                    <div className="bg-blue-600 p-3 rounded-lg shadow-md">
+                      <MapPin className="text-white" size={24} />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-[#001F5B] mb-1">Address</h3>
-                      <p className="text-gray-600">
+                      <h3 className="font-semibold text-blue-700 mb-1">Address</h3>
+                      <p className="text-gray-700">
                         Km 18, Topaz Plaza, New Road,<br />
                         Lekki Ajah, Lagos
                       </p>
@@ -145,7 +145,7 @@ export default function ContactPage() {
               </div>
 
               {/* Business Hours */}
-              <div className="bg-blue-900 text-white p-8 rounded-lg shadow-lg">
+              <div className="bg-blue-700 text-white p-8 rounded-lg shadow-xl border-l-4 border-red-600">
                 <h2 className="text-2xl font-bold mb-6">Business Hours</h2>
                 <div className="space-y-3">
                   <div className="flex justify-between">

@@ -4,16 +4,30 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+    "build": "npm run db:check && next build --turbopack",
+    "build:frontend": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:init": "node server-init.js",
+    "db:check": "node -e \"require('./src/lib/db/init').initializeDatabase()\"",
+    "verify": "node verify-setup.js"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cloudinary": "^1.41.3",
+    "dotenv": "^17.2.3",
+    "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.545.0",
+    "multer": "^2.0.2",
+    "multer-storage-cloudinary": "^4.0.0",
+    "mysql2": "^3.15.2",
     "next": "15.5.4",
+    "pg": "^8.16.3",
+    "pg-hstore": "^2.3.4",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "react-icons": "^5.5.0"
+    "react-icons": "^5.5.0",
+    "sequelize": "^6.37.7"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
