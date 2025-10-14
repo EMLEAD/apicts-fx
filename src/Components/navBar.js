@@ -19,7 +19,7 @@ export default function Navbar() {
         {/* Logo */}
         <Link href="/" className="group">
           <Image 
-            src="/images/apicts-logo.jpg" 
+            src="/images/apicts2.jpg" 
             alt="Logo" 
             width={42} 
             height={42} 

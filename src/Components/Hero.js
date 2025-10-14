@@ -101,10 +101,10 @@ export default function Hero() {
           {/* Right Content - Image/Illustration */}
           <div className="relative">
             {/* Hero Image */}
-            <div className="relative mb-8">
+            <div className="relative mb-8 mt-8">
               <div className="relative h-64 rounded-2xl overflow-hidden shadow-2xl">
                 <Image
-                  src="/images/hero-exchange.jpg"
+                  src="/images/software-pc-screen-used-analyzing-cryptocurrency-investment-purchases.jpg"
                   alt="Currency Exchange Platform"
                   fill
                   className="object-cover"
@@ -164,10 +164,10 @@ export default function Hero() {
               </div>
 
               {/* Floating badges */}
-              <div className="absolute -top-4 -right-4 bg-green-500 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg animate-bounce">
+              <div className="absolute -top-4 -right-4 bg-green-500 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg animate-bounce ">
                 ✓ Verified
               </div>
-              <div className="absolute -bottom-4 -left-4 bg-rose-500 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
+              <div className="absolute -bottom-4 -left-4 bg-rose-500 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg ">
                 24/7 Support
               </div>
             </div>

@@ -35,7 +35,7 @@ export default function Features() {
     {
       icon: <Users size={24} />,
       title: "Multi-Currency Support",
-      description: "Trade fiat currencies, e-currencies, and cryptocurrencies all in one platform.",
+      description: "Exchange fiat currencies, e-currencies, and cryptocurrencies all in one platform.",
       stat: "50+",
       statLabel: "Currencies"
     },
