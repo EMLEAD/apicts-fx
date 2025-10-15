@@ -12,7 +12,7 @@ export default function Services() {
       color: "from-blue-500 to-blue-600",
       bgColor: "bg-blue-50",
       iconBg: "bg-blue-500",
-      image: "/images/fiat-currency.jpg"
+      image: "/images/portrait-cheerful-happy-african-man.jpg"
     },
     {
       icon: <Bitcoin size={32} />,
@@ -21,24 +21,24 @@ export default function Services() {
       color: "from-green-500 to-emerald-600",
       bgColor: "bg-green-50",
       iconBg: "bg-green-500",
-      image: "/images/crypto-trading.jpg"
+      image: "/images/closeup-golden-bitcoins-dark-reflective-surface-histogram-decreasing-crypto (1).jpg"
     },
     {
-      icon: <CreditCard size={32} />,
+      // icon: <CreditCard size={32} />,
       title: "E-Currency Exchange",
       description: "Trade Perfect Money, Payeer, Neteller, and other e-currencies with competitive rates.",
       color: "from-rose-500 to-red-600",
       bgColor: "bg-rose-50",
-      iconBg: "bg-rose-500",
-      image: "/images/e-currency.jpg"
+      // iconBg: "bg-rose-500",
+      image: "/images/1f543fa5-df98-473c-81a9-8543fb22f9cc.jpg"
     },
     {
-      icon: <Globe size={32} />,
+      // icon: <Globe size={32} />,
       title: "International Transfers",
       description: "Send and receive money globally with low fees and fast processing times.",
       color: "from-blue-600 to-indigo-600",
       bgColor: "bg-blue-50",
-      iconBg: "bg-blue-600",
+      // iconBg: "bg-blue-600",
       image: "/images/international-transfer.jpg"
     },
     {
@@ -47,8 +47,8 @@ export default function Services() {
       description: "Bank-level security with NIN verification, KYC compliance, and encrypted transactions.",
       color: "from-green-600 to-teal-600",
       bgColor: "bg-green-50",
-      iconBg: "bg-green-600",
-      image: "/images/secure-transactions.jpg"
+      iconBg: "bg-blue-600",
+      image: "/images/secured-lock.jpg"
     },
     {
       icon: <Zap size={32} />,

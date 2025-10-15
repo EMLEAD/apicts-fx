@@ -8,9 +8,9 @@ export default function BlogSection() {
   const blogPosts = [
     {
       id: 1,
-      title: "Understanding Currency Exchange: A Beginner's Guide",
-      excerpt: "Learn the fundamentals of currency exchange, how rates are determined, and tips for getting the best deals on your transactions.",
-      image: "/images/blog-1.jpg",
+      title: "Understanding CFDs Trading: A Beginner's Guide",
+      excerpt: "Learn the fundamentals of CFDs analysis(Fundamentals and Technicals), how prices are determined, and tips to be a profitable trader at APICTS-FX ACADEMY.",
+      image: "/images/stock-exchange-trading-forex-finance-graphic-concept.jpg",
       category: "Education",
       author: "APICTS Team",
       date: "Jan 15, 2025",
@@ -21,7 +21,7 @@ export default function BlogSection() {
       id: 2,
       title: "Cryptocurrency Trading in Nigeria: What You Need to Know",
       excerpt: "Explore the latest regulations, best practices, and opportunities in the Nigerian cryptocurrency market.",
-      image: "/images/blog-2.jpg",
+      image: "/images/bitcoin-crypto-currency-diagram.jpg",
       category: "Cryptocurrency",
       author: "John Okafor",
       date: "Jan 12, 2025",
@@ -32,46 +32,14 @@ export default function BlogSection() {
       id: 3,
       title: "NIN Verification: Securing Your Financial Transactions",
       excerpt: "Why identity verification matters and how NIN integration is making online exchanges safer for everyone.",
-      image: "/images/blog-3.jpg",
+      image: "/images/nimc.png",
       category: "Security",
       author: "Sarah Adeyemi",
       date: "Jan 10, 2025",
       readTime: "4 min read",
       categoryColor: "bg-rose-500"
     },
-    {
-      id: 4,
-      title: "E-Currency Exchange: Perfect Money vs PayPal",
-      excerpt: "Compare different e-currency platforms and find out which one suits your business needs best.",
-      image: "/images/blog-4.jpg",
-      category: "E-Currency",
-      author: "Michael Chen",
-      date: "Jan 8, 2025",
-      readTime: "6 min read",
-      categoryColor: "bg-blue-600"
-    },
-    {
-      id: 5,
-      title: "International Money Transfer: Best Practices",
-      excerpt: "Save money and time with our expert tips on sending money across borders efficiently.",
-      image: "/images/blog-5.jpg",
-      category: "Transfers",
-      author: "Fatima Ahmed",
-      date: "Jan 5, 2025",
-      readTime: "5 min read",
-      categoryColor: "bg-green-600"
-    },
-    {
-      id: 6,
-      title: "Market Analysis: Naira Exchange Rates Trends 2025",
-      excerpt: "Deep dive into the factors affecting Naira exchange rates and what to expect in the coming months.",
-      image: "/images/blog-6.jpg",
-      category: "Market Analysis",
-      author: "David Okonkwo",
-      date: "Jan 3, 2025",
-      readTime: "8 min read",
-      categoryColor: "bg-rose-600"
-    }
+    
   ];
 
   return (
