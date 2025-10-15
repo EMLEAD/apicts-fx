@@ -1,4 +1,4 @@
-import React from "react";
+
 import Link from "next/link";
 import Image from "next/image";
 import Navbar from '@/Components/Navbar';
@@ -9,7 +9,7 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen">
       <Navbar />
 
-      <section className="min-h-screen flex pt-20 items-center justify-center bg-gradient-to-br from-green-500 via-blue-700 to-green-500 relative overflow-hidden">
+      <main className="min-h-screen flex pt-20 items-center justify-center bg-gradient-to-br from-green-500 via-blue-700 to-green-500 relative overflow-hidden">
         {/* Animated background blobs */}
         <div className="absolute inset-0 opacity-10 pointer-events-none">
           <div className="absolute top-20 left-10 w-72 h-72 bg-green-500 rounded-full mix-blend-multiply filter blur-xl animate-[blob_7s_infinite]"></div>
@@ -19,13 +19,7 @@ export default function ForgotPasswordPage() {
 
         <div className="relative z-10 w-full max-w-md mx-auto bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-white/20">
           <div className="flex flex-col items-center mb-8">
-            <Image
-              src="/images/software-pc-screen-used-analyzing-cryptocurrency-investment-purchases.jpg"
-              alt="Logo"
-              width={56}
-              height={56}
-              className="rounded-full shadow-lg mb-2"
-            />
+           
             <h2 className="text-3xl font-bold text-white mb-1">Forgot Password</h2>
             <p className="text-blue-100 text-center">
               Enter your email address for a One-Time Password (OTP).
@@ -65,7 +59,7 @@ export default function ForgotPasswordPage() {
             </Link>
           </div>
         </div>
-      </section>
+      </main>
       <Footer />
     </div>
   );

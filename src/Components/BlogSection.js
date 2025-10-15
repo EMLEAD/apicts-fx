@@ -8,8 +8,8 @@ export default function BlogSection() {
   const blogPosts = [
     {
       id: 1,
-      title: "Understanding Currency Exchange: A Beginner's Guide",
-      excerpt: "Learn the fundamentals of currency exchange, how rates are determined, and tips for getting the best deals on your transactions.",
+      title: "Understanding CFDs Trading: A Beginner's Guide",
+      excerpt: "Learn the fundamentals of CFDs analysis(Fundamentals and Technicals), how prices are determined, and tips to be a profitable trader at APICTS-FX ACADEMY.",
       image: "/images/stock-exchange-trading-forex-finance-graphic-concept.jpg",
       category: "Education",
       author: "APICTS Team",
@@ -39,39 +39,7 @@ export default function BlogSection() {
       readTime: "4 min read",
       categoryColor: "bg-rose-500"
     },
-    {
-      id: 4,
-      title: "Gold Trading",
-      excerpt: "Gold has held a special place in human history as a store of value.It's value has recently reached a record high above $4,000 per troy ounce, as investors anticipate interest rate cuts from the U.S. Federal Reserve amid ongoing global instability",
-      image: "/images/gold.jpg",
-      category: "XAU",
-      author: "Michael Chen",
-      date: "Jan 8, 2025",
-      readTime: "6 min read",
-      categoryColor: "bg-red-600"
-    },
-    {
-      id: 5,
-      title: "CFDs Trading",
-      excerpt: "A CFD (Contract for Difference) is a financial derivative that lets you speculate on price changes of underlying assets (stocks, currencies, commodities, indices) without owning the actual asset.When you enter a CFD trade, you and the broker agree to exchange the difference in value of the asset between when the position is opened and when it is closed. If the price goes in the direction you predicted, you profit; otherwise, you incur a loss.",
-      image: "/images/CFDs.jpg",
-      category: "Transfers",
-      author: "Fatima Ahmed",
-      date: "Jan 5, 2025",
-      readTime: "5 min read",
-      categoryColor: "bg-green-600"
-    },
-    {
-      id: 6,
-      title: "Market Analysis: Naira Exchange Rates Trends 2025",
-      excerpt: "Deep dive into the factors affecting Naira exchange rates and what to expect in the coming months.",
-      image: "/images/naira-lady.jpg",
-      category: "Market Analysis",
-      author: "David Okonkwo",
-      date: "Jan 3, 2025",
-      readTime: "8 min read",
-      categoryColor: "bg-rose-600"
-    }
+    
   ];
 
   return (

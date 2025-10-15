@@ -19,7 +19,7 @@ export default function Navbar() {
         {/* Logo */}
         <Link href="/" className="group">
           <Image 
-            src="/images/apicts2.jpg" 
+            src="/images/apicts-logo.jpg" 
             alt="Logo" 
             width={42} 
             height={42} 
@@ -67,7 +67,7 @@ export default function Navbar() {
             size={38} 
             className="cursor-pointer text-white hover:text-rose-300 hover:scale-110 transition-all duration-300 ease-in-out" 
           />
-          <Link href="/get-started">
+          <Link href="/register">
             <button className="bg-rose-500 text-white px-6 py-2.5 rounded-md font-semibold hover:bg-rose-600 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 ease-in-out shadow-md">
               Get Started
             </button>

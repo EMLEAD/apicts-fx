@@ -1,5 +1,5 @@
 
-import React from "react";
+
 import Link from "next/link";
 import Image from "next/image";
 import  Navbar  from '@/Components/Navbar'
@@ -20,13 +20,7 @@ export default function LoginPage() {
 
       <div className="relative z-10 w-full max-w-md mx-auto bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-white/20">
         <div className="flex flex-col items-center mb-8">
-          <Image
-            src="/images/software-pc-screen-used-analyzing-cryptocurrency-investment-purchases.jpg"
-            alt="Logo"
-            width={56}
-            height={56}
-            className="rounded-full shadow-lg mb-2"
-          />
+          
           <h2 className="text-3xl font-bold text-white mb-1">Welcome Back</h2>
           <p className="text-blue-100">Sign in to your account</p>
         </div>
@@ -83,7 +77,7 @@ export default function LoginPage() {
           </button>
         </form>
         <div className="mt-8 text-center text-blue-100">
-          Don't have an account?{" "}
+          Don&apos;`t have an account?{" "}
           <Link
             href="/register"
             className="text-green-300 font-semibold hover:underline"
