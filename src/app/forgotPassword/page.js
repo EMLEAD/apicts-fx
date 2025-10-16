@@ -9,7 +9,7 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen">
       <Navbar />
 
-      <main className="min-h-screen flex pt-20 items-center justify-center bg-gradient-to-br from-green-500 via-blue-700 to-green-500 relative overflow-hidden">
+      <main className="min-h-screen flex pt-10 items-center justify-center bg-gradient-to-br from-green-500 via-blue-700 to-green-500 relative overflow-hidden">
         {/* Animated background blobs */}
         <div className="absolute inset-0 opacity-10 pointer-events-none">
           <div className="absolute top-20 left-10 w-72 h-72 bg-green-500 rounded-full mix-blend-multiply filter blur-xl animate-[blob_7s_infinite]"></div>
