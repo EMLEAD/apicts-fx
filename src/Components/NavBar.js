@@ -149,7 +149,7 @@ export default function Navbar() {
 
           {/* Mobile Buttons */}
           <div className="pt-4 space-y-3 border-t border-blue-500">
-            <Link href="/get-started" onClick={toggleMenu}>
+            <Link href="/register" onClick={toggleMenu}>
               <button className="w-full bg-rose-500 text-white px-6 py-3 rounded-md font-semibold hover:bg-rose-600 transition-all duration-300 shadow-md">
                 Get Started
               </button>
