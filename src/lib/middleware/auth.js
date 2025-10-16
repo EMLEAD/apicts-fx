@@ -28,5 +28,5 @@ const authenticate = async (req) => {
   }
 };
 
-module.exports = { authenticate };
+module.exports = { authenticate, auth: authenticate };
 

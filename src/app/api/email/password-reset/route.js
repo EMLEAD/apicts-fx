@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import emailService from '@/lib/email/service';
-import { auth } from '@/lib/auth/middleware';
+import { auth } from '@/lib/middleware/auth';
 
 // Send password reset email
 export async function POST(request) {
