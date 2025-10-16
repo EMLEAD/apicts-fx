@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to <%= siteName %></title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #2563eb, #dc2626);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .content {
+            padding: 30px;
+        }
+        .welcome-message {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #2563eb;
+        }
+        .features {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        .feature-icon {
+            width: 20px;
+            height: 20px;
+            background: #2563eb;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #2563eb, #dc2626);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .footer {
+            background: #1f2937;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 14px;
+        }
+        .social-links {
+            margin: 15px 0;
+        }
+        .social-links a {
+            color: white;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Welcome to <%= siteName %>!</h1>
+        </div>
+        
+        <div class="content">
+            <div class="welcome-message">
+                Hello <%= userName %>! 🎉
+            </div>
+            
+            <p>Thank you for joining APICTS - Nigeria's premier currency exchange platform. We're excited to have you on board!</p>
+            
+            <p>Your account has been successfully created with the email: <strong><%= userEmail %></strong></p>
+            
+            <div class="features">
+                <h3 style="margin-top: 0; color: #2563eb;">What you can do with APICTS:</h3>
+                <div class="feature-item">
+                    <div class="feature-icon"></div>
+                    <span>Exchange fiat currencies at competitive rates</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon"></div>
+                    <span>Trade cryptocurrencies securely</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon"></div>
+                    <span>Exchange e-currencies (Perfect Money, Payeer, etc.)</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon"></div>
+                    <span>Send international transfers</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon"></div>
+                    <span>Enjoy secure and fast transactions</span>
+                </div>
+            </div>
+            
+            <p>Ready to get started? Click the button below to explore our services:</p>
+            
+            <a href="<%= siteUrl %>/get-started" class="cta-button">Get Started Now</a>
+            
+            <p>If you have any questions or need assistance, don't hesitate to contact our support team.</p>
+            
+            <p>Best regards,<br>
+            The APICTS Team</p>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; <%= currentYear %> APICTS. All rights reserved.</p>
+            <div class="social-links">
+                <a href="<%= siteUrl %>">Website</a>
+                <a href="<%= siteUrl %>/contact">Contact</a>
+                <a href="<%= siteUrl %>/support">Support</a>
+            </div>
+            <p>This email was sent to <%= userEmail %>. If you didn't create an account, please ignore this email.</p>
+        </div>
+    </div>
+</body>
+</html>
+

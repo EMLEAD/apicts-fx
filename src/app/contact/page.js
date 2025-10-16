@@ -1,4 +1,4 @@
-import Navbar from "@/Components/Navbar";
+import Navbar from "@/Components/NavBar";
 import Footer from "@/Components/Footer";
 import { Mail, Phone, MapPin, Send } from "lucide-react";
 

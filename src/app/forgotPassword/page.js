@@ -1,7 +1,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import Navbar from '@/Components/Navbar';
+import Navbar from '@/Components/NavBar';
 import Footer from '@/Components/Footer';
 
 export default function ForgotPasswordPage() {
