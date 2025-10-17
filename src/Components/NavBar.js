@@ -13,7 +13,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-blue-600 shadow-lg fixed w-full top-0 left-0 z-50 backdrop-blur-sm">
+    <nav className="bg-gradient-to-br from-green-500  to-blue-900 shadow-lg fixed w-full top-0 left-0 z-50 backdrop-blur-sm">
       <div className="container mx-auto px-6 py-4 flex justify-between items-center">
         
         {/* Logo */}
@@ -31,32 +31,32 @@ export default function Navbar() {
         <ul className="hidden md:flex space-x-8 text-white font-semibold">
           <li>
             <Link href="/" className="relative group py-2 transition-all duration-300 cursor-pointer">
-              <span className="group-hover:text-rose-300 transition-colors duration-300">Home</span>
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-rose-300 group-hover:w-full transition-all duration-300 ease-out"></span>
+              <span className="group-hover:text-red-500 transition-colors duration-300">Home</span>
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-500 group-hover:w-full transition-all duration-300 ease-out"></span>
             </Link>
           </li>
           <li>
             <Link href="/about" className="relative group py-2 transition-all duration-300 cursor-pointer">
-              <span className="group-hover:text-rose-300 transition-colors duration-300">About Us</span>
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-rose-300 group-hover:w-full transition-all duration-300 ease-out"></span>
+              <span className="group-hover:text-red-500 transition-colors duration-300">About Us</span>
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-500 group-hover:w-full transition-all duration-300 ease-out"></span>
             </Link>
           </li>
           <li>
             <Link href="/contact" className="relative group py-2 transition-all duration-300 cursor-pointer">
-              <span className="group-hover:text-rose-300 transition-colors duration-300">Contact Us</span>
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-rose-300 group-hover:w-full transition-all duration-300 ease-out"></span>
+              <span className="group-hover:text-red-500 transition-colors duration-300">Contact Us</span>
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-500 group-hover:w-full transition-all duration-300 ease-out"></span>
             </Link>
           </li>
           <li>
             <Link href="/blog" className="relative group py-2 transition-all duration-300 cursor-pointer">
-              <span className="group-hover:text-rose-300 transition-colors duration-300">Blog</span>
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-rose-300 group-hover:w-full transition-all duration-300 ease-out"></span>
+              <span className="group-hover:text-red-500 transition-colors duration-300">Blog</span>
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-500 group-hover:w-full transition-all duration-300 ease-out"></span>
             </Link>
           </li>
           <li>
             <Link href="/vlog" className="relative group py-2 transition-all duration-300 cursor-pointer">
-              <span className="group-hover:text-rose-300 transition-colors duration-300">Vlog</span>
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-rose-300 group-hover:w-full transition-all duration-300 ease-out"></span>
+              <span className="group-hover:text-red-500 transition-colors duration-300">Vlog</span>
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-500 group-hover:w-full transition-all duration-300 ease-out"></span>
             </Link>
           </li>
         </ul>
@@ -65,15 +65,15 @@ export default function Navbar() {
         <div className="hidden md:flex space-x-4 items-center">
           <MessageCircle 
             size={38} 
-            className="cursor-pointer text-white hover:text-rose-300 hover:scale-110 transition-all duration-300 ease-in-out" 
+            className="cursor-pointer text-white hover:text-rose-400 hover:scale-110 transition-all duration-300 ease-in-out" 
           />
           <Link href="/register">
-            <button className="bg-rose-500 text-white px-6 py-2.5 rounded-md font-semibold hover:bg-rose-600 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 ease-in-out shadow-md">
+            <button className="bg-red-600 cursor-pointer text-white px-6 py-2.5 rounded-md font-semibold hover:bg-rose-600 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 ease-in-out shadow-md">
               Get Started
             </button>
           </Link>
           <Link href="/login">
-            <button className="border-2 border-white text-white px-6 py-2.5 rounded-md font-semibold hover:bg-white hover:text-blue-600 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 ease-in-out shadow-md">
+            <button className="border-2 cursor-pointer border-white text-white px-6 py-2.5 rounded-md font-semibold hover:bg-white hover:text-blue-600 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 ease-in-out shadow-md">
               Login
             </button>
           </Link>

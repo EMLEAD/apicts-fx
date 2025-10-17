@@ -7,7 +7,7 @@ export default function CtaSection() {
   return (
     <section className="py-20 relative overflow-hidden">
       {/* Gradient Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-blue-700 to-green-600">
+      <div className="absolute inset-0 bg-gradient-to-br from-red-600 via-red-700 to-green-600">
         {/* Animated blobs */}
         <div className="absolute top-0 left-0 w-96 h-96 bg-green-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-[blob_7s_infinite]"></div>
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-rose-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-[blob_7s_infinite_2s]"></div>

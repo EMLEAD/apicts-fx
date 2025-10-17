@@ -26,30 +26,37 @@ export default function VlogPage() {
   const [videos, setVideos] = useState([
     {
       id: 1,
-      title: "How to Trade Forex on Apicts-FX",
+      bgClass: "bg-red-700",            
+      titleClass: "text-white",    
+      descClass: "text-white",       
+      title: "How to Trade Forex on Apicts-FX.",
       description: "A step-by-step guide for beginners to start trading forex and become a pro in no time.",
       url: "https://www.youtube.com/watch?v=1jofE-GNYZ4",
-      thumbnail: "/images/vlog-thumb1.jpg",
       uploadedBy: "APICTS Academy",
       date: "15-0-2025",
     },
     {
       id: 2,
-      title: "Mentorship With Don",
+      bgClass: "bg-red-700",
+      titleClass: "text-white",
+      descClass: "text-white",
+      title: "Mentorship With Don.",
       description: "Learn from the best! and trade like a pro with our expert mentorship from DON himself.",
       url: "https://www.youtube.com/watch?v=tGOfzmPfFIA",
-      thumbnail: "/images/vlog-thumb2.jpg",
       uploadedBy: "APICTS Academy",
       date: "15-0-2025",
     },
     {
       id: 3,
-      title: "Understanding Market Analysis(Fundamentals and Technicals)",
+      bgClass: "bg-red-700",            
+      titleClass: "text-white",    
+      descClass: "text-white",       
+      title: "Understanding Market Analysis.",
       description: "Learn about what drives the market. Who are the market makers? and how to be a profitable trader.",
       url: "https://www.youtube.com/watch?v=pPN59DjpCfk&t=3s",
-      thumbnail: "/images/vlog-thumb2.jpg",
       uploadedBy: "APICTS Academy",
       date: "15-0-2025",
+      
     },
   ]);
   const [uploading, setUploading] = useState(false);
@@ -82,14 +89,14 @@ export default function VlogPage() {
   const admin = isAdmin();
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-900 via-blue-700 to-green-500">
+    <div className="min-h-screen flex flex-col bg-white">
       <Navbar />
       <section className="flex-1 py-16 px-4 sm:px-8">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-10">
             <div className="mt-20">
-              <p className="text-blue-100 text-lg">
+              <p className="text-white text-lg">
                 Watch, learn, and trade like a pro! Explore our latest video contents.
               </p>
             </div>
@@ -123,7 +130,7 @@ export default function VlogPage() {
             {videos.map((video) => (
               <div
                 key={video.id}
-                className="bg-white/10 backdrop-blur-lg rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300"
+                className={`${video.bgClass || "bg-white/10"} backdrop-blur-lg rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300`}
               >
                 <div className="relative group">
                   {isYouTubeUrl(video.url) ? (
@@ -147,11 +154,11 @@ export default function VlogPage() {
                   </div>
                 </div>
                 <div className="p-5">
-                  <h2 className="text-xl font-bold text-white mb-1">{video.title}</h2>
-                  <p className="text-blue-100 text-sm mb-2">{video.description}</p>
-                  <div className="flex items-center justify-between text-xs text-blue-200">
-                    <span>{video.date}</span>
-                    <span>#{video.id}</span>
+                  <h2 className={`text-xl font-bold mb-1 ${video.titleClass || "text-white"}`}>{video.title}</h2>
+                  <p className={`${video.descClass || "text-blue-100"} text-sm mb-2`}>{video.description}</p>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-white">{video.date}</span>
+                    <span className="text-white">#{video.id}</span>
                   </div>
                 </div>
               </div>
