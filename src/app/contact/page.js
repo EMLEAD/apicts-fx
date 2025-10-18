@@ -11,10 +11,10 @@ export default function ContactPage() {
       <main className="flex-grow pt-24 pb-16 px-6 md:px-20">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-blue-700 mb-4">
+          <div className="text-center mt-12 mb-12">
+            {/* <h1 className="text-4xl md:text-5xl font-bold text-blue-700 mb-4">
               Get in Touch
-            </h1>
+            </h1> */}
             <p className="text-lg text-gray-700 font-medium">
               We&apos;d love to hear from you. Send us a message and we&apos;ll respond as soon as possible.
             </p>
@@ -23,7 +23,7 @@ export default function ContactPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Contact Form */}
             <div className="bg-white p-8 rounded-lg shadow-xl border-t-4 border-blue-600">
-              <h2 className="text-2xl font-bold text-blue-700 mb-6">Send us a Message</h2>
+              <h2 className="text-2xl font-bold text-green-700 mb-6">Send us a Message</h2>
               <form className="space-y-6">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
@@ -92,7 +92,7 @@ export default function ContactPage() {
 
                 <button
                   type="submit"
-                  className="w-full bg-red-600 text-white px-6 py-3 rounded-md hover:bg-red-700 hover:shadow-lg flex items-center justify-center gap-2 font-semibold transition-all duration-300"
+                  className="w-full bg-green-600 text-white px-6 py-3 rounded-md hover:bg-red-700 hover:shadow-lg flex items-center justify-center gap-2 font-semibold transition-all duration-300"
                 >
                   <Send size={20} />
                   Send Message
@@ -108,7 +108,7 @@ export default function ContactPage() {
                 <div className="space-y-6">
                   {/* Email */}
                   <div className="flex items-start gap-4">
-                    <div className="bg-blue-600 p-3 rounded-lg shadow-md">
+                    <div className="bg-green-600 p-3 rounded-lg shadow-md">
                       <Mail className="text-white" size={24} />
                     </div>
                     <div>
@@ -145,7 +145,7 @@ export default function ContactPage() {
               </div>
 
               {/* Business Hours */}
-              <div className="bg-blue-700 text-white p-8 rounded-lg shadow-xl border-l-4 border-red-600">
+              <div className="bg-red-600 text-white p-8 rounded-lg shadow-xl border-l-4 border-red-600">
                 <h2 className="text-2xl font-bold mb-6">Business Hours</h2>
                 <div className="space-y-3">
                   <div className="flex justify-between">

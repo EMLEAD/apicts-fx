@@ -3,10 +3,24 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, TrendingUp, Shield, Zap } from "lucide-react";
+import { useState, useEffect } from "react";
 
 export default function Hero() {
+  // carousel images + state
+  const images = [
+    "/images/software-pc-screen-used-analyzing-cryptocurrency-investment-purchases.jpg",
+    "/images/chart.jpg",
+    "/images/deriv.jpg",
+  ];
+  const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => setCurrent((c) => (c + 1) % images.length), 4500);
+    return () => clearInterval(id);
+  }, []);
+
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 pt-20">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-red-600 via-red-700 to-red-900 pt-20">
       {/* Animated background elements */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-20 left-10 w-72 h-72 bg-green-500 rounded-full mix-blend-multiply filter blur-xl animate-[blob_7s_infinite]"></div>
@@ -100,15 +114,52 @@ export default function Hero() {
 
           {/* Right Content - Image/Illustration */}
           <div className="relative">
-            {/* Hero Image */}
+            {/* Animated carousel (replaces single Image div) */}
             <div className="relative mb-8 mt-8">
               <div className="relative h-64 rounded-2xl overflow-hidden shadow-2xl">
-                <Image
-                  src="/images/software-pc-screen-used-analyzing-cryptocurrency-investment-purchases.jpg"
-                  alt="Currency Exchange Platform"
-                  fill
-                  className="object-cover"
-                />
+                {images.map((src, idx) => (
+                  <div
+                    key={src}
+                    className={`absolute inset-0 transition-opacity duration-1000 ease-in transform ${
+                      idx === current ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
+                    }`}
+                  >
+                    <Image src={src} alt={`hero-${idx}`} fill className="object-cover" />
+                  </div>
+                ))}
+
+                {/* Prev / Next controls */}
+                <button
+                  type="button"
+                  aria-label="Previous slide"
+                  onClick={() => setCurrent((c) => (c === 0 ? images.length - 1 : c - 1))}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full shadow-md"
+                >
+                  ‹
+                </button>
+                <button
+                  type="button"
+                  aria-label="Next slide"
+                  onClick={() => setCurrent((c) => (c === images.length - 1 ? 0 : c + 1))}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full shadow-md"
+                >
+                  ›
+                </button>
+
+                {/* pagination dots */}
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
+                  {images.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setCurrent(i)}
+                      aria-label={`Go to slide ${i + 1}`}
+                      className={`w-2.5 h-2.5 rounded-full transition-all ${
+                        i === current ? "bg-white scale-110" : "bg-white/40"
+                      }`}
+                      type="button"
+                    />
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -152,7 +203,7 @@ export default function Hero() {
                     </div>
                   </div>
 
-                  <button className="w-full bg-gradient-to-r from-blue-600 to-green-500 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300">
+                  <button className="w-full bg-gradient-to-r from-blue-600 to-green-500 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-1500">
                     Exchange Now
                   </button>
                 </div>

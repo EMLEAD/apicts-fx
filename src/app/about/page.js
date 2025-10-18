@@ -8,7 +8,7 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen  flex flex-col">
       <Navbar />
-      <section className="relative flex-1 flex items-center justify-center overflow-hidden bg-gradient-to-br from-green-600 via-blue-700 to-green-600 pt-20 pb-10">
+      <section className="relative flex-1 flex items-center justify-center overflow-hidden bg-white pt-20 pb-10">
         {/* Animated background blobs */}
         <div className="absolute inset-0 opacity-10 pointer-events-none">
           <div className="absolute top-20 left-10 w-72 h-72 bg-green-500 rounded-full mix-blend-multiply filter blur-xl animate-[blob_7s_infinite]"></div>
@@ -20,16 +20,16 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left Content */}
             <div className="text-white space-y-6">
-              <span className="bg-red-500 text-white text-sm font-semibold px-4 py-2 rounded-full inline-block">
+              <span className="bg-green-500 text-white text-sm font-semibold px-4 py-2 rounded-full inline-block mt-5">
                 About Apicts-FX & Academy
               </span>
-              <h1 className="text-5xl md:text-6xl font-bold leading-tight">
-                Empowering Your <span className="bg-gradient-to-r from-red-400 to-emerald-200 bg-clip-text text-transparent">Financial Future</span>
+              <h1 className="text-5xl md:text-6xl font-bold leading-tight text-black">
+                Empowering Your <span className="bg-gradient-to-r from-blue-400 to-emerald-200 bg-clip-text text-transparent">Financial Future</span>
               </h1>
-              <p className="text-xl text-blue-100 leading-relaxed">
-                <b>Apicts-FX</b> is Nigeria’s leading digital currency exchange and financial education platform. We provide secure, fast, and reliable services for trading fiat, e-currencies, and cryptocurrencies. Our mission is to make global currency exchange simple, accessible, and trustworthy for everyone.
+              <p className="text-xl text-black leading-relaxed">
+                <b >Apicts-FX</b> is Nigeria’s leading digital currency exchange and financial education platform. We provide secure, fast, and reliable services for trading fiat, e-currencies, and cryptocurrencies. Our mission is to make global currency exchange simple, accessible, and trustworthy for everyone.
               </p>
-              <p className="text-lg text-blue-200">
+              <p className="text-lg text-black">
                 <b>Apicts Academy</b> is our educational arm, dedicated to empowering individuals and businesses with the knowledge and skills needed to thrive in the digital finance world. From beginner to advanced, our courses, webinars, and mentorship programs are designed to help you succeed.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
@@ -41,7 +41,7 @@ export default function AboutPage() {
                   </div>
                   <div>
                     <p className="font-semibold">Trusted Exchange</p>
-                    <p className="text-xs text-blue-200">Registered & Regulated</p>
+                    <p className="text-xs text-black">Registered & Regulated</p>
                   </div>
                 </div>
                 <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 flex items-center gap-3">
@@ -52,7 +52,7 @@ export default function AboutPage() {
                   </div>
                   <div>
                     <p className="font-semibold">24/7 Support</p>
-                    <p className="text-xs text-blue-200">Always Here for You</p>
+                    <p className="text-xs text-black">Always Here for You</p>
                   </div>
                 </div>
                 <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 flex items-center gap-3">
@@ -63,7 +63,7 @@ export default function AboutPage() {
                   </div>
                   <div>
                     <p className="font-semibold">Academy</p>
-                    <p className="text-xs text-blue-200">Learn & Grow</p>
+                    <p className="text-xs text-black">Learn & Grow</p>
                   </div>
                 </div>
                 <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 flex items-center gap-3">
@@ -74,7 +74,7 @@ export default function AboutPage() {
                   </div>
                   <div>
                     <p className="font-semibold">Secure & Fast</p>
-                    <p className="text-xs text-blue-200">Bank-level Security</p>
+                    <p className="text-xs text-black">Bank-level Security</p>
                   </div>
                 </div>
               </div>
@@ -86,7 +86,7 @@ export default function AboutPage() {
                   </button>
                 </Link>
                 <Link href="/vlog">
-                  <button className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-blue-700 transition-all duration-300 shadow-xl">
+                  <button className="border-2 border-blue-500 text-black px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-red-700 transition-all duration-300 shadow-xl">
                     Explore Academy
                   </button>
                 </Link>
@@ -95,11 +95,11 @@ export default function AboutPage() {
               <div className="flex items-center gap-6 pt-4 text-sm">
                 <div className="flex items-center gap-2">
                   <span className="text-green-400 text-2xl">★★★★★</span>
-                  <span className="text-blue-200">4.9/5 Rating</span>
+                  <span className="text-blue-600">4.9/5 Rating</span>
                 </div>
                 <div className="h-6 w-px bg-blue-400"></div>
-                <div className="text-blue-200">
-                  <span className="font-bold text-white">10,000+</span> Happy Customers
+                <div className="text-blue-600">
+                  <span className="font-bold text-green-400">10,000+</span> Happy Customers
                 </div>
               </div>
             </div>
@@ -136,10 +136,10 @@ export default function AboutPage() {
                   </p>
                 </div>
                 {/* Floating badges */}
-                <div className="absolute -top-4 -right-4 bg-green-500 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg animate-bounce">
+                <div className="absolute -top-4 -right-4 bg-red-500 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg animate-bounce">
                   CAC Registered
                 </div>
-                <div className="absolute -bottom-4 -left-4 bg-rose-500 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
+                <div className="absolute -bottom-4 -left-4 bg-red-500 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
                   24/7 Support
                 </div>
               </div>

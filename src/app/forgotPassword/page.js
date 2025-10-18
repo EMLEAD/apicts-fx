@@ -9,26 +9,21 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen">
       <Navbar />
 
-      <main className="min-h-screen flex pt-20 items-center justify-center bg-gradient-to-br from-green-500 via-blue-700 to-green-500 relative overflow-hidden">
-        {/* Animated background blobs */}
-        <div className="absolute inset-0 opacity-10 pointer-events-none">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-green-500 rounded-full mix-blend-multiply filter blur-xl animate-[blob_7s_infinite]"></div>
-          <div className="absolute top-40 right-10 w-72 h-72 bg-rose-500 rounded-full mix-blend-multiply filter blur-xl animate-[blob_7s_infinite_2s]"></div>
-          <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl animate-[blob_7s_infinite_4s]"></div>
-        </div>
+      <main className=" flex pt-30 pb-10 items-center justify-center bg-white relative overflow-hidden">
+        
 
-        <div className="relative z-10 w-full max-w-md mx-auto bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-white/20">
+        <div className="relative z-10 w-full max-w-md mx-auto bg-red-600 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-white/20">
           <div className="flex flex-col items-center mb-8">
            
             <h2 className="text-3xl font-bold text-white mb-1">Forgot Password</h2>
-            <p className="text-blue-100 text-center">
+            <p className="text-white text-center">
               Enter your email address for a One-Time Password (OTP).
             </p>
           </div>
           <form className="space-y-6">
             <div>
               <label
-                className="block text-blue-100 mb-1 font-medium"
+                className="block text-white mb-1 font-medium"
                 htmlFor="email"
               >
                 Email Address
@@ -38,22 +33,22 @@ export default function ForgotPasswordPage() {
                 type="email"
                 autoComplete="email"
                 required
-                className="w-full px-4 py-3 rounded-lg bg-white/80 text-blue-900 font-semibold border border-blue-200 focus:outline-none focus:ring-2 focus:ring-green-400 transition"
+                className="w-full px-4 py-3 rounded-lg bg-white text-blue-900 font-semibold border border-blue-200 focus:outline-none focus:ring-2 focus:ring-green-400 transition"
                 placeholder="you@email.com"
               />
             </div>
             <button
               type="submit"
-              className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg shadow-lg transition-all duration-300 text-lg"
+              className="w-full bg-blue-900 hover:bg-green-600 text-white font-bold py-3 rounded-lg shadow-lg transition-all duration-300 text-lg"
             >
               Send OTP
             </button>
           </form>
-          <div className="mt-8 text-center text-blue-100">
+          <div className="mt-8 text-center text-white">
             Remembered your password?{" "}
             <Link
               href="/login"
-              className="text-green-300 font-semibold hover:underline"
+              className="text-blue-900 font-semibold hover:underline hover:text-green-500"
             >
               Login
             </Link>
