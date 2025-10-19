@@ -8,20 +8,13 @@ module.exports = (sequelize) => {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true
     },
-    firstName: {
+    username: {
       type: DataTypes.STRING,
       allowNull: false,
+      unique: true,
       validate: {
         notEmpty: true,
-        len: [2, 50]
-      }
-    },
-    lastName: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-        len: [2, 50]
+        len: [3, 30]
       }
     },
     email: {
@@ -39,10 +32,6 @@ module.exports = (sequelize) => {
         len: [6, 100]
       }
     },
-    phone: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
     role: {
       type: DataTypes.ENUM('user', 'admin', 'moderator'),
       defaultValue: 'user'
@@ -53,6 +42,15 @@ module.exports = (sequelize) => {
     },
     lastLogin: {
       type: DataTypes.DATE,
+      allowNull: true
+    },
+    firebaseUid: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true
+    },
+    profilePicture: {
+      type: DataTypes.STRING,
       allowNull: true
     }
   }, {
