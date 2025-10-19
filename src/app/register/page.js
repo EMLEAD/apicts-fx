@@ -4,19 +4,17 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Mail, Lock, User, Phone, CheckCircle } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, CheckCircle } from "lucide-react";
 import Navbar from '@/Components/NavBar';
 import Footer from '@/Components/Footer';
 
 export default function SignupPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    username: '',
     email: '',
     password: '',
-    confirmPassword: '',
-    phone: ''
+    confirmPassword: ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -42,12 +40,10 @@ export default function SignupPage() {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = 'First name is required';
-    }
-
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Last name is required';
+    if (!formData.username.trim()) {
+      newErrors.username = 'Username is required';
+    } else if (formData.username.length < 3) {
+      newErrors.username = 'Username must be at least 3 characters';
     }
 
     if (!formData.email.trim()) {
@@ -160,7 +156,7 @@ export default function SignupPage() {
                 <div className="absolute bottom-8 left-8 right-8 text-white">
                   <h3 className="text-3xl font-bold mb-4">Join Thousands of Happy Traders</h3>
                   <p className="text-lg opacity-90">
-                    Start your financial journey with APICTS-FX. Secure, fast, and reliable currency exchange services.
+                    Start your financial journey with APICTS-FX. Quick registration with just username, email, and password.
                   </p>
                   <div className="flex items-center gap-4 mt-6">
                     <div className="flex items-center gap-2">
@@ -181,7 +177,7 @@ export default function SignupPage() {
               <div className="bg-white rounded-2xl shadow-2xl p-8">
                 <div className="text-center mb-8">
                   <h2 className="text-3xl font-bold text-gray-800 mb-2">Create Your Account</h2>
-                  <p className="text-gray-600">Join APICTS-FX and start trading today</p>
+                  <p className="text-gray-600">Join APICTS-FX with just a few details</p>
                 </div>
 
                 {/* Google Sign In */}
@@ -212,57 +208,30 @@ export default function SignupPage() {
                     </div>
                   )}
 
-                  {/* Name Fields */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-gray-700 mb-2 font-medium" htmlFor="firstName">
-                        First Name
-                      </label>
-                      <div className="relative">
-                        <User size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                        <input
-                          id="firstName"
-                          name="firstName"
-                          type="text"
-                          autoComplete="given-name"
-                          required
-                          value={formData.firstName}
-                          onChange={handleInputChange}
-                          className={`w-full pl-10 pr-4 py-3 rounded-lg border transition ${
-                            errors.firstName ? 'border-red-300 focus:ring-red-500' : 'border-gray-200 focus:ring-red-500'
-                          } focus:outline-none focus:ring-2`}
-                          placeholder="First Name"
-                        />
-                      </div>
-                      {errors.firstName && (
-                        <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>
-                      )}
+                  {/* Username */}
+                  <div>
+                    <label className="block text-gray-700 mb-2 font-medium" htmlFor="username">
+                      Username
+                    </label>
+                    <div className="relative">
+                      <User size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                      <input
+                        id="username"
+                        name="username"
+                        type="text"
+                        autoComplete="username"
+                        required
+                        value={formData.username}
+                        onChange={handleInputChange}
+                        className={`w-full pl-10 pr-4 py-3 rounded-lg border transition ${
+                          errors.username ? 'border-red-300 focus:ring-red-500' : 'border-gray-200 focus:ring-red-500'
+                        } focus:outline-none focus:ring-2`}
+                        placeholder="Choose a username"
+                      />
                     </div>
-
-                    <div>
-                      <label className="block text-gray-700 mb-2 font-medium" htmlFor="lastName">
-                        Last Name
-                      </label>
-                      <div className="relative">
-                        <User size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                        <input
-                          id="lastName"
-                          name="lastName"
-                          type="text"
-                          autoComplete="family-name"
-                          required
-                          value={formData.lastName}
-                          onChange={handleInputChange}
-                          className={`w-full pl-10 pr-4 py-3 rounded-lg border transition ${
-                            errors.lastName ? 'border-red-300 focus:ring-red-500' : 'border-gray-200 focus:ring-red-500'
-                          } focus:outline-none focus:ring-2`}
-                          placeholder="Last Name"
-                        />
-                      </div>
-                      {errors.lastName && (
-                        <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>
-                      )}
-                    </div>
+                    {errors.username && (
+                      <p className="text-red-500 text-sm mt-1">{errors.username}</p>
+                    )}
                   </div>
 
                   {/* Email */}
@@ -291,25 +260,6 @@ export default function SignupPage() {
                     )}
                   </div>
 
-                  {/* Phone */}
-                  <div>
-                    <label className="block text-gray-700 mb-2 font-medium" htmlFor="phone">
-                      Phone Number (Optional)
-                    </label>
-                    <div className="relative">
-                      <Phone size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                      <input
-                        id="phone"
-                        name="phone"
-                        type="tel"
-                        autoComplete="tel"
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                        className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500 transition"
-                        placeholder="+234 123 456 7890"
-                      />
-                    </div>
-                  </div>
 
                   {/* Password */}
                   <div>
@@ -420,6 +370,7 @@ export default function SignupPage() {
               </div>
             </div>
           </div>
+        </div>
         </section>
       
       <Footer />

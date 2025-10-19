@@ -268,8 +268,8 @@ export default function LoginPage() {
               </div>
             </div>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
       
       <Footer />
     </div>

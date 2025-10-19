@@ -15,8 +15,8 @@ export default function TermsAndConditionsPage() {
 
         <section className="space-y-6 text-base leading-relaxed text-gray-900">
           <p>
-            Welcome to Apicts‑FX and Apicts Academy. These Terms & Conditions ("Terms") govern your use of our exchange services,
-            academy content, website and any related services (together, the "Services"). By accessing or using our Services you
+            Welcome to Apicts‑FX and Apicts Academy. These Terms & Conditions (&quot;Terms&quot;) govern your use of our exchange services,
+            academy content, website and any related services (together, the &quot;Services&quot;). By accessing or using our Services you
             agree to be bound by these Terms.
           </p>
 
