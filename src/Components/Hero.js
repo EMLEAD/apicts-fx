@@ -17,68 +17,68 @@ export default function Hero() {
   useEffect(() => {
     const id = setInterval(() => setCurrent((c) => (c + 1) % images.length), 4500);
     return () => clearInterval(id);
-  }, []);
+  }, [images.length]);
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-red-600 via-red-700 to-red-900 pt-20">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-cream-50 via-cream-100 to-cream-200 pt-20">
       {/* Animated background elements */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-green-500 rounded-full mix-blend-multiply filter blur-xl animate-[blob_7s_infinite]"></div>
-        <div className="absolute top-40 right-10 w-72 h-72 bg-rose-500 rounded-full mix-blend-multiply filter blur-xl animate-[blob_7s_infinite_2s]"></div>
-        <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl animate-[blob_7s_infinite_4s]"></div>
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-emerald-400 rounded-full mix-blend-multiply filter blur-xl animate-[blob_7s_infinite]"></div>
+        <div className="absolute top-40 right-10 w-72 h-72 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl animate-[blob_7s_infinite_2s]"></div>
+        <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl animate-[blob_7s_infinite_4s]"></div>
       </div>
 
       <div className="container mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
-          <div className="text-white space-y-6">
+          <div className="text-gray-800 space-y-6">
             <div className="inline-block">
-              <span className="bg-green-500 text-white text-sm font-semibold px-4 py-2 rounded-full">
+              <span className="bg-red-600 text-white text-sm font-semibold px-4 py-2 rounded-full shadow-lg">
                 🇳🇬 CAC Registered • Leading Exchange Provider
               </span>
             </div>
             
             <h1 className="text-5xl md:text-6xl font-bold leading-tight">
               Global Currency Exchange
-              <span className="block bg-gradient-to-r from-green-400 to-emerald-300 bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-red-600 to-red-500 bg-clip-text text-transparent">
                 Made Simple
               </span>
             </h1>
             
-            <p className="text-xl text-blue-100 leading-relaxed">
-              Trade fiat currencies, e-currencies, and cryptocurrencies with confidence. 
-              Secure, fast, and reliable exchange services powered by advanced technology.
+            <p className="text-xl text-gray-600 leading-relaxed">
+              Trade fiat currencies, e-currencies, and cryptocurrencies with <span className="text-red-600 font-semibold">confidence</span>. 
+              <span className="text-red-600 font-semibold">Secure</span>, fast, and reliable exchange services powered by advanced technology.
             </p>
 
             {/* Feature highlights */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
-              <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-lg p-3">
-                <div className="bg-green-500 p-2 rounded-lg">
-                  <Shield size={20} />
+              <div className="flex items-center gap-3 bg-white/80 backdrop-blur-sm rounded-lg p-3 shadow-lg border border-gray-200">
+                <div className="bg-red-500 p-2 rounded-lg">
+                  <Shield size={20} className="text-white" />
                 </div>
                 <div>
-                  <p className="font-semibold">Secure</p>
-                  <p className="text-xs text-blue-200">Bank-level security</p>
+                  <p className="font-semibold text-red-600">Secure</p>
+                  <p className="text-xs text-gray-600">Bank-level security</p>
                 </div>
               </div>
               
-              <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-lg p-3">
-                <div className="bg-rose-500 p-2 rounded-lg">
-                  <Zap size={20} />
+              <div className="flex items-center gap-3 bg-white/80 backdrop-blur-sm rounded-lg p-3 shadow-lg border border-gray-200">
+                <div className="bg-red-500 p-2 rounded-lg">
+                  <Zap size={20} className="text-white" />
                 </div>
                 <div>
-                  <p className="font-semibold">Instant</p>
-                  <p className="text-xs text-blue-200">Real-time processing</p>
+                  <p className="font-semibold text-red-600">Instant</p>
+                  <p className="text-xs text-gray-600">Real-time processing</p>
                 </div>
               </div>
               
-              <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-lg p-3">
-                <div className="bg-blue-500 p-2 rounded-lg">
-                  <TrendingUp size={20} />
+              <div className="flex items-center gap-3 bg-white/80 backdrop-blur-sm rounded-lg p-3 shadow-lg border border-gray-200">
+                <div className="bg-red-500 p-2 rounded-lg">
+                  <TrendingUp size={20} className="text-white" />
                 </div>
                 <div>
-                  <p className="font-semibold">Best Rates</p>
-                  <p className="text-xs text-blue-200">Competitive pricing</p>
+                  <p className="font-semibold text-red-600">Best Rates</p>
+                  <p className="text-xs text-gray-600">Competitive pricing</p>
                 </div>
               </div>
             </div>
@@ -86,14 +86,14 @@ export default function Hero() {
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 pt-6">
               <Link href="/get-started">
-                <button className="group bg-green-500 text-white px-8 py-4 rounded-lg font-semibold hover:bg-green-600 transition-all duration-300 shadow-xl hover:shadow-2xl hover:-translate-y-1 flex items-center justify-center gap-2">
+                <button className="group bg-gradient-to-r from-red-600 to-red-500 text-white px-8 py-4 rounded-lg font-semibold hover:from-red-700 hover:to-red-600 transition-all duration-300 shadow-xl hover:shadow-2xl hover:-translate-y-1 flex items-center justify-center gap-2">
                   Get Started Now
                   <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
                 </button>
               </Link>
               
               <Link href="/rates">
-                <button className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-blue-700 transition-all duration-300 shadow-xl">
+                <button className="border-2 border-red-300 text-red-600 px-8 py-4 rounded-lg font-semibold hover:bg-red-50 hover:border-red-400 transition-all duration-300 shadow-lg">
                   View Live Rates
                 </button>
               </Link>
@@ -102,12 +102,12 @@ export default function Hero() {
             {/* Trust indicators */}
             <div className="flex items-center gap-6 pt-4 text-sm">
               <div className="flex items-center gap-2">
-                <span className="text-green-400 text-2xl">★★★★★</span>
-                <span className="text-blue-200">4.9/5 Rating</span>
+                <span className="text-yellow-400 text-2xl">★★★★★</span>
+                <span className="text-gray-600">4.9/5 Rating</span>
               </div>
-              <div className="h-6 w-px bg-blue-400"></div>
-              <div className="text-blue-200">
-                <span className="font-bold text-white">10,000+</span> Happy Customers
+              <div className="h-6 w-px bg-gray-300"></div>
+              <div className="text-gray-600">
+                <span className="font-bold text-gray-800">10,000+</span> Happy Customers
               </div>
             </div>
           </div>
@@ -133,7 +133,7 @@ export default function Hero() {
                   type="button"
                   aria-label="Previous slide"
                   onClick={() => setCurrent((c) => (c === 0 ? images.length - 1 : c - 1))}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full shadow-md"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 p-2 rounded-full shadow-lg border border-gray-200"
                 >
                   ‹
                 </button>
@@ -141,7 +141,7 @@ export default function Hero() {
                   type="button"
                   aria-label="Next slide"
                   onClick={() => setCurrent((c) => (c === images.length - 1 ? 0 : c + 1))}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full shadow-md"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 p-2 rounded-full shadow-lg border border-gray-200"
                 >
                   ›
                 </button>
@@ -154,7 +154,7 @@ export default function Hero() {
                       onClick={() => setCurrent(i)}
                       aria-label={`Go to slide ${i + 1}`}
                       className={`w-2.5 h-2.5 rounded-full transition-all ${
-                        i === current ? "bg-white scale-110" : "bg-white/40"
+                        i === current ? "bg-red-600 scale-110" : "bg-gray-400"
                       }`}
                       type="button"
                     />
@@ -163,7 +163,7 @@ export default function Hero() {
               </div>
             </div>
 
-            <div className="relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-white/20">
+            <div className="relative bg-gradient-to-br from-white/90 to-white/70 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-gray-200">
               {/* Exchange Card Mockup */}
               <div className="bg-white rounded-xl p-6 shadow-xl">
                 <h3 className="text-gray-800 font-bold text-lg mb-4">Quick Exchange</h3>
@@ -203,22 +203,22 @@ export default function Hero() {
                     </div>
                   </div>
 
-                  <button className="w-full bg-gradient-to-r from-blue-600 to-green-500 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-1500">
+                  <button className="w-full bg-gradient-to-r from-red-600 to-red-500 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-1500">
                     Exchange Now
                   </button>
                 </div>
 
                 <div className="mt-4 flex items-center justify-between text-xs text-gray-500">
                   <span>Rate: 1 USD = 1,560 NGN</span>
-                  <span className="text-green-600 font-semibold">Live</span>
+                  <span className="text-red-600 font-semibold">Live</span>
                 </div>
               </div>
 
               {/* Floating badges */}
-              <div className="absolute -top-4 -right-4 bg-green-500 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg animate-bounce ">
+              <div className="absolute -top-4 -right-4 bg-red-600 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg animate-bounce">
                 ✓ Verified
               </div>
-              <div className="absolute -bottom-4 -left-4 bg-rose-500 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg ">
+              <div className="absolute -bottom-4 -left-4 bg-red-600 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
                 24/7 Support
               </div>
             </div>

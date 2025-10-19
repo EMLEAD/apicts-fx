@@ -116,7 +116,7 @@ export default function BlogSection() {
                   </div>
 
                   <Link href={`/blog/${post.id}`}>
-                    <button className="text-blue-600 hover:text-blue-700 font-semibold text-sm flex items-center gap-1 group/btn">
+                    <button className="text-red-600 hover:text-green-600 font-semibold text-sm flex items-center gap-1 group/btn">
                       Read More
                       <ArrowRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
                     </button>
@@ -130,7 +130,7 @@ export default function BlogSection() {
         {/* View All Button */}
         <div className="text-center mt-12">
           <Link href="/blog">
-            <button className="bg-gradient-to-r from-blue-600 to-green-500 text-white px-10 py-4 rounded-full font-bold text-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 inline-flex items-center gap-2">
+            <button className="bg-gradient-to-r from-red-600 to-red-500 text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-green-600 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 inline-flex items-center gap-2">
               View All Articles
               <ArrowRight size={20} />
             </button>

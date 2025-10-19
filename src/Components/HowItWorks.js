@@ -102,7 +102,7 @@ export default function HowItWorks() {
         <div className="mt-16 text-center">
           <a 
             href="/get-started"
-            className="inline-block bg-gradient-to-r from-blue-600 via-green-500 to-rose-500 text-white px-10 py-4 rounded-full font-bold text-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
+            className="inline-block bg-gradient-to-r from-red-600 to-red-500 text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-green-600 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
           >
             Start Your Exchange Journey
           </a>

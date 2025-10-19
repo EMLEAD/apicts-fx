@@ -15,7 +15,20 @@ module.exports = {
       acquire: 30000,
       idle: 10000
     },
-    timezone: '+00:00'
+    timezone: '+00:00',
+    dialectOptions: {
+      charset: 'utf8mb4',
+      collate: 'utf8mb4_unicode_ci',
+      supportBigNumbers: true,
+      bigNumberStrings: true
+    },
+    define: {
+      charset: 'utf8mb4',
+      collate: 'utf8mb4_unicode_ci',
+      timestamps: true,
+      underscored: false,
+      freezeTableName: true
+    }
   },
   test: {
     username: process.env.DB_USER || 'root',

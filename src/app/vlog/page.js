@@ -186,7 +186,7 @@ export default function VlogPage() {
       </section>
       <div className="text-center mb-10">
         <Link href="/register">
-          <button className="bg-gradient-to-r from-blue-600 to-green-500 text-white px-10 py-4 rounded-full font-bold text-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 inline-flex items-center gap-2">
+          <button className="bg-gradient-to-r from-red-600 to-red-500 text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-green-600 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 inline-flex items-center gap-2">
             Subscribe for more videos
             <ArrowRight size={20} />
           </button>

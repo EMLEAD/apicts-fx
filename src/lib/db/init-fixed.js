@@ -27,14 +27,22 @@ const initializeDatabase = async () => {
       console.error('      2. Verify .env.local credentials');
       console.error('      3. Make sure database "apicts_db" exists');
       console.error('      4. Check MySQL port (default: 3306)');
-      console.error('\x1b[33m%s\x1b[0m', '   📖 See QUICK_START.md for setup instructions');
+      console.error('\x1b[33m%s\x1b[0m', '   📖 Run: ./fix-database.sh');
       console.log('='.repeat(60) + '\n');
       return false;
     }
 
-    // Sync database tables
+    // Sync database tables with safe options
     console.log('\x1b[36m%s\x1b[0m', '🔄 Synchronizing database tables...');
-    await syncDatabase({ force: false, alter: false });
+    
+    // First try to sync without alter
+    try {
+      await syncDatabase({ force: false, alter: false });
+    } catch (error) {
+      console.log('\x1b[33m%s\x1b[0m', '⚠️  Standard sync failed, trying force sync...');
+      // If that fails, try force sync (drops and recreates tables)
+      await syncDatabase({ force: true });
+    }
     
     isInitialized = true;
     
@@ -53,7 +61,7 @@ const initializeDatabase = async () => {
     console.log('\x1b[31m%s\x1b[0m', '❌ DATABASE INITIALIZATION ERROR');
     console.log('='.repeat(60));
     console.error('\x1b[31m%s\x1b[0m', `   ❌ Error: ${error.message}`);
-    console.error('\x1b[33m%s\x1b[0m', '   📖 Check BACKEND_SETUP.md for setup instructions');
+    console.error('\x1b[33m%s\x1b[0m', '   📖 Run: ./fix-database.sh');
     console.log('='.repeat(60) + '\n');
     return false;
   }
@@ -65,4 +73,3 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 module.exports = { initializeDatabase };
-

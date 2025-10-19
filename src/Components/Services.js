@@ -131,7 +131,7 @@ export default function Services() {
           </p>
           <a 
             href="/contact" 
-            className="inline-block bg-gradient-to-r from-blue-600 to-green-500 text-white px-8 py-3 rounded-lg font-semibold hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+            className="inline-block bg-gradient-to-r from-red-600 to-red-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
           >
             Contact Our Team
           </a>

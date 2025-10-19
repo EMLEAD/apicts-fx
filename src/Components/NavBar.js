@@ -3,17 +3,33 @@
 import Image from "next/image";
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      const heroHeight = window.innerHeight; // Approximate hero section height
+      setIsScrolled(scrollPosition > heroHeight * 0.8);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
-    <nav className="bg-gradient-to-br from-green-500  to-blue-900 shadow-lg fixed w-full top-0 left-0 z-50 backdrop-blur-sm">
+    <nav className={`fixed w-full top-0 left-0 z-50 transition-all duration-500 ease-in-out ${
+      isScrolled 
+        ? 'bg-black/90 backdrop-blur-md shadow-2xl' 
+        : 'bg-white/10 backdrop-blur-lg shadow-lg'
+    }`}>
       <div className="container mx-auto px-6 py-4 flex justify-between items-center">
         
         {/* Logo */}
@@ -28,35 +44,57 @@ export default function Navbar() {
         </Link>
         
         {/* Navigation Links */}
-        <ul className="hidden md:flex space-x-8 text-white font-semibold">
+        <ul className={`hidden md:flex space-x-8 font-semibold transition-colors duration-500 ${
+          isScrolled ? 'text-green-600' : 'text-white'
+        }`}>
           <li>
             <Link href="/" className="relative group py-2 transition-all duration-300 cursor-pointer">
-              <span className="group-hover:text-red-500 transition-colors duration-300">Home</span>
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-500 group-hover:w-full transition-all duration-300 ease-out"></span>
+              <span className={`transition-colors duration-300 ${
+                isScrolled ? 'group-hover:text-green-300' : 'group-hover:text-red-500'
+              }`}>Home</span>
+              <span className={`absolute bottom-0 left-0 w-0 h-0.5 group-hover:w-full transition-all duration-300 ease-out ${
+                isScrolled ? 'bg-green-300' : 'bg-red-500'
+              }`}></span>
             </Link>
           </li>
           <li>
             <Link href="/about" className="relative group py-2 transition-all duration-300 cursor-pointer">
-              <span className="group-hover:text-red-500 transition-colors duration-300">About Us</span>
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-500 group-hover:w-full transition-all duration-300 ease-out"></span>
+              <span className={`transition-colors duration-300 ${
+                isScrolled ? 'group-hover:text-green-300' : 'group-hover:text-red-500'
+              }`}>About Us</span>
+              <span className={`absolute bottom-0 left-0 w-0 h-0.5 group-hover:w-full transition-all duration-300 ease-out ${
+                isScrolled ? 'bg-green-300' : 'bg-red-500'
+              }`}></span>
             </Link>
           </li>
           <li>
             <Link href="/contact" className="relative group py-2 transition-all duration-300 cursor-pointer">
-              <span className="group-hover:text-red-500 transition-colors duration-300">Contact Us</span>
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-500 group-hover:w-full transition-all duration-300 ease-out"></span>
+              <span className={`transition-colors duration-300 ${
+                isScrolled ? 'group-hover:text-green-300' : 'group-hover:text-red-500'
+              }`}>Contact Us</span>
+              <span className={`absolute bottom-0 left-0 w-0 h-0.5 group-hover:w-full transition-all duration-300 ease-out ${
+                isScrolled ? 'bg-green-300' : 'bg-red-500'
+              }`}></span>
             </Link>
           </li>
           <li>
             <Link href="/blog" className="relative group py-2 transition-all duration-300 cursor-pointer">
-              <span className="group-hover:text-red-500 transition-colors duration-300">Blog</span>
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-500 group-hover:w-full transition-all duration-300 ease-out"></span>
+              <span className={`transition-colors duration-300 ${
+                isScrolled ? 'group-hover:text-green-300' : 'group-hover:text-red-500'
+              }`}>Blog</span>
+              <span className={`absolute bottom-0 left-0 w-0 h-0.5 group-hover:w-full transition-all duration-300 ease-out ${
+                isScrolled ? 'bg-green-300' : 'bg-red-500'
+              }`}></span>
             </Link>
           </li>
           <li>
             <Link href="/vlog" className="relative group py-2 transition-all duration-300 cursor-pointer">
-              <span className="group-hover:text-red-500 transition-colors duration-300">Vlog</span>
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-500 group-hover:w-full transition-all duration-300 ease-out"></span>
+              <span className={`transition-colors duration-300 ${
+                isScrolled ? 'group-hover:text-green-300' : 'group-hover:text-red-500'
+              }`}>Vlog</span>
+              <span className={`absolute bottom-0 left-0 w-0 h-0.5 group-hover:w-full transition-all duration-300 ease-out ${
+                isScrolled ? 'bg-green-300' : 'bg-red-500'
+              }`}></span>
             </Link>
           </li>
         </ul>
@@ -65,15 +103,25 @@ export default function Navbar() {
         <div className="hidden md:flex space-x-4 items-center">
           <MessageCircle 
             size={38} 
-            className="cursor-pointer text-white hover:text-rose-400 hover:scale-110 transition-all duration-300 ease-in-out" 
+            className={`cursor-pointer hover:scale-110 transition-all duration-300 ease-in-out ${
+              isScrolled ? 'text-green-600 hover:text-green-300' : 'text-white hover:text-rose-400'
+            }`}
           />
           <Link href="/register">
-            <button className="bg-red-600 cursor-pointer text-white px-6 py-2.5 rounded-md font-semibold hover:bg-rose-600 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 ease-in-out shadow-md">
+            <button className={`cursor-pointer px-6 py-2.5 rounded-md font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 ease-in-out shadow-md ${
+              isScrolled 
+                ? 'bg-red-600 text-white hover:bg-green-600' 
+                : 'bg-red-600 text-white hover:bg-green-600'
+            }`}>
               Get Started
             </button>
           </Link>
           <Link href="/login">
-            <button className="border-2 cursor-pointer border-white text-white px-6 py-2.5 rounded-md font-semibold hover:bg-white hover:text-blue-600 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 ease-in-out shadow-md">
+            <button className={`border-2 cursor-pointer px-6 py-2.5 rounded-md font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 ease-in-out shadow-md ${
+              isScrolled 
+                ? 'border-red-600 text-red-600 hover:bg-green-600 hover:text-white' 
+                : 'border-white text-white hover:bg-green-600 hover:text-white'
+            }`}>
               Login
             </button>
           </Link>
@@ -86,76 +134,106 @@ export default function Navbar() {
           aria-label="Toggle menu"
         >
           <span 
-            className={`block w-7 h-0.5 bg-white transition-all duration-300 ease-in-out ${
-              isMenuOpen ? 'rotate-45 translate-y-2' : ''
-            }`}
+            className={`block w-7 h-0.5 transition-all duration-300 ease-in-out ${
+              isScrolled ? 'bg-green-600' : 'bg-white'
+            } ${isMenuOpen ? 'rotate-45 translate-y-2' : ''}`}
           ></span>
           <span 
-            className={`block w-7 h-0.5 bg-white transition-all duration-300 ease-in-out ${
-              isMenuOpen ? 'opacity-0' : 'opacity-100'
-            }`}
+            className={`block w-7 h-0.5 transition-all duration-300 ease-in-out ${
+              isScrolled ? 'bg-green-600' : 'bg-white'
+            } ${isMenuOpen ? 'opacity-0' : 'opacity-100'}`}
           ></span>
           <span 
-            className={`block w-7 h-0.5 bg-white transition-all duration-300 ease-in-out ${
-              isMenuOpen ? '-rotate-45 -translate-y-2' : ''
-            }`}
+            className={`block w-7 h-0.5 transition-all duration-300 ease-in-out ${
+              isScrolled ? 'bg-green-600' : 'bg-white'
+            } ${isMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}
           ></span>
         </button>
       </div>
 
       {/* Mobile Menu */}
       <div 
-        className={`md:hidden bg-blue-700 overflow-hidden transition-all duration-500 ease-in-out ${
-          isMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
-        }`}
+        className={`md:hidden overflow-hidden transition-all duration-500 ease-in-out ${
+          isScrolled ? 'bg-black/95 backdrop-blur-md' : 'bg-blue-700'
+        } ${isMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'}`}
       >
         <div className="container mx-auto px-6 py-4 space-y-4">
           {/* Mobile Navigation Links */}
           <Link 
             href="/" 
             onClick={toggleMenu}
-            className="block text-white font-semibold py-3 px-4 hover:bg-blue-800 hover:text-rose-300 rounded-md transition-all duration-300"
+            className={`block font-semibold py-3 px-4 rounded-md transition-all duration-300 ${
+              isScrolled 
+                ? 'text-green-600 hover:bg-green-900/50 hover:text-green-300' 
+                : 'text-white hover:bg-blue-800 hover:text-rose-300'
+            }`}
           >
             Home
           </Link>
           <Link 
             href="/about" 
             onClick={toggleMenu}
-            className="block text-white font-semibold py-3 px-4 hover:bg-blue-800 hover:text-rose-300 rounded-md transition-all duration-300"
+            className={`block font-semibold py-3 px-4 rounded-md transition-all duration-300 ${
+              isScrolled 
+                ? 'text-green-600 hover:bg-green-900/50 hover:text-green-300' 
+                : 'text-white hover:bg-blue-800 hover:text-rose-300'
+            }`}
           >
             About Us
           </Link>
           <Link 
             href="/contact" 
             onClick={toggleMenu}
-            className="block text-white font-semibold py-3 px-4 hover:bg-blue-800 hover:text-rose-300 rounded-md transition-all duration-300"
+            className={`block font-semibold py-3 px-4 rounded-md transition-all duration-300 ${
+              isScrolled 
+                ? 'text-green-600 hover:bg-green-900/50 hover:text-green-300' 
+                : 'text-white hover:bg-blue-800 hover:text-rose-300'
+            }`}
           >
             Contact Us
           </Link>
           <Link 
             href="/blog" 
             onClick={toggleMenu}
-            className="block text-white font-semibold py-3 px-4 hover:bg-blue-800 hover:text-rose-300 rounded-md transition-all duration-300"
+            className={`block font-semibold py-3 px-4 rounded-md transition-all duration-300 ${
+              isScrolled 
+                ? 'text-green-600 hover:bg-green-900/50 hover:text-green-300' 
+                : 'text-white hover:bg-blue-800 hover:text-rose-300'
+            }`}
           >
             Blog
           </Link>
           <Link 
             href="/vlog" 
             onClick={toggleMenu}
-            className="block text-white font-semibold py-3 px-4 hover:bg-blue-800 hover:text-rose-300 rounded-md transition-all duration-300"
+            className={`block font-semibold py-3 px-4 rounded-md transition-all duration-300 ${
+              isScrolled 
+                ? 'text-green-600 hover:bg-green-900/50 hover:text-green-300' 
+                : 'text-white hover:bg-blue-800 hover:text-rose-300'
+            }`}
           >
             Vlog
           </Link>
 
           {/* Mobile Buttons */}
-          <div className="pt-4 space-y-3 border-t border-blue-500">
+          <div className={`pt-4 space-y-3 border-t ${
+            isScrolled ? 'border-green-500' : 'border-blue-500'
+          }`}>
             <Link href="/register" onClick={toggleMenu}>
-              <button className="w-full bg-rose-500 text-white px-6 py-3 rounded-md font-semibold hover:bg-rose-600 transition-all duration-300 shadow-md">
+              <button className={`w-full px-6 py-3 rounded-md font-semibold transition-all duration-300 shadow-md ${
+                isScrolled 
+                  ? 'bg-red-600 text-white hover:bg-green-600' 
+                  : 'bg-red-600 text-white hover:bg-green-600'
+              }`}>
                 Get Started
               </button>
             </Link>
             <Link href="/login" onClick={toggleMenu}>
-              <button className="w-full border-2 border-white text-white px-6 py-3 rounded-md font-semibold hover:bg-white hover:text-blue-600 transition-all duration-300 shadow-md">
+              <button className={`w-full border-2 px-6 py-3 rounded-md font-semibold transition-all duration-300 shadow-md ${
+                isScrolled 
+                  ? 'border-red-600 text-red-600 hover:bg-green-600 hover:text-white' 
+                  : 'border-white text-white hover:bg-green-600 hover:text-white'
+              }`}>
                 Login
               </button>
             </Link>
@@ -165,7 +243,9 @@ export default function Navbar() {
           <div className="flex justify-center pt-4">
             <MessageCircle 
               size={32} 
-              className="text-white hover:text-rose-300 transition-colors duration-300" 
+              className={`transition-colors duration-300 ${
+                isScrolled ? 'text-green-600 hover:text-green-300' : 'text-white hover:text-rose-300'
+              }`}
             />
           </div>
         </div>

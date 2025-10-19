@@ -7,6 +7,20 @@ module.exports = {
   ],
   theme: {
     extend: {
+      colors: {
+        cream: {
+          50: '#fefdf8',
+          100: '#fdf9f0',
+          200: '#faf2e1',
+          300: '#f6e8c7',
+          400: '#f0d9a8',
+          500: '#e8c885',
+          600: '#d4b062',
+          700: '#b8954a',
+          800: '#9a7a3d',
+          900: '#7d6233',
+        },
+      },
       keyframes: {
         blob: {
           "0%, 100%": { transform: "translate(0px, 0px) scale(1)" },
