@@ -5,6 +5,15 @@ module.exports = {
     "./src/Components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  safelist: [
+    // Ensure cream colors are always included
+    'from-cream-50',
+    'via-cream-100', 
+    'to-cream-200',
+    'from-cream-300',
+    'via-cream-400',
+    'to-cream-500',
+  ],
   theme: {
     extend: {
       colors: {

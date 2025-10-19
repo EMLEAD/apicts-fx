@@ -1,37 +1,35 @@
 import { NextResponse } from 'next/server';
 
-// Import database initialization
-import './lib/db/register';
-
-// Initialize database on first API request (backup if startup init didn't run)
-let isInitializing = false;
-let isInitialized = false;
-
 export async function middleware(request) {
-  // Only initialize once (fallback if startup init didn't work)
-  if (!isInitialized && !isInitializing) {
-    isInitializing = true;
+  // Only protect dashboard routes
+  if (request.nextUrl.pathname.startsWith('/dashboard')) {
+    // Check for token in cookies or headers
+    const token = request.cookies.get('token')?.value || 
+                  request.headers.get('authorization')?.replace('Bearer ', '');
     
-    // Initialize database in the background
-    if (typeof window === 'undefined') {
-      // Server-side only
-      try {
-        const { initializeDatabase } = require('./lib/db/init');
-        const success = await initializeDatabase();
-        isInitialized = success;
-      } catch (error) {
-        console.error('\x1b[31m%s\x1b[0m', '❌ Middleware: Failed to initialize database:', error.message);
-      }
+    if (!token) {
+      // Redirect to login if no token
+      return NextResponse.redirect(new URL('/login', request.url));
     }
     
-    isInitializing = false;
+    // Basic token validation (you might want to verify JWT here)
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const now = Math.floor(Date.now() / 1000);
+      
+      if (payload.exp && payload.exp < now) {
+        // Token expired, redirect to login
+        return NextResponse.redirect(new URL('/login', request.url));
+      }
+    } catch (error) {
+      // Invalid token, redirect to login
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
   }
 
   return NextResponse.next();
 }
 
-// Only run middleware for API routes
 export const config = {
-  matcher: '/api/:path*',
+  matcher: ['/dashboard/:path*']
 };
-

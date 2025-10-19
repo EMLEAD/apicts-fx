@@ -5,7 +5,7 @@ import { ArrowRight, Users } from "lucide-react";
 
 export default function CtaSection() {
   return (
-    <section className="py-20 relative overflow-hidden bg-gradient-to-br from-cream-50 via-cream-100 to-cream-200">
+    <section className="py-20 relative overflow-hidden bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
       {/* Animated background elements */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-20 left-10 w-72 h-72 bg-emerald-400 rounded-full mix-blend-multiply filter blur-xl animate-[blob_7s_infinite]"></div>

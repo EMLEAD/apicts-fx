@@ -2,16 +2,49 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { MessageCircle } from "lucide-react";
+import { useRouter, usePathname } from "next/navigation";
+import { MessageCircle, User, LogOut, ChevronDown } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export default function Navbar() {
+  const router = useRouter();
+  const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [user, setUser] = useState(null);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [isDashboard, setIsDashboard] = useState(false);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    
+    // Clear cookie
+    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    
+    router.push('/login');
+  };
+
+  useEffect(() => {
+    // Check if user is authenticated
+    const token = localStorage.getItem('token');
+    const userData = localStorage.getItem('user');
+    
+    if (token && userData) {
+      try {
+        setUser(JSON.parse(userData));
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+      }
+    }
+
+    // Check if we're in dashboard
+    setIsDashboard(pathname.startsWith('/dashboard'));
+  }, [pathname]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -107,24 +140,68 @@ export default function Navbar() {
               isScrolled ? 'text-green-600 hover:text-green-300' : 'text-white hover:text-rose-400'
             }`}
           />
-          <Link href="/register">
-            <button className={`cursor-pointer px-6 py-2.5 rounded-md font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 ease-in-out shadow-md ${
-              isScrolled 
-                ? 'bg-red-600 text-white hover:bg-green-600' 
-                : 'bg-red-600 text-white hover:bg-green-600'
-            }`}>
-              Get Started
-            </button>
-          </Link>
-          <Link href="/login">
-            <button className={`border-2 cursor-pointer px-6 py-2.5 rounded-md font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 ease-in-out shadow-md ${
-              isScrolled 
-                ? 'border-red-600 text-red-600 hover:bg-green-600 hover:text-white' 
-                : 'border-white text-white hover:bg-green-600 hover:text-white'
-            }`}>
-              Login
-            </button>
-          </Link>
+          
+          {user ? (
+            // User is authenticated - show user menu
+            <div className="relative">
+              <button
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors"
+              >
+                <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center">
+                  <User className="h-5 w-5 text-white" />
+                </div>
+                <span className={`text-sm font-medium ${
+                  isScrolled ? 'text-green-600' : 'text-white'
+                }`}>
+                  {user.username}
+                </span>
+                <ChevronDown className={`h-4 w-4 ${
+                  isScrolled ? 'text-green-600' : 'text-white'
+                }`} />
+              </button>
+
+              {/* User Dropdown Menu */}
+              {userMenuOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                  <Link href="/dashboard" className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                    <User className="h-4 w-4 mr-3" />
+                    Dashboard
+                  </Link>
+                  <hr className="my-1" />
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                  >
+                    <LogOut className="h-4 w-4 mr-3" />
+                    Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            // User is not authenticated - show login/register buttons
+            <>
+              <Link href="/register">
+                <button className={`cursor-pointer px-6 py-2.5 rounded-md font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 ease-in-out shadow-md ${
+                  isScrolled 
+                    ? 'bg-red-600 text-white hover:bg-green-600' 
+                    : 'bg-red-600 text-white hover:bg-green-600'
+                }`}>
+                  Get Started
+                </button>
+              </Link>
+              <Link href="/login">
+                <button className={`border-2 cursor-pointer px-6 py-2.5 rounded-md font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 ease-in-out shadow-md ${
+                  isScrolled 
+                    ? 'border-red-600 text-red-600 hover:bg-green-600 hover:text-white' 
+                    : 'border-white text-white hover:bg-green-600 hover:text-white'
+                }`}>
+                  Login
+                </button>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Hamburger Menu Button */}
@@ -219,24 +296,72 @@ export default function Navbar() {
           <div className={`pt-4 space-y-3 border-t ${
             isScrolled ? 'border-green-500' : 'border-blue-500'
           }`}>
-            <Link href="/register" onClick={toggleMenu}>
-              <button className={`w-full px-6 py-3 rounded-md font-semibold transition-all duration-300 shadow-md ${
-                isScrolled 
-                  ? 'bg-red-600 text-white hover:bg-green-600' 
-                  : 'bg-red-600 text-white hover:bg-green-600'
-              }`}>
-                Get Started
-              </button>
-            </Link>
-            <Link href="/login" onClick={toggleMenu}>
-              <button className={`w-full border-2 px-6 py-3 rounded-md font-semibold transition-all duration-300 shadow-md ${
-                isScrolled 
-                  ? 'border-red-600 text-red-600 hover:bg-green-600 hover:text-white' 
-                  : 'border-white text-white hover:bg-green-600 hover:text-white'
-              }`}>
-                Login
-              </button>
-            </Link>
+            {user ? (
+              // User is authenticated - show user info and logout
+              <>
+                <div className="flex items-center space-x-3 px-4 py-3 bg-white/10 rounded-lg">
+                  <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center">
+                    <User className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <p className={`font-semibold ${
+                      isScrolled ? 'text-green-600' : 'text-white'
+                    }`}>
+                      {user.username}
+                    </p>
+                    <p className={`text-sm ${
+                      isScrolled ? 'text-green-400' : 'text-blue-200'
+                    }`}>
+                      {user.email}
+                    </p>
+                  </div>
+                </div>
+                <Link href="/dashboard" onClick={toggleMenu}>
+                  <button className={`w-full px-6 py-3 rounded-md font-semibold transition-all duration-300 shadow-md ${
+                    isScrolled 
+                      ? 'bg-red-600 text-white hover:bg-green-600' 
+                      : 'bg-red-600 text-white hover:bg-green-600'
+                  }`}>
+                    Dashboard
+                  </button>
+                </Link>
+                <button 
+                  onClick={() => {
+                    handleLogout();
+                    toggleMenu();
+                  }}
+                  className={`w-full border-2 px-6 py-3 rounded-md font-semibold transition-all duration-300 shadow-md ${
+                    isScrolled 
+                      ? 'border-red-600 text-red-600 hover:bg-red-600 hover:text-white' 
+                      : 'border-white text-white hover:bg-red-600 hover:text-white'
+                  }`}
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              // User is not authenticated - show login/register buttons
+              <>
+                <Link href="/register" onClick={toggleMenu}>
+                  <button className={`w-full px-6 py-3 rounded-md font-semibold transition-all duration-300 shadow-md ${
+                    isScrolled 
+                      ? 'bg-red-600 text-white hover:bg-green-600' 
+                      : 'bg-red-600 text-white hover:bg-green-600'
+                  }`}>
+                    Get Started
+                  </button>
+                </Link>
+                <Link href="/login" onClick={toggleMenu}>
+                  <button className={`w-full border-2 px-6 py-3 rounded-md font-semibold transition-all duration-300 shadow-md ${
+                    isScrolled 
+                      ? 'border-red-600 text-red-600 hover:bg-green-600 hover:text-white' 
+                      : 'border-white text-white hover:bg-green-600 hover:text-white'
+                  }`}>
+                    Login
+                  </button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Message Icon */}

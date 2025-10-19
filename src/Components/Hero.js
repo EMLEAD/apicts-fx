@@ -20,7 +20,7 @@ export default function Hero() {
   }, [images.length]);
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-cream-50 via-cream-100 to-cream-200 pt-20">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black/90 backdrop-blur-md pt-20">
       {/* Animated background elements */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-20 left-10 w-72 h-72 bg-emerald-400 rounded-full mix-blend-multiply filter blur-xl animate-[blob_7s_infinite]"></div>
@@ -31,7 +31,7 @@ export default function Hero() {
       <div className="container mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
-          <div className="text-gray-800 space-y-6">
+          <div className="text-white space-y-6">
             <div className="inline-block">
               <span className="bg-red-600 text-white text-sm font-semibold px-4 py-2 rounded-full shadow-lg">
                 🇳🇬 CAC Registered • Leading Exchange Provider
@@ -45,40 +45,40 @@ export default function Hero() {
               </span>
             </h1>
             
-            <p className="text-xl text-gray-600 leading-relaxed">
+            <p className="text-xl text-blue-100 leading-relaxed">
               Trade fiat currencies, e-currencies, and cryptocurrencies with <span className="text-red-600 font-semibold">confidence</span>. 
               <span className="text-red-600 font-semibold">Secure</span>, fast, and reliable exchange services powered by advanced technology.
             </p>
 
             {/* Feature highlights */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
-              <div className="flex items-center gap-3 bg-white/80 backdrop-blur-sm rounded-lg p-3 shadow-lg border border-gray-200">
+              <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-lg p-3 shadow-lg border border-gray-200">
                 <div className="bg-red-500 p-2 rounded-lg">
                   <Shield size={20} className="text-white" />
                 </div>
                 <div>
                   <p className="font-semibold text-red-600">Secure</p>
-                  <p className="text-xs text-gray-600">Bank-level security</p>
+                  <p className="text-xs text-blue-200">Bank-level security</p>
                 </div>
               </div>
               
-              <div className="flex items-center gap-3 bg-white/80 backdrop-blur-sm rounded-lg p-3 shadow-lg border border-gray-200">
+              <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-lg p-3 shadow-lg border border-gray-200">
                 <div className="bg-red-500 p-2 rounded-lg">
                   <Zap size={20} className="text-white" />
                 </div>
                 <div>
                   <p className="font-semibold text-red-600">Instant</p>
-                  <p className="text-xs text-gray-600">Real-time processing</p>
+                  <p className="text-xs text-blue-200">Real-time processing</p>
                 </div>
               </div>
               
-              <div className="flex items-center gap-3 bg-white/80 backdrop-blur-sm rounded-lg p-3 shadow-lg border border-gray-200">
+              <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-lg p-3 shadow-lg border border-gray-200">
                 <div className="bg-red-500 p-2 rounded-lg">
                   <TrendingUp size={20} className="text-white" />
                 </div>
                 <div>
                   <p className="font-semibold text-red-600">Best Rates</p>
-                  <p className="text-xs text-gray-600">Competitive pricing</p>
+                  <p className="text-xs text-blue-200">Competitive pricing</p>
                 </div>
               </div>
             </div>
@@ -103,11 +103,11 @@ export default function Hero() {
             <div className="flex items-center gap-6 pt-4 text-sm">
               <div className="flex items-center gap-2">
                 <span className="text-yellow-400 text-2xl">★★★★★</span>
-                <span className="text-gray-600">4.9/5 Rating</span>
+                <span className="text-blue-200">4.9/5 Rating</span>
               </div>
-              <div className="h-6 w-px bg-gray-300"></div>
-              <div className="text-gray-600">
-                <span className="font-bold text-gray-800">10,000+</span> Happy Customers
+              <div className="h-6 w-px bg-white/30"></div>
+              <div className="text-blue-200">
+                <span className="font-bold text-white">10,000+</span> Happy Customers
               </div>
             </div>
           </div>
@@ -163,7 +163,7 @@ export default function Hero() {
               </div>
             </div>
 
-            <div className="relative bg-gradient-to-br from-white/90 to-white/70 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-gray-200">
+            <div className="relative bg-gradient-to-br from-white/95 to-white/85 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-gray-200">
               {/* Exchange Card Mockup */}
               <div className="bg-white rounded-xl p-6 shadow-xl">
                 <h3 className="text-gray-800 font-bold text-lg mb-4">Quick Exchange</h3>

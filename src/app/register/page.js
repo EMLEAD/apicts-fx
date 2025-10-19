@@ -92,9 +92,12 @@ export default function SignupPage() {
         const apiResult = await response.json();
 
         if (apiResult.success) {
-          // Store token in localStorage
+          // Store token in localStorage and cookies
           localStorage.setItem('token', apiResult.data.token);
           localStorage.setItem('user', JSON.stringify(apiResult.data.user));
+          
+          // Set cookie for server-side authentication
+          document.cookie = `token=${apiResult.data.token}; path=/; max-age=${7 * 24 * 60 * 60}; secure; samesite=strict`;
           
           setSuccess(true);
           
@@ -138,9 +141,12 @@ export default function SignupPage() {
       const result = await response.json();
 
       if (result.success) {
-        // Store token in localStorage
+        // Store token in localStorage and cookies
         localStorage.setItem('token', result.data.token);
         localStorage.setItem('user', JSON.stringify(result.data.user));
+        
+        // Set cookie for server-side authentication
+        document.cookie = `token=${result.data.token}; path=/; max-age=${7 * 24 * 60 * 60}; secure; samesite=strict`;
         
         setSuccess(true);
         
@@ -161,7 +167,7 @@ export default function SignupPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-cream-50 via-cream-100 to-cream-200">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
         <Navbar />
         <section className="min-h-screen flex pt-20 items-center justify-center relative overflow-hidden">
           <div className="relative z-10 w-full max-w-md mx-auto bg-white rounded-2xl shadow-2xl p-8 text-center">
@@ -184,7 +190,7 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cream-50 via-cream-100 to-cream-200">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
       <Navbar />
       
       <section className="min-h-screen flex items-center justify-center pt-20 pb-10">
