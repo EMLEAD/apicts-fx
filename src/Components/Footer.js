@@ -64,8 +64,13 @@ export default function Footer() {
         <div className="space-y-4 group">
           <h3 className="font-bold text-xl mb-4 border-b-2 border-red-500 pb-2 inline-block group-hover:border-green-400 transition-colors duration-300">Legal</h3>
           <ul className="space-y-3 text-sm">
+<<<<<<< Updated upstream
             <li className="group/link">
               <a href="#" className="hover:text-green-400 transition-all duration-300 hover:translate-x-1 inline-block">
+=======
+            <li>
+              <a href="termsandconditions" className="hover:text-red-400 transition-colors duration-300">
+>>>>>>> Stashed changes
                 Terms of Use
               </a>
             </li>
@@ -136,7 +141,11 @@ export default function Footer() {
           <span className="group-hover:text-green-400 transition-colors duration-300">Apicts © 2025. All rights reserved.</span>
         </p>
         <div className="flex space-x-6 mt-4 md:mt-0">
+<<<<<<< Updated upstream
           <a href="#" className="text-white hover:text-green-400 transition-all duration-300 hover:scale-110 hover:-translate-y-1">
+=======
+          <a href="https://www.youtube.com/@apictsforex" className="text-white hover:text-red-400 transition-colors duration-300">
+>>>>>>> Stashed changes
             <Youtube size={24} />
           </a>
           <a href="#" className="text-white hover:text-green-400 transition-all duration-300 hover:scale-110 hover:-translate-y-1">
