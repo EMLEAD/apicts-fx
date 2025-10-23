@@ -37,7 +37,7 @@ export async function POST(request) {
     if (!isPasswordValid) {
       return NextResponse.json({
         success: false,
-        message: 'Invalid email or password'
+        message: 'Incorrect password'
       }, { status: 401 });
     }
 

@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title><%= "APICTS-FX" %> — New sign-in</title>
+  <style>
+   
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table { border-collapse: collapse !important; }
+    img { border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+    a { color: inherit; text-decoration: none; }
+
+    /* Container */
+    .email-wrap {
+      width:100%;
+      background-color: #f6f8fb;
+      padding: 32px 12px;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      color: #0f172a;
+    }
+    .email-card {
+      max-width: 680px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 30px rgba(2,6,23,0.08);
+    }
+
+    .header {
+      padding: 28px 32px;
+      display:flex;
+      align-items:center;
+      gap:16px;
+      border-bottom: 1px solid #eef2f7;
+      background: linear-gradient(90deg, #0ea5a4 0%, #06b6d4 100%);
+      color: white;
+    }
+    .logo {
+      width:48px; height:48px; border-radius:10px; background:#ffffff20; display:inline-flex; align-items:center; justify-content:center; font-weight:700;
+    }
+    .header h1 { margin:0; font-size:18px; line-height:1; font-weight:700; }
+
+    .body {
+      padding: 28px 32px;
+    }
+    .greeting { font-size:18px; margin:0 0 8px 0; font-weight:600; color:#071133; }
+    .lead { margin:0 0 16px 0; color:#334155; line-height:1.5; }
+
+    .info {
+      margin: 18px 0;
+      padding: 16px;
+      background: #f8fafc;
+      border: 1px solid #eef2f7;
+      border-radius: 8px;
+      font-size:14px;
+      color:#0f172a;
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .info .item { min-width:140px; }
+    .info .label { display:block; font-size:12px; color:#6b7280; margin-bottom:6px; }
+    .info .value { font-weight:600; color:#0f172a; }
+
+    .cta {
+      margin-top: 18px;
+      text-align:left;
+    }
+    .btn {
+      display:inline-block;
+      background: linear-gradient(90deg,#0ea5a4,#06b6d4);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-weight:700;
+      box-shadow: 0 8px 18px rgba(6,182,212,0.18);
+    }
+    .muted { color:#64748b; font-size:13px; margin-top:10px; }
+
+    .divider { height:1px; background:#eef2f7; margin:20px 0; }
+
+    .footer {
+      padding: 20px 32px;
+      background: #f8fafc;
+      color:#475569;
+      font-size:13px;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .brand { display:flex; gap:12px; align-items:center; }
+    .brand .name { font-weight:700; color:#0f172a; }
+    .social a { margin-left:8px; color:#0f172a; opacity:0.7; text-decoration:underline; font-size:13px; }
+
+    @media (max-width:480px){
+      .header, .body, .footer { padding-left:16px; padding-right:16px; }
+      .info { flex-direction:column; }
+      .footer { text-align:center; gap:8px; justify-content:center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="email-wrap">
+    <div class="email-card" role="article" aria-labelledby="email-heading">
+
+      <div class="header">
+        <div class="logo" aria-hidden="true">
+          <!-- simple logo initials -->
+          <span style="font-size:18px;color:white;"><img src="./logo.png" alt=""></span>
+        </div>
+        <div>
+          <h1 id="email-heading"><%= 'APICTS-FX' %> — New sign-in detected</h1>
+          <div style="font-size:12px; opacity:0.95; margin-top:6px;"><%= 'https://apicts-fx.com' %></div>
+        </div>
+      </div>
+
+      <div class="body">
+        <p class="greeting">Hi <%= userName || "there" %>,</p>
+
+        <p class="lead">
+          We noticed a sign-in to your account. If this was you, no further action is required. If you did not sign in, please contact the support team.
+        </p>
+
+        <div class="info" role="list">
+          <div class="item" role="listitem">
+            <span class="label">When</span>
+            <span class="value"><%= loginTime || "Just now" %></span>
+          </div>
+
+          <div class="item" role="listitem">
+            <span class="label">Device / Browser</span>
+            <span class="value"><%= device || "Unknown" %></span>
+          </div>
+
+          <div class="item" role="listitem">
+            <span class="label">IP address</span>
+            <span class="value"><%= ip || "—" %></span>
+          </div>
+
+          <div class="item" role="listitem">
+            <span class="label">Location</span>
+            <span class="value"><%= location || "—" %></span>
+          </div>
+        </div>
+
+        <div class="cta">
+          <a href="mailto:support@apicts-fx.com" class="btn">Contact Support</a>
+          <div class="muted">
+            If the button doesn't work, copy and paste the following link into your browser:
+            <div style="word-break:break-all;"><a href="<%= actionUrl || (siteUrl || '#') %>"><%= actionUrl || (siteUrl || '#') %></a></div>
+          </div>
+        </div>
+
+        <div class="divider" role="separator" aria-hidden="true"></div>
+
+        <p style="margin:0; color:#334155; font-size:14px;">
+          Need help? Contact our support at
+          <a href="mailto:support@apicts-fx.com">support@apicts-fx.com</a>.
+        </p>
+      </div>
+
+      <div class="footer" role="contentinfo">
+        <div class="brand">
+          <div style="width:44px;height:44px;border-radius:8px;background:#0ea5a4;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;"> <%= companyInitials || 'AF' %> </div>
+          <div>
+            <div class="name"><%= companyName || "APICTS-FX" %></div>
+            <div style="font-size:12px; color:#64748b;"><%= companyTagline || "Forex Exchange & Academy" %></div>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:18px;">
+          <div class="social">
+            <a href="<%= Instagram || '#' %>">Instagram</a>
+            <a href="<%= facebook || '#' %>">Facebook</a>
+            <a href="<%= linkedin || '#' %>">LinkedIn</a>
+          </div>
+
+          <div style="text-align:right; font-size:12px; color:#94a3b8;">
+            <div><%= companyAddress || "Km 18, Topaz Plaza, Lekki Ajah, Lagos, Nigeria" %></div>
+            <div style="margin-top:6px;">© <%= new Date().getFullYear() %> <%= companyName || "APICTS-FX" %>. All rights reserved.</div>
+            <div style="margin-top:8px;">
+              <a href="<%= unsubscribeUrl || '#' %>" style="color:#64748b; text-decoration:underline;">Unsubscribe</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

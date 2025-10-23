@@ -9,28 +9,28 @@ export default function HowItWorks() {
       icon: <UserPlus size={32} />,
       title: "Create Account",
       description: "Sign up in minutes with your email and complete our simple registration process.",
-      color: "from-blue-500 to-blue-600"
+      color: "from-blue-500 to-green-500"
     },
     {
       number: "02",
       icon: <FileCheck size={32} />,
       title: "Verify Identity",
       description: "Complete KYC verification with NIN/BVN for secure and compliant transactions.",
-      color: "from-green-500 to-emerald-600"
+      color: "from-blue-500 to-green-500"
     },
     {
       number: "03",
       icon: <ArrowRightLeft size={32} />,
       title: "Start Trading",
       description: "Choose your currencies, enter the amount, and execute your exchange instantly.",
-      color: "from-rose-500 to-red-600"
+    color: "from-blue-500 to-green-500"
     },
     {
       number: "04",
       icon: <CheckCircle2 size={32} />,
       title: "Receive Funds",
       description: "Get your funds delivered to your account with automated confirmation.",
-      color: "from-blue-600 to-indigo-600"
+      color: "from-blue-500 to-green-500"
     }
   ];
 

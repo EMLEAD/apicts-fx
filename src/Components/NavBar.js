@@ -46,23 +46,19 @@ export default function Navbar() {
     setIsDashboard(pathname.startsWith('/dashboard'));
   }, [pathname]);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollPosition = window.scrollY;
-      const heroHeight = window.innerHeight; // Approximate hero section height
-      setIsScrolled(scrollPosition > heroHeight * 0.8);
-    };
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     const scrollPosition = window.scrollY;
+  //     const heroHeight = window.innerHeight; // Approximate hero section height
+  //     setIsScrolled(scrollPosition > heroHeight * 0.8);
+  //   };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  //   window.addEventListener('scroll', handleScroll);
+  //   return () => window.removeEventListener('scroll', handleScroll);
+  // }, []);
 
   return (
-    <nav className={`fixed w-full top-0 left-0 z-50 transition-all duration-500 ease-in-out ${
-      isScrolled 
-        ? 'bg-black/90 backdrop-blur-md shadow-2xl' 
-        : 'bg-white/10 backdrop-blur-lg shadow-lg'
-    }`}>
+    <nav className="fixed w-full top-0 left-0 z-50 transition-all duration-500 ease-in-out bg-black/90 backdrop-blur-md" >
       <div className="container mx-auto px-6 py-4 flex justify-between items-center">
         
         {/* Logo */}
@@ -137,7 +133,7 @@ export default function Navbar() {
           <MessageCircle 
             size={38} 
             className={`cursor-pointer hover:scale-110 transition-all duration-300 ease-in-out ${
-              isScrolled ? 'text-green-600 hover:text-green-300' : 'text-white hover:text-rose-400'
+              isScrolled ? 'text-green-600 hover:text-green-300' : 'text-white hover:text-rose-600'
             }`}
           />
           
