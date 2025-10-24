@@ -26,9 +26,9 @@ export default function BlogPage() {
       image: "/images/bitcoin-crypto-currency-diagram.jpg",
       category: "Cryptocurrency",
       author: "John Okafor",
-      date: "Jan 12, 2025",
+      date: "Oct 30, 2025",
       readTime: "7 min read",
-      categoryColor: "bg-green-500"
+      categoryColor: "bg-blue-500"
     },
     {
       id: 3,
@@ -37,9 +37,9 @@ export default function BlogPage() {
       image: "/images/nimc.png",
       category: "Security",
       author: "Sarah Adeyemi",
-      date: "Jan 10, 2025",
+      date: "Oct 30, 2025",
       readTime: "4 min read",
-      categoryColor: "bg-rose-500"
+      categoryColor: "bg-blue-500"
     },
     {
       id: 4,
@@ -48,9 +48,9 @@ export default function BlogPage() {
       image: "/images/gold.jpg",
       category: "XAU",
       author: "Michael Chen",
-      date: "Jan 8, 2025",
+      date: "Oct 30, 2025",
       readTime: "6 min read",
-      categoryColor: "bg-red-600"
+      categoryColor: "bg-blue-500"
     },
     {
       id: 5,
@@ -59,9 +59,9 @@ export default function BlogPage() {
       image: "/images/CFDs.jpg",
       category: "Training",
       author: "Fatima Ahmed",
-      date: "Jan 5, 2025",
+      date: "Oct 30, 2025",
       readTime: "5 min read",
-      categoryColor: "bg-green-600"
+      categoryColor: "bg-blue-500"
     },
     {
       id: 6,
@@ -70,9 +70,9 @@ export default function BlogPage() {
       image: "/images/naira-lady.jpg",
       category: "Market Analysis",
       author: "David Okonkwo",
-      date: "Jan 3, 2025",
+      date: "Oct 30, 2025",
       readTime: "8 min read",
-      categoryColor: "bg-rose-600"
+      categoryColor: "bg-blue-500"
     }
   ];
 

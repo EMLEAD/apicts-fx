@@ -85,7 +85,7 @@ export default function Hero() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 pt-6">
-              <Link href="/get-started">
+              <Link href="/register">
                 <button className="group bg-gradient-to-r from-red-600 to-red-500 text-white px-8 py-4 rounded-lg font-semibold hover:from-red-700 hover:to-red-600 transition-all duration-300 shadow-xl hover:shadow-2xl hover:-translate-y-1 flex items-center justify-center gap-2">
                   Get Started Now
                   <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
