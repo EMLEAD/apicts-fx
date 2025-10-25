@@ -37,9 +37,9 @@ export default function CtaSection() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link href="/get-started">
+            <Link href="/register">
               <button className="group bg-red-600 text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-green-600 hover:text-white transition-all duration-300 shadow-2xl hover:shadow-green-500/50 hover:-translate-y-1 flex items-center gap-2">
-                Get Started Free
+                Get Started for Free
                 <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
               </button>
             </Link>

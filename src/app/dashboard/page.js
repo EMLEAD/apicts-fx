@@ -65,7 +65,7 @@ export default function Dashboard() {
         <div className="flex items-center justify-between">
           <div>
             {showBalance ? (
-              <p className="text-4xl font-bold">$12,450.00</p>
+              <p className="text-4xl font-bold">#500,450.00</p>
             ) : (
               <p className="text-4xl font-bold">••••••</p>
             )}
@@ -74,7 +74,7 @@ export default function Dashboard() {
           <div className="text-right">
             <div className="flex items-center text-green-300">
               <ArrowUpRight className="h-5 w-5 mr-1" />
-              <span className="text-sm font-medium">+$310.50</span>
+              <span className="text-sm font-medium">+#31,980.50</span>
             </div>
             <p className="text-red-100 text-sm">This month</p>
           </div>
@@ -135,7 +135,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Revenue</p>
-              <p className="text-2xl font-bold text-gray-900">$45,678</p>
+              <p className="text-2xl font-bold text-gray-900">#4,500,678</p>
             </div>
             <div className="p-3 bg-yellow-100 rounded-lg">
               <DollarSign className="h-6 w-6 text-yellow-600" />

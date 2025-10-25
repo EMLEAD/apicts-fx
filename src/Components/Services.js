@@ -11,7 +11,7 @@ export default function Services() {
       description: "Exchange major fiat currencies including USD, EUR, GBP, and more with the best market rates.",
       color: "from-blue-500 to-blue-600",
       bgColor: "bg-blue-50",
-      iconBg: "bg-blue-500",
+      iconBg: "bg-gradient-to-br from-blue-500 to-green-500",
       image: "/images/portrait-cheerful-happy-african-man.jpg"
     },
     {
@@ -20,7 +20,7 @@ export default function Services() {
       description: "Buy and sell Bitcoin, Ethereum, USDT, and other popular cryptocurrencies securely and instantly.",
       color: "from-green-500 to-emerald-600",
       bgColor: "bg-green-50",
-      iconBg: "bg-green-500",
+      iconBg: "bg-gradient-to-br from-blue-500 to-green-500",
       image: "/images/closeup-golden-bitcoins-dark-reflective-surface-histogram-decreasing-crypto (1).jpg"
     },
     {
@@ -47,7 +47,7 @@ export default function Services() {
       description: "Bank-level security with NIN verification, KYC compliance, and encrypted transactions.",
       color: "from-green-600 to-teal-600",
       bgColor: "bg-green-50",
-      iconBg: "bg-blue-600",
+     iconBg: "bg-gradient-to-br from-blue-500 to-green-500",
       image: "/images/secured-lock.jpg"
     },
     {
@@ -56,7 +56,7 @@ export default function Services() {
       description: "Automated payment approval system for fast and efficient transaction processing.",
       color: "from-rose-600 to-pink-600",
       bgColor: "bg-rose-50",
-      iconBg: "bg-rose-600",
+      iconBg: "bg-gradient-to-br from-blue-500 to-green-500",
       image: "/images/instant-processing.jpg"
     }
   ];

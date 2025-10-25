@@ -103,12 +103,12 @@ export default function ContactPage() {
             {/* Contact Information */}
             <div className="space-y-8">
               <div className="bg-white p-8 rounded-lg shadow-xl border-t-4 border-red-600">
-                <h2 className="text-2xl font-bold text-red-600 mb-6">Contact Information</h2>
+                <h2 className="text-2xl font-bold text-black mb-6">Contact Information</h2>
                 
                 <div className="space-y-6">
                   {/* Email */}
                   <div className="flex items-start gap-4">
-                    <div className="bg-green-600 p-3 rounded-lg shadow-md">
+                    <div className="bg-gradient-to-r from-green-400 to-blue-500 p-3 rounded-lg shadow-md">
                       <Mail className="text-white" size={24} />
                     </div>
                     <div>
@@ -119,18 +119,18 @@ export default function ContactPage() {
 
                   {/* Phone */}
                   <div className="flex items-start gap-4">
-                    <div className="bg-red-600 p-3 rounded-lg shadow-md">
+                    <div className="bg-gradient-to-r from-green-400 to-blue-500 p-3 rounded-lg shadow-md">
                       <Phone className="text-white" size={24} />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-red-600 mb-1">Phone</h3>
+                      <h3 className="font-semibold text-blue-700 mb-1">Phone</h3>
                       <p className="text-gray-700">+2348139399978</p>
                     </div>
                   </div>
 
                   {/* Address */}
                   <div className="flex items-start gap-4">
-                    <div className="bg-blue-600 p-3 rounded-lg shadow-md">
+                    <div className="bg-gradient-to-r from-green-400 to-blue-500 p-3 rounded-lg shadow-md">
                       <MapPin className="text-white" size={24} />
                     </div>
                     <div>
@@ -145,20 +145,20 @@ export default function ContactPage() {
               </div>
 
               {/* Business Hours */}
-              <div className="bg-red-600 text-white p-8 rounded-lg shadow-xl border-l-4 border-red-600">
-                <h2 className="text-2xl font-bold mb-6">Business Hours</h2>
+              <div className="bg-white text-black p-8 rounded-lg shadow-xl border-l-4 border-red-600">
+                <h2 className="text-2xl font-bold text-red-600 mb-6">Business Hours</h2>
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span>Monday - Friday</span>
-                    <span className="font-semibold">9:00 AM - 6:00 PM</span>
+                    <span className="font-semibold text-gray-700">9:00 AM - 6:00 PM</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Saturday</span>
-                    <span className="font-semibold">10:00 AM - 4:00 PM</span>
+                    <span className="font-semibold text-gray-700">10:00 AM - 4:00 PM</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Sunday</span>
-                    <span className="font-semibold">Closed</span>
+                    <span className="font-semibold text-gray-700">Closed</span>
                   </div>
                 </div>
               </div>

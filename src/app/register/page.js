@@ -273,7 +273,7 @@ export default function SignupPage() {
                       Username
                     </label>
                     <div className="relative">
-                      <User size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                      <User size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black" />
                       <input
                         id="username"
                         name="username"

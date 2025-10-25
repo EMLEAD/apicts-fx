@@ -80,8 +80,8 @@ export default function WalletPage() {
     {
       id: 1,
       type: 'deposit',
-      amount: 500.00,
-      currency: 'USD',
+      amount: 500000.00,
+      currency: 'NGN',
       description: 'Bank Transfer Deposit',
       status: 'completed',
       date: '2024-12-19',
@@ -92,8 +92,8 @@ export default function WalletPage() {
     {
       id: 2,
       type: 'exchange',
-      amount: -250.00,
-      currency: 'USD',
+      amount: -230900.00,
+      currency: 'NGN',
       description: 'USD to NGN Exchange',
       status: 'completed',
       date: '2024-12-19',
@@ -104,8 +104,8 @@ export default function WalletPage() {
     {
       id: 3,
       type: 'withdrawal',
-      amount: -100.00,
-      currency: 'USD',
+      amount: -147000.00,
+      currency: 'NGN',
       description: 'ATM Withdrawal',
       status: 'pending',
       date: '2024-12-18',
@@ -169,7 +169,7 @@ export default function WalletPage() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-8 mt-10">
         <h1 className="text-3xl font-bold text-gray-900">My Wallet</h1>
         <p className="text-gray-600 mt-2">Manage your digital wallet and currencies.</p>
       </div>
@@ -188,7 +188,7 @@ export default function WalletPage() {
         <div className="flex items-center justify-between">
           <div>
             {showBalance ? (
-              <p className="text-4xl font-bold">$2,450.75</p>
+              <p className="text-4xl font-bold">#268,450.75</p>
             ) : (
               <p className="text-4xl font-bold">••••••</p>
             )}
@@ -197,7 +197,7 @@ export default function WalletPage() {
           <div className="text-right">
             <div className="flex items-center text-green-300">
               <TrendingUp className="h-5 w-5 mr-1" />
-              <span className="text-sm font-medium">+$76.25</span>
+              <span className="text-sm font-medium">+#76,030.25</span>
             </div>
             <p className="text-red-100 text-sm">This week</p>
           </div>
@@ -346,7 +346,7 @@ export default function WalletPage() {
             })}
           </div>
           
-          <button className="w-full mt-6 py-3 text-red-600 font-medium hover:bg-red-50 rounded-lg transition-colors">
+          <button className="w-full mt-6 py-3 text-red-600 font-medium hover:bg-red-50 rounded-lg transition-colors cursor-pointer">
             View All Transactions
           </button>
         </div>

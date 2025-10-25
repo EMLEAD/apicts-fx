@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{subject}}</title>
+    <style>
+        /* Reset & Base Styles */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #333;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+        .container {
+            max-width: 700px;
+            margin: 40px auto;
+            background-color: #fff;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background-color: #000;
+            text-align: center;
+            padding: 20px;
+        }
+        .header img {
+            height: 50px;
+        }
+        .header h1 {
+            color: #fff;
+            margin: 0;
+            font-size: 24px;
+        }
+        /* Enhanced Content Styles */
+        .content {
+            padding: 30px 40px;
+        }
+        .alert-box {
+            background-color: #d03030;
+            border-left: 4px solid #d32f2f;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+            color: #fff;
+        }
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background: #fafafa;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .details-table tr:not(:last-child) {
+            border-bottom: 1px solid #eee;
+        }
+        .details-table td {
+            padding: 12px 15px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .details-table td:first-child {
+            font-weight: 600;
+            width: 160px;
+            color: #555;
+            background: #f5f5f5;
+        }
+        .action-button {
+            display: inline-block;
+            background-color: #d32f2f;
+            color: #fff;
+            padding: 12px 25px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            margin: 15px 0;
+            text-align: center;
+        }
+        .action-button:hover {
+            background-color: #b71c1c;
+        }
+        
+        /* Responsive Adjustments */
+        @media only screen and (max-width: 600px) {
+            .container { margin: 0; border-radius: 0; }
+            .content { padding: 20px; }
+            .details-table td { display: block; width: 100%; }
+            .details-table td:first-child { border-bottom: none; padding-bottom: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="./assets/apicts-logo.jpg" alt="{{companyName}} Logo">
+            <h1>Login Attempt Notification</h1>
+        </div>
+
+        <div class="content">
+           <p>Hello <%= userName %>,</p>
+
+            <div class="alert-box">
+                <p>A login attempt was detected on your account from a new device. If this wasn't you, please contact support.</p>
+            </div>
+
+            <table class="details-table">
+                <tr>
+                    <td>Device:</td>
+                    <td><%= deviceInfo %></td>
+                </tr>
+                <tr>
+                    <td>Browser:</td>
+                    <td><%= browserInfo %></td>
+                </tr>
+                <tr>
+                    <td>IP Address:</td>
+                    <td><%= ipAddress %></td>
+                </tr>
+                <tr>
+                    <td>Location:</td>
+                    <td><%= location %></td>
+                </tr>
+                <tr>
+                    <td>Time:</td>
+                    <td><%= timestamp %></td>
+                </tr>
+            </table>
+
+            <p>If this was you, you can safely ignore this email. Otherwise, we recommend:</p>
+            <ul>
+                <li>Changing your password immediately</li>
+                <li>Enabling two-factor authentication</li>
+                <li>Reviewing your recent account activity</li>
+            </ul>
+              <div style="display: flex;">
+            Need help? <div style=" margin: 25px 0;">
+                <a href="<%= contact %>" class="action-button">
+                    Contact Support
+                </a>
+            </div>
+
+
+           
+            
+        </div>
+ <div>
+                <p style="margin-top: 30px;">
+                    Best regards,<br>
+                    <strong>The Apicts Team</strong>
+                </p>
+            </div>
+             
+        <div class="footer">
+            <p>&copy; <%= currentYear %> APICTS. All rights reserved.</p>
+            <p>This is an automated notification. Please Do Not Reply To This Email.</p>
+        </div>
+       
+    </div>
+</body>
+</html>

@@ -9,28 +9,28 @@ export default function HowItWorks() {
       icon: <UserPlus size={32} />,
       title: "Create Account",
       description: "Sign up in minutes with your email and complete our simple registration process.",
-      color: "from-blue-500 to-blue-600"
+      color: "from-blue-500 to-green-500"
     },
     {
       number: "02",
       icon: <FileCheck size={32} />,
       title: "Verify Identity",
       description: "Complete KYC verification with NIN/BVN for secure and compliant transactions.",
-      color: "from-green-500 to-emerald-600"
+      color: "from-blue-500 to-green-500"
     },
     {
       number: "03",
       icon: <ArrowRightLeft size={32} />,
       title: "Start Trading",
       description: "Choose your currencies, enter the amount, and execute your exchange instantly.",
-      color: "from-rose-500 to-red-600"
+    color: "from-blue-500 to-green-500"
     },
     {
       number: "04",
       icon: <CheckCircle2 size={32} />,
       title: "Receive Funds",
       description: "Get your funds delivered to your account with automated confirmation.",
-      color: "from-blue-600 to-indigo-600"
+      color: "from-blue-500 to-green-500"
     }
   ];
 
@@ -101,7 +101,7 @@ export default function HowItWorks() {
         {/* Bottom CTA */}
         <div className="mt-16 text-center">
           <a 
-            href="/get-started"
+            href="/register"
             className="inline-block bg-gradient-to-r from-red-600 to-red-500 text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-green-600 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
           >
             Start Your Exchange Journey
