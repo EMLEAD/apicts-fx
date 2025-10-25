@@ -177,7 +177,7 @@ export default function LoginPage() {
             </div>
 
             {/* Right Side - Form */}
-            <div className="w-full">
+            <div className="w-full pt-8">
               <div className="bg-white rounded-2xl shadow-2xl p-8">
                 <div className="text-center mb-8">
                   <h2 className="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h2>

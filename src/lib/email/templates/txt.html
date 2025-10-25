@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to APICTS-FX</title>
+    <style>
+        /* Reset & Base Styles */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #333;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+        .container {
+            max-width: 700px;
+            margin: 40px auto;
+            background-color: #fff;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+             background-color: #000;
+            text-align: center;
+            padding: 30px 20px;
+        }
+        .header img {
+            height: 60px;
+            margin-bottom: 15px;
+        }
+        .header h1 {
+            color: #fff;
+            margin: 0;
+            font-size: 28px;
+        }
+        .content {
+            padding: 40px;
+        }
+        .welcome-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid  #d03030;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .feature-item {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+        .feature-item h3 {
+            color:#b21414;
+            margin: 0 0 10px 0;
+            font-size: 16px;
+        }
+        .verification-code {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            margin: 25px 0;
+        }
+        .code {
+            font-size: 32px;
+            font-weight: bold;
+            letter-spacing: 4px;
+            color: #ff6b35;
+            padding: 10px;
+        }
+        .action-button {
+            display: inline-block;
+            background-color: #d03030;
+            color: #fff;
+            padding: 14px 28px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            margin: 15px 0;
+            text-align: center;
+        }
+        .action-button:hover {
+            background-color: #16a34a;
+        }
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #726e6e;
+            font-size: 14px;
+
+        }
+        .footer a { color: #726e6e;color: #2a915dcd;
+            color: #726e6e;
+            text-decoration: none;
+            margin: 0 8px;
+        }
+        .footer a:hover {
+            color:#16a34a;
+        }
+        @media only screen and (max-width: 600px) {
+            .container { margin: 0; border-radius: 0; }
+            .content { padding: 20px; }
+            .features-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="./assets/apicts-logo.jpg" alt="APICTS-FX Logo">
+            <h1>Welcome to APICTS-FX!</h1>
+        </div>
+
+        <div class="content">
+            <p>Hello <%= userName %>,</p>
+
+            <div class="welcome-box">
+                <p>Thank you for joining APICTS-FX. We're excited to have you on board! Please feel free to explore our platform.</p>
+            </div>
+
+            <p>Our support team is here to help you with any questions or issues you may have. We operate 24/7, so don't hesitate to reach out!</p>
+
+            <div style="text-align: center;">
+                <a href="<%= contact %>" class="action-button">
+                    Contact Support
+                </a>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-item">
+                    <h3>🔒 Secure Trading</h3>
+                    <p>State-of-the-art security measures to protect your investments</p>
+                </div>
+                <div class="feature-item">
+                    <h3>📊 Real-time Analytics</h3>
+                    <p>Access live market data and trading insights</p>
+                </div>
+                <div class="feature-item">
+                    <h3>💰 Multiple Assets</h3>
+                    <p>Trade forex, cryptocurrencies, and more</p>
+                </div>
+                <div class="feature-item">
+                    <h3>🎓 Trading Academy</h3>
+                    <p>Access educational resources and trading guides</p>
+                </div>
+            </div>
+
+           
+
+            <p>Need help getting started?</p>
+            <ul>
+             
+                <li>Contact our <a href="<%= contact %>">support team</a></li>
+            </ul>
+
+            <p style="margin-top: 30px;">
+                Best regards,<br>
+                <strong>The APICTS-FX Team</strong>
+            </p>
+              <p>This is an automated notification. Please Do Not Reply To This Email.</p>
+        </div>
+
+        <div class="footer">
+            <p>© <%= year %> APICTS-FX. All rights reserved.</p>
+            
+            <p>
+                <a href="<%= termsandconditions %>">Terms and conditions</a> • 
+                <a href="<%= contact %>">Support</a>
+            </p>
+            
+        </div>
+        
+    </div>
+</body>
+</html>
