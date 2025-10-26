@@ -52,6 +52,16 @@ module.exports = (sequelize) => {
     profilePicture: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    walletBalance: {
+      type: DataTypes.DECIMAL(15, 2),
+      defaultValue: 0,
+      allowNull: false
+    },
+    currency: {
+      type: DataTypes.STRING,
+      defaultValue: 'NGN',
+      allowNull: false
     }
   }, {
     timestamps: true,

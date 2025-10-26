@@ -10,6 +10,8 @@
     "lint": "eslint",
     "db:init": "node server-init.js",
     "db:check": "node -e \"require('./src/lib/db/init').initializeDatabase()\"",
+    "db:migrate": "node add-wallet-migration.js",
+    "db:migrate:comments": "node add-blog-comments-likes-migration.js",
     "verify": "node verify-setup.js",
     "test:email": "node test-email.js",
     "email:test": "node test-email.js"
@@ -33,6 +35,7 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-icons": "^5.5.0",
+    "recharts": "^3.3.0",
     "sequelize": "^6.37.7"
   },
   "devDependencies": {

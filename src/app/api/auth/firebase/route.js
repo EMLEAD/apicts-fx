@@ -54,7 +54,7 @@ export async function POST(request) {
         role: user.role,
         firebaseUid: userData.uid
       },
-      process.env.JWT_SECRET,
+      process.env.JWT_SECRET || 'apicts_super_secret_jwt_key_2024_secure_random_string_change_in_production',
       { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     );
 

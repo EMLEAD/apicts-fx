@@ -52,7 +52,7 @@ export async function POST(request) {
         email: user.email, 
         role: user.role 
       },
-      process.env.JWT_SECRET,
+      process.env.JWT_SECRET || 'apicts_super_secret_jwt_key_2024_secure_random_string_change_in_production',
       { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     );
 
@@ -67,6 +67,8 @@ export async function POST(request) {
           role: user.role,
           isActive: user.isActive,
           lastLogin: user.lastLogin,
+          walletBalance: user.walletBalance,
+          currency: user.currency,
           createdAt: user.createdAt
         },
         token,
