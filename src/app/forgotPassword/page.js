@@ -273,7 +273,7 @@ export default function ForgotPasswordPage() {
                     </div>
 
                     <div className="mt-4 text-center text-sm text-gray-600">
-                      Can't receive email?{" "}
+                      Can&apos;t receive email?{" "}
                       <Link href="/contact" className="text-red-600 font-semibold hover:underline">Contact Support</Link>
                     </div>
                   </div>

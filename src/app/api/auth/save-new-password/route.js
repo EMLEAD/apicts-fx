@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
+import { User } from '@/lib/db/models';
 
 const JWT_SECRET = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET;
 
@@ -19,21 +20,9 @@ export async function POST(req) {
       return NextResponse.json({ message: "Password must be at least 8 characters" }, { status: 400 });
     }
 
-    // initialize Prisma client (require inside function to avoid build-time errors)
-    let prisma;
-    try {
-      const { PrismaClient } = require("@prisma/client");
-      if (!globalThis.__prismaClient) globalThis.__prismaClient = new PrismaClient();
-      prisma = globalThis.__prismaClient;
-    } catch (err) {
-      console.error("Prisma client init failed:", err);
-      return NextResponse.json({ message: "Server database misconfiguration" }, { status: 500 });
-    }
-
     const normalizedEmail = email.trim().toLowerCase();
-    const user = await prisma.user.findUnique({
-      where: { email: normalizedEmail },
-      select: { id: true, password: true, isActive: true }
+    const user = await User.findOne({
+      where: { email: normalizedEmail }
     });
 
     if (!user) return NextResponse.json({ message: "User not found" }, { status: 404 });
@@ -56,9 +45,8 @@ export async function POST(req) {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
 
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { password: hashedPassword, updatedAt: new Date() }
+    await user.update({
+      password: hashedPassword
     });
 
     return NextResponse.json({ success: true, message: "Password updated successfully" });
