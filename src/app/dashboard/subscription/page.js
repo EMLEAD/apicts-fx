@@ -52,7 +52,7 @@ export default function SubscriptionPage() {
     {
       id: 'premium',
       name: 'Premium',
-      price: 29,
+      price: 43500,
       period: 'month',
       description: 'Most popular for active traders',
       features: [
@@ -72,7 +72,7 @@ export default function SubscriptionPage() {
     {
       id: 'pro',
       name: 'Professional',
-      price: 99,
+      price: 148500,
       period: 'month',
       description: 'For professional traders and institutions',
       features: [
@@ -94,8 +94,8 @@ export default function SubscriptionPage() {
   const currentPlan = {
     name: 'Premium',
     status: 'active',
-    nextBilling: '2024-01-15',
-    amount: 29,
+    nextBilling: '2025-11-10',
+    amount: 43500,
     features: [
       'Advanced market analysis',
       'Real-time exchange rates',
@@ -107,22 +107,22 @@ export default function SubscriptionPage() {
   const billingHistory = [
     {
       id: 1,
-      date: '2024-12-15',
-      amount: 29.00,
+      date: '2025-11-10',
+      amount: 43500,
       status: 'paid',
       description: 'Premium Plan - Monthly'
     },
     {
       id: 2,
-      date: '2024-11-15',
-      amount: 29.00,
+      date: '2024-11-10',
+      amount: 43500,
       status: 'paid',
       description: 'Premium Plan - Monthly'
     },
     {
       id: 3,
       date: '2024-10-15',
-      amount: 29.00,
+      amount: 43500,
       status: 'paid',
       description: 'Premium Plan - Monthly'
     }
@@ -140,7 +140,7 @@ export default function SubscriptionPage() {
     <div>
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Subscription & Billing</h1>
+        <h1 className="text-3xl font-bold text-gray-900 pt-10">Subscription & Billing</h1>
         <p className="text-gray-600 mt-2">Manage your subscription plan and billing information.</p>
       </div>
 
@@ -171,7 +171,7 @@ export default function SubscriptionPage() {
               <CreditCard className="h-4 w-4 text-gray-600" />
               <span className="text-sm font-medium text-gray-600">Amount</span>
             </div>
-            <p className="text-lg font-semibold text-gray-900">${currentPlan.amount}/month</p>
+            <p className="text-lg font-semibold text-gray-900">₦{currentPlan.amount}/month</p>
           </div>
           
           <div className="bg-gray-50 rounded-lg p-4">
@@ -232,7 +232,7 @@ export default function SubscriptionPage() {
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">{plan.name}</h3>
                   <p className="text-gray-600 text-sm mb-4">{plan.description}</p>
                   <div className="flex items-baseline justify-center">
-                    <span className="text-4xl font-bold text-gray-900">${plan.price}</span>
+                    <span className="text-4xl font-bold text-gray-900">₦{plan.price}</span>
                     <span className="text-gray-600 ml-1">/{plan.period}</span>
                   </div>
                 </div>
@@ -314,7 +314,7 @@ export default function SubscriptionPage() {
                     {item.description}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ${item.amount.toFixed(2)}
+                    ₦{item.amount.toFixed(2)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">

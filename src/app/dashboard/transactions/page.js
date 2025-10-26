@@ -38,8 +38,8 @@ export default function TransactionsPage() {
     {
       id: 'TXN001',
       type: 'exchange',
-      amount: 250.00,
-      currency: 'USD',
+      amount: 250000.00,
+      currency: '₦',
       fromCurrency: 'USD',
       toCurrency: 'NGN',
       exchangeRate: 1234.56,
@@ -54,8 +54,8 @@ export default function TransactionsPage() {
     {
       id: 'TXN002',
       type: 'deposit',
-      amount: 500.00,
-      currency: 'USD',
+      amount: 500000.00,
+      currency: '₦',
       status: 'completed',
       date: '2024-12-19',
       time: '12:15',
@@ -67,8 +67,8 @@ export default function TransactionsPage() {
     {
       id: 'TXN003',
       type: 'withdrawal',
-      amount: 100.00,
-      currency: 'USD',
+      amount: 150000.00,
+      currency: '₦',
       status: 'pending',
       date: '2024-12-18',
       time: '16:45',
@@ -96,14 +96,14 @@ export default function TransactionsPage() {
     {
       id: 'TXN005',
       type: 'transfer',
-      amount: 75.00,
-      currency: 'USD',
+      amount: 120657.00,
+      currency: '₦',
       status: 'completed',
       date: '2024-12-17',
       time: '09:30',
-      description: 'Transfer to John Doe',
+      description: 'Transfer to John Chika',
       fee: 1.00,
-      totalAmount: 76.00,
+      totalAmount: 158000.00,
       reference: 'REF123456793'
     },
     {
@@ -239,7 +239,7 @@ export default function TransactionsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Total Volume</p>
-              <p className="text-2xl font-bold text-gray-900">${totalStats.totalVolume.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-gray-900">₦{totalStats.totalVolume.toLocaleString()}</p>
             </div>
             <div className="p-3 bg-purple-100 rounded-lg">
               <TrendingUp className="h-6 w-6 text-purple-600" />
