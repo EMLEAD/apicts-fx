@@ -188,7 +188,7 @@ export default function WalletPage() {
         <div className="flex items-center justify-between">
           <div>
             {showBalance ? (
-              <p className="text-4xl font-bold">#268,450.75</p>
+              <p className="text-4xl font-bold">₦268,450.75</p>
             ) : (
               <p className="text-4xl font-bold">••••••</p>
             )}
@@ -197,7 +197,7 @@ export default function WalletPage() {
           <div className="text-right">
             <div className="flex items-center text-green-300">
               <TrendingUp className="h-5 w-5 mr-1" />
-              <span className="text-sm font-medium">+#76,030.25</span>
+              <span className="text-sm font-medium">+₦76,030.25</span>
             </div>
             <p className="text-red-100 text-sm">This week</p>
           </div>
