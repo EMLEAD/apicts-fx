@@ -34,46 +34,46 @@ export default function AboutPage() {
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
                 <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 flex items-center gap-3">
-                  <div className="bg-green-500 p-2 rounded-lg">
+                  <div className="bg-gradient-to-r from-green-400 to-blue-500 p-2 rounded-lg">
                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0-1.104.896-2 2-2s2 .896 2 2-.896 2-2 2-2-.896-2-2zm0 0V7m0 4v4m0 0c0 1.104-.896 2-2 2s-2-.896-2-2 .896-2 2-2 2 .896 2 2z" />
                     </svg>
                   </div>
                   <div>
-                    <p className="font-semibold">Trusted Exchange</p>
+                    <p className="font-semibold text-black">Trusted Exchange</p>
                     <p className="text-xs text-black">Registered & Regulated</p>
                   </div>
                 </div>
                 <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 flex items-center gap-3">
-                  <div className="bg-blue-500 p-2 rounded-lg">
+                  <div className="bg-gradient-to-r from-green-400 to-blue-500 p-2 rounded-lg">
                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
                   <div>
-                    <p className="font-semibold">24/7 Support</p>
+                    <p className="font-semibold text-black">24/7 Support</p>
                     <p className="text-xs text-black">Always Here for You</p>
                   </div>
                 </div>
                 <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 flex items-center gap-3">
-                  <div className="bg-rose-500 p-2 rounded-lg">
+                  <div className="bg-gradient-to-r from-green-400 to-blue-500 p-2 rounded-lg">
                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12c0 4.418-4.03 8-9 8s-9-3.582-9-8 4.03-8 9-8 9 3.582 9 8z" />
                     </svg>
                   </div>
                   <div>
-                    <p className="font-semibold">Academy</p>
+                    <p className="font-semibold text-black">Academy</p>
                     <p className="text-xs text-black">Learn & Grow</p>
                   </div>
                 </div>
                 <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 flex items-center gap-3">
-                  <div className="bg-green-500 p-2 rounded-lg">
+                  <div className="bg-gradient-to-r from-green-400 to-blue-500 p-2 rounded-lg">
                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a5 5 0 00-10 0v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2z" />
                     </svg>
                   </div>
                   <div>
-                    <p className="font-semibold">Secure & Fast</p>
+                    <p className="font-semibold text-black">Secure & Fast</p>
                     <p className="text-xs text-black">Bank-level Security</p>
                   </div>
                 </div>

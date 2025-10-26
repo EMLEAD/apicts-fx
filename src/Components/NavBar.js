@@ -46,23 +46,19 @@ export default function Navbar() {
     setIsDashboard(pathname.startsWith('/dashboard'));
   }, [pathname]);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollPosition = window.scrollY;
-      const heroHeight = window.innerHeight; // Approximate hero section height
-      setIsScrolled(scrollPosition > heroHeight * 0.8);
-    };
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     const scrollPosition = window.scrollY;
+  //     const heroHeight = window.innerHeight; // Approximate hero section height
+  //     setIsScrolled(scrollPosition > heroHeight * 0.8);
+  //   };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  //   window.addEventListener('scroll', handleScroll);
+  //   return () => window.removeEventListener('scroll', handleScroll);
+  // }, []);
 
   return (
-    <nav className={`fixed w-full top-0 left-0 z-50 transition-all duration-500 ease-in-out ${
-      isScrolled 
-        ? 'bg-black/90 backdrop-blur-md shadow-2xl' 
-        : 'bg-white/10 backdrop-blur-lg shadow-lg'
-    }`}>
+    <nav className="fixed w-full top-0 left-0 z-50 transition-all duration-500 ease-in-out bg-black/90 backdrop-blur-md" >
       <div className="container mx-auto px-6 py-4 flex justify-between items-center">
         
         {/* Logo */}
@@ -137,7 +133,7 @@ export default function Navbar() {
           <MessageCircle 
             size={38} 
             className={`cursor-pointer hover:scale-110 transition-all duration-300 ease-in-out ${
-              isScrolled ? 'text-green-600 hover:text-green-300' : 'text-white hover:text-rose-400'
+              isScrolled ? 'text-green-600 hover:text-green-300' : 'text-white hover:text-rose-600'
             }`}
           />
           
@@ -231,7 +227,7 @@ export default function Navbar() {
       {/* Mobile Menu */}
       <div 
         className={`md:hidden overflow-hidden transition-all duration-500 ease-in-out ${
-          isScrolled ? 'bg-black/95 backdrop-blur-md' : 'bg-blue-700'
+          isScrolled ? 'bg-black/95 backdrop-blur-md' : 'bg-black/90 backdrop-blur-md'
         } ${isMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'}`}
       >
         <div className="container mx-auto px-6 py-4 space-y-4">
@@ -242,7 +238,7 @@ export default function Navbar() {
             className={`block font-semibold py-3 px-4 rounded-md transition-all duration-300 ${
               isScrolled 
                 ? 'text-green-600 hover:bg-green-900/50 hover:text-green-300' 
-                : 'text-white hover:bg-blue-800 hover:text-rose-300'
+                : 'text-white hover:bg-green-600 hover:text-rose-600'
             }`}
           >
             Home
@@ -253,7 +249,7 @@ export default function Navbar() {
             className={`block font-semibold py-3 px-4 rounded-md transition-all duration-300 ${
               isScrolled 
                 ? 'text-green-600 hover:bg-green-900/50 hover:text-green-300' 
-                : 'text-white hover:bg-blue-800 hover:text-rose-300'
+                : 'text-white hover:bg-green-600 hover:text-rose-600'
             }`}
           >
             About Us
@@ -264,7 +260,7 @@ export default function Navbar() {
             className={`block font-semibold py-3 px-4 rounded-md transition-all duration-300 ${
               isScrolled 
                 ? 'text-green-600 hover:bg-green-900/50 hover:text-green-300' 
-                : 'text-white hover:bg-blue-800 hover:text-rose-300'
+                : 'text-white hover:bg-green-600 hover:text-rose-600'
             }`}
           >
             Contact Us
@@ -275,7 +271,7 @@ export default function Navbar() {
             className={`block font-semibold py-3 px-4 rounded-md transition-all duration-300 ${
               isScrolled 
                 ? 'text-green-600 hover:bg-green-900/50 hover:text-green-300' 
-                : 'text-white hover:bg-blue-800 hover:text-rose-300'
+                : 'text-white hover:bg-green-600 hover:text-rose-600'
             }`}
           >
             Blog
@@ -286,7 +282,7 @@ export default function Navbar() {
             className={`block font-semibold py-3 px-4 rounded-md transition-all duration-300 ${
               isScrolled 
                 ? 'text-green-600 hover:bg-green-900/50 hover:text-green-300' 
-                : 'text-white hover:bg-blue-800 hover:text-rose-300'
+                : 'text-white hover:bg-green-600 hover:text-rose-600'
             }`}
           >
             Vlog
@@ -369,7 +365,7 @@ export default function Navbar() {
             <MessageCircle 
               size={32} 
               className={`transition-colors duration-300 ${
-                isScrolled ? 'text-green-600 hover:text-green-300' : 'text-white hover:text-rose-300'
+                isScrolled ? 'text-green-600 hover:text-green-300' : 'text-white hover:text-rose-600'
               }`}
             />
           </div>
