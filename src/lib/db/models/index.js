@@ -12,6 +12,7 @@ const UserPlanModel = require('./UserPlan');
 const CouponModel = require('./Coupon');
 const CouponRedemptionModel = require('./CouponRedemption');
 const ReferralModel = require('./Referral');
+const AffiliateApplicationModel = require('./AffiliateApplication');
 
 // Initialize models
 const User = UserModel(sequelize);
@@ -27,6 +28,7 @@ const UserPlan = UserPlanModel(sequelize);
 const Coupon = CouponModel(sequelize);
 const CouponRedemption = CouponRedemptionModel(sequelize);
 const Referral = ReferralModel(sequelize);
+const AffiliateApplication = AffiliateApplicationModel(sequelize);
 
 // Define associations
 User.hasMany(Contact, { foreignKey: 'userId', as: 'contacts' });
@@ -80,6 +82,10 @@ Referral.belongsTo(User, { foreignKey: 'referredUserId', as: 'referredUser' });
 Plan.hasMany(Referral, { foreignKey: 'planId', as: 'planReferrals', onDelete: 'SET NULL' });
 Referral.belongsTo(Plan, { foreignKey: 'planId', as: 'plan' });
 
+// Affiliate applications associations
+User.hasMany(AffiliateApplication, { foreignKey: 'userId', as: 'affiliateApplications', onDelete: 'SET NULL' });
+AffiliateApplication.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
 // Sync database
 const syncDatabase = async (options = {}) => {
   try {
@@ -106,6 +112,7 @@ module.exports = {
   Coupon,
   CouponRedemption,
   Referral,
+  AffiliateApplication,
   syncDatabase
 };
 
