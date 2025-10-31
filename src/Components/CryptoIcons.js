@@ -128,3 +128,4 @@ export const CryptoMarketOverview = ({ cryptos = [] }) => {
 };
 
 export default CryptoIcon;
+

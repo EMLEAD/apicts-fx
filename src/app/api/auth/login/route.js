@@ -69,6 +69,8 @@ export async function POST(request) {
           lastLogin: user.lastLogin,
           walletBalance: user.walletBalance,
           currency: user.currency,
+          referralCode: user.referralCode,
+          referredBy: user.referredBy,
           createdAt: user.createdAt
         },
         token,

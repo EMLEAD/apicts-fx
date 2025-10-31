@@ -7,6 +7,11 @@ const BlogPostModel = require('./BlogPost');
 const VlogPostModel = require('./VlogPost');
 const BlogCommentModel = require('./BlogComment');
 const BlogLikeModel = require('./BlogLike');
+const PlanModel = require('./Plan');
+const UserPlanModel = require('./UserPlan');
+const CouponModel = require('./Coupon');
+const CouponRedemptionModel = require('./CouponRedemption');
+const ReferralModel = require('./Referral');
 
 // Initialize models
 const User = UserModel(sequelize);
@@ -17,6 +22,11 @@ const BlogPost = BlogPostModel(sequelize);
 const VlogPost = VlogPostModel(sequelize);
 const BlogComment = BlogCommentModel(sequelize);
 const BlogLike = BlogLikeModel(sequelize);
+const Plan = PlanModel(sequelize);
+const UserPlan = UserPlanModel(sequelize);
+const Coupon = CouponModel(sequelize);
+const CouponRedemption = CouponRedemptionModel(sequelize);
+const Referral = ReferralModel(sequelize);
 
 // Define associations
 User.hasMany(Contact, { foreignKey: 'userId', as: 'contacts' });
@@ -48,6 +58,28 @@ BlogLike.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 BlogPost.hasMany(BlogLike, { foreignKey: 'postId', as: 'likes' });
 BlogLike.belongsTo(BlogPost, { foreignKey: 'postId', as: 'post' });
 
+// Plans associations
+Plan.hasMany(UserPlan, { foreignKey: 'planId', as: 'subscriptions', onDelete: 'CASCADE' });
+UserPlan.belongsTo(Plan, { foreignKey: 'planId', as: 'plan' });
+User.hasMany(UserPlan, { foreignKey: 'userId', as: 'planSubscriptions', onDelete: 'CASCADE' });
+UserPlan.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+// Coupons associations
+Coupon.hasMany(CouponRedemption, { foreignKey: 'couponId', as: 'redemptions', onDelete: 'CASCADE' });
+CouponRedemption.belongsTo(Coupon, { foreignKey: 'couponId', as: 'coupon' });
+User.hasMany(CouponRedemption, { foreignKey: 'userId', as: 'couponRedemptions', onDelete: 'CASCADE' });
+CouponRedemption.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+Transaction.hasMany(CouponRedemption, { foreignKey: 'transactionId', as: 'couponRedemptions', onDelete: 'SET NULL' });
+CouponRedemption.belongsTo(Transaction, { foreignKey: 'transactionId', as: 'transaction' });
+
+// Referrals associations
+User.hasMany(Referral, { foreignKey: 'referrerId', as: 'referralsMade', onDelete: 'SET NULL' });
+User.hasMany(Referral, { foreignKey: 'referredUserId', as: 'referralsReceived', onDelete: 'SET NULL' });
+Referral.belongsTo(User, { foreignKey: 'referrerId', as: 'referrer' });
+Referral.belongsTo(User, { foreignKey: 'referredUserId', as: 'referredUser' });
+Plan.hasMany(Referral, { foreignKey: 'planId', as: 'planReferrals', onDelete: 'SET NULL' });
+Referral.belongsTo(Plan, { foreignKey: 'planId', as: 'plan' });
+
 // Sync database
 const syncDatabase = async (options = {}) => {
   try {
@@ -69,6 +101,11 @@ module.exports = {
   VlogPost,
   BlogComment,
   BlogLike,
+  Plan,
+  UserPlan,
+  Coupon,
+  CouponRedemption,
+  Referral,
   syncDatabase
 };
 

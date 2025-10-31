@@ -14,7 +14,7 @@ async function authenticateAdmin(request) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
     const user = await User.findByPk(decoded.userId);
-    if (!user || user.role !== 'admin') {
+    if (!user || !['super_admin', 'admin', 'manager', 'support'].includes(user.role)) {
       return { authenticated: false, error: 'Unauthorized' };
     }
 

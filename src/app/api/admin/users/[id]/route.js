@@ -1,27 +1,6 @@
 import { NextResponse } from 'next/server';
 import { User } from '@/lib/db/models';
-import jwt from 'jsonwebtoken';
-
-async function authenticateAdmin(request) {
-  try {
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return { authenticated: false, error: 'No token provided' };
-    }
-
-    const token = authHeader.substring(7);
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
-    const user = await User.findByPk(decoded.userId);
-    if (!user || user.role !== 'admin') {
-      return { authenticated: false, error: 'Unauthorized' };
-    }
-
-    return { authenticated: true, user };
-  } catch (error) {
-    return { authenticated: false, error: error.message };
-  }
-}
+import { authenticateAdmin } from '@/lib/middleware/adminAuth';
 
 export async function GET(request, { params }) {
   try {
@@ -47,7 +26,7 @@ export async function GET(request, { params }) {
 
 export async function PATCH(request, { params }) {
   try {
-    const auth = await authenticateAdmin(request);
+    const auth = await authenticateAdmin(request, { allowRoles: ['super_admin', 'admin'] });
     if (!auth.authenticated) {
       return NextResponse.json({ error: auth.error }, { status: 401 });
     }
@@ -59,7 +38,38 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    await user.update(body);
+    if (user.role === 'super_admin' && auth.user.role !== 'super_admin') {
+      return NextResponse.json({ error: 'You cannot modify a super admin account' }, { status: 403 });
+    }
+
+    const updates = {};
+
+    if (Object.prototype.hasOwnProperty.call(body, 'isActive')) {
+      updates.isActive = Boolean(body.isActive);
+    }
+
+    if (Object.prototype.hasOwnProperty.call(body, 'role')) {
+      const allowedRoles = ['super_admin', 'admin', 'manager', 'support', 'user'];
+      if (!allowedRoles.includes(body.role)) {
+        return NextResponse.json({ error: 'Invalid role specified' }, { status: 400 });
+      }
+
+      if (auth.user.role !== 'super_admin') {
+        return NextResponse.json({ error: 'Only super admins can change roles' }, { status: 403 });
+      }
+
+      if (user.id === auth.user.id && body.role !== user.role) {
+        return NextResponse.json({ error: 'You cannot change your own role' }, { status: 400 });
+      }
+
+      updates.role = body.role;
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json({ error: 'No valid fields provided for update' }, { status: 400 });
+    }
+
+    await user.update(updates);
     
     return NextResponse.json({ 
       user: {
@@ -78,7 +88,7 @@ export async function PATCH(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
-    const auth = await authenticateAdmin(request);
+    const auth = await authenticateAdmin(request, { allowRoles: ['super_admin'] });
     if (!auth.authenticated) {
       return NextResponse.json({ error: auth.error }, { status: 401 });
     }
@@ -86,6 +96,10 @@ export async function DELETE(request, { params }) {
     const user = await User.findByPk(params.id);
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    if (user.role === 'super_admin') {
+      return NextResponse.json({ error: 'Super admin accounts cannot be deleted' }, { status: 400 });
     }
 
     await user.destroy();

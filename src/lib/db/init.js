@@ -1,11 +1,55 @@
 const { testConnection, sequelize } = require('./sequelize');
-const { syncDatabase } = require('./models');
+const { syncDatabase, Plan, UserPlan, Coupon, CouponRedemption, Referral, User } = require('./models');
 
 let isInitialized = false;
 
+const ensureAdditionalTables = async () => {
+  try {
+    if (User) {
+      await User.sync({ alter: true });
+    }
+    if (Plan) {
+      await Plan.sync({ alter: true });
+    }
+    if (UserPlan) {
+      await UserPlan.sync({ alter: true });
+    }
+    if (Coupon) {
+      await Coupon.sync({ alter: true });
+    }
+    if (CouponRedemption) {
+      await CouponRedemption.sync({ alter: true });
+    }
+    if (Referral) {
+      await Referral.sync({ alter: true });
+    }
+  } catch (syncError) {
+    console.log('\x1b[33m%s\x1b[0m', '⚠️  Failed to ensure new tables with alter:true, attempting alter:false...');
+    if (Plan) {
+      await Plan.sync({ alter: false });
+    }
+    if (UserPlan) {
+      await UserPlan.sync({ alter: false });
+    }
+    if (User) {
+      await User.sync({ alter: false });
+    }
+    if (Coupon) {
+      await Coupon.sync({ alter: false });
+    }
+    if (CouponRedemption) {
+      await CouponRedemption.sync({ alter: false });
+    }
+    if (Referral) {
+      await Referral.sync({ alter: false });
+    }
+  }
+};
+
 const initializeDatabase = async () => {
   if (isInitialized) {
-    console.log('\x1b[33m%s\x1b[0m', '⚠️  Database already initialized');
+    console.log('\x1b[33m%s\x1b[0m', '⚠️  Database already initialized – ensuring new tables exist');
+    await ensureAdditionalTables();
     return true;
   }
 
@@ -35,6 +79,9 @@ const initializeDatabase = async () => {
     // Sync database tables
     console.log('\x1b[36m%s\x1b[0m', '🔄 Synchronizing database tables...');
     await syncDatabase({ force: false, alter: false });
+
+    // Ensure newly added models are created if they do not exist yet
+    await ensureAdditionalTables();
     
     isInitialized = true;
     
@@ -43,7 +90,7 @@ const initializeDatabase = async () => {
     console.log('='.repeat(60));
     console.log('\x1b[32m%s\x1b[0m', '   ✅ MySQL connection established');
     console.log('\x1b[32m%s\x1b[0m', '   ✅ Tables synchronized');
-    console.log('\x1b[36m%s\x1b[0m', '   📊 Available models: User, Contact');
+    console.log('\x1b[36m%s\x1b[0m', '   📊 Available models: User, Contact, Plan, UserPlan, Coupon, CouponRedemption, Referral, Transaction, ExchangeRate, BlogPost, VlogPost');
     console.log('\x1b[36m%s\x1b[0m', '   🌐 API endpoints ready at /api/*');
     console.log('='.repeat(60) + '\n');
     
@@ -59,9 +106,14 @@ const initializeDatabase = async () => {
   }
 };
 
-// Initialize on module load
-if (process.env.NODE_ENV !== 'production') {
-  initializeDatabase();
+// Initialize on module load (can be disabled with SKIP_AUTO_DB_INIT=true)
+if (process.env.SKIP_AUTO_DB_INIT !== 'true') {
+  if (!global.__DB_AUTO_INIT_STARTED__) {
+    global.__DB_AUTO_INIT_STARTED__ = true;
+    initializeDatabase().catch((error) => {
+      console.error('Database auto-initialization failed:', error.message);
+    });
+  }
 }
 
 module.exports = { initializeDatabase };

@@ -17,7 +17,9 @@ import {
   CreditCard,
   Wallet,
   BarChart3,
-  ChevronRight
+  ChevronRight,
+  ClipboardList,
+  BadgePercent
 } from 'lucide-react';
 import Navbar from '@/Components/NavBar';
 
@@ -27,6 +29,12 @@ const dashboardNavigationItems = [
   { name: 'Subscription', href: '/dashboard/subscription', icon: CreditCard },
   { name: 'Wallet', href: '/dashboard/wallet', icon: Wallet },
   { name: 'Transactions', href: '/dashboard/transactions', icon: BarChart3 },
+];
+
+const adminNavigationItems = [
+  { name: 'Manage Plans', href: '/dashboard/admin/plans', icon: ClipboardList },
+  { name: 'Manage Coupons', href: '/dashboard/admin/coupons', icon: BadgePercent },
+  { name: 'Admin Transfers', href: '/dashboard/admin/transfers', icon: ArrowUpRight }
 ];
 
 export default function DashboardLayout({ children }) {
@@ -85,6 +93,11 @@ export default function DashboardLayout({ children }) {
     return null;
   }
 
+  const adminRoles = ['super_admin', 'admin', 'manager', 'support'];
+  const navigationItems = adminRoles.includes(user.role)
+    ? [...dashboardNavigationItems, ...adminNavigationItems]
+    : dashboardNavigationItems;
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Main Navigation */}
@@ -101,7 +114,7 @@ export default function DashboardLayout({ children }) {
 
             {/* Desktop Sub Navigation */}
             <div className="hidden md:flex md:items-center md:space-x-1">
-              {dashboardNavigationItems.map((item) => {
+              {navigationItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = pathname === item.href;
                 return (
@@ -135,7 +148,7 @@ export default function DashboardLayout({ children }) {
         {mobileSubMenuOpen && (
           <div className="md:hidden bg-white border-t border-gray-200">
             <div className="px-2 pt-2 pb-3 space-y-1">
-              {dashboardNavigationItems.map((item) => {
+              {navigationItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = pathname === item.href;
                 return (

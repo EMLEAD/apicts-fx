@@ -1,0 +1,44 @@
+. Active Plans section on the homepage
+Data: add a plans table (name, description, price, features, status, displayOrder).
+API: create /api/plans (admin CRUD) and /api/public/plans (public read).
+UI: expose a new hero/section on the homepage pulling from public/plans; add admin controls in the dashboard to toggle visibility.
+2. Coupons
+Models: coupons table (code, type, value, maxRedemptions, startsAt, endsAt, status); coupon_redemptions to track usage.
+Backend: admin endpoints for creating and managing coupons; user checkout/transaction endpoints must accept a coupon code and enforce business rules.
+Front end: admin form in dashboard; user-facing apply-coupon UI (likely on wallet/deposit flows).
+3. Deposit & Withdrawal flows
+Transactions table: extend existing schema to store type (deposit / withdrawal), amount, status, metadata.
+Process:
+Admin: manual approval queue & audit trail.
+User: deposit method selection, proof upload (if needed), withdrawal request form.
+Integrations: if you plan to hook into payment gateways, abstract that behind service classes so you can swap providers later.
+4. Transfers (user-to-user or internal accounts)
+Business rules: who can transfer, limits, fees.
+Backend: service that debits sender, credits recipient atomically, logs both sides.
+UI: transfer form in wallet section, admin oversight page to review flagged transfers.
+5. Referral links
+Schema: add referralCode and referredBy columns on users; create a referrals table for tracking bonuses/status.
+Flow: generate unique referral URLs, set cookies on signup, credit both parties after qualifying action.
+Dashboard: admin analytics view + user view showing referral stats.
+6. Become an Affiliate
+Application: allow users to apply (form, status pending/approved).
+Permissions: affiliate-only dashboard with marketing assets, performance metrics.
+Admin tools: approve/deny applications, adjust payout logic.
+7. Admins & Sub-admins
+Roles & permissions: add roles and permissions tables (or a role enum plus per-role capabilities). Example roles: super_admin, admin, manager, support.
+Access control: update middleware to enforce role-based access (route protections, component rendering).
+UI: “User Management” page for admins to invite or downgrade staff accounts.
+8. Editable “most important content”
+Identify content: e.g., hero headlines, CTA copy, feature cards, FAQs.
+Storage: create a cms_blocks table (slug, title, content JSON/markup).
+Editing UI: build a simple CMS inside the admin dashboard with form-based editors, preview, publish/draft states.
+Frontend rendering: fetch content via API or load server-side and hydrate on the client.
+Versioning/backups: consider storing revision history to roll back mistakes.
+Implementation Workflow
+Data layer: extend Sequelize models & migrations.
+API layer: add Next.js route handlers with validation, RBAC, and error handling.
+Client: extend dashboard layout with new navigation and pages, wire up forms, handle optimistic updates where it improves UX.
+Content editing: ensure frontend pulls from APIs instead of hard-coded strings.
+Testing: add unit tests for services, integration tests for key flows (auth, payments, referrals).
+Deployment: run DB migrations, seed initial data, update environment variables, and expose new routes through middleware.
+If you’d like me to start scaffolding models, API routes, or admin UI, just toggle to Agent Mode and say the word!

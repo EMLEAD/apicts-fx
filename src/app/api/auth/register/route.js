@@ -6,7 +6,7 @@ import emailService from '@/lib/email/service';
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { username, email, password, confirmPassword } = body;
+    const { username, email, password, confirmPassword, referralCode } = body;
 
     // Validate required fields
     if (!username || !email || !password || !confirmPassword) {
@@ -67,12 +67,27 @@ export async function POST(request) {
     }
 
     // Create new user
+    let referrerId = null;
+
+    if (referralCode) {
+      const normalizedCode = referralCode.trim().toUpperCase();
+      const referrer = await User.findOne({ where: { referralCode: normalizedCode } });
+      if (!referrer) {
+        return NextResponse.json({
+          success: false,
+          message: 'Invalid referral code provided'
+        }, { status: 400 });
+      }
+      referrerId = referrer.id;
+    }
+
     const user = await User.create({
       username,
       email,
       password,
       role: 'user',
-      isActive: true
+      isActive: true,
+      referredBy: referrerId
     });
 
     // Generate JWT token
@@ -110,6 +125,8 @@ export async function POST(request) {
           email: user.email,
           role: user.role,
           isActive: user.isActive,
+          referralCode: user.referralCode,
+          referredBy: user.referredBy,
           createdAt: user.createdAt
         },
         token,

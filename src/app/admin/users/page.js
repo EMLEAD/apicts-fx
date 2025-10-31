@@ -1,7 +1,26 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Search, Filter, UserCheck, UserX, Mail, Shield, Eye, Edit2, CheckCircle, XCircle, Calendar, Phone, User, Wallet, DollarSign } from 'lucide-react';
+import Image from 'next/image';
+import { useState, useEffect, useCallback } from 'react';
+import { Search, UserCheck, UserX, Mail, Shield, Eye, CheckCircle, XCircle, Calendar, User, Wallet, Plus, Loader2 } from 'lucide-react';
+
+const ROLE_OPTIONS = [
+  { value: 'super_admin', label: 'Super Admin' },
+  { value: 'admin', label: 'Admin' },
+  { value: 'manager', label: 'Manager' },
+  { value: 'support', label: 'Support' },
+  { value: 'user', label: 'User' }
+];
+
+const ROLE_BADGE_CLASSES = {
+  super_admin: 'bg-purple-100 text-purple-700',
+  admin: 'bg-red-100 text-red-700',
+  manager: 'bg-blue-100 text-blue-700',
+  support: 'bg-teal-100 text-teal-700',
+  user: 'bg-gray-100 text-gray-700'
+};
+
+const getRoleBadgeClass = (role) => ROLE_BADGE_CLASSES[role] || 'bg-gray-100 text-gray-700';
 
 export default function UserManagement() {
   const [users, setUsers] = useState([]);
@@ -12,14 +31,31 @@ export default function UserManagement() {
   const [walletAction, setWalletAction] = useState('add');
   const [walletAmount, setWalletAmount] = useState('');
   const [showWalletForm, setShowWalletForm] = useState(false);
+  const [currentAdminRole, setCurrentAdminRole] = useState(null);
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [inviteForm, setInviteForm] = useState({
+    username: '',
+    email: '',
+    password: '',
+    role: 'admin'
+  });
+  const [inviteErrors, setInviteErrors] = useState({});
+  const [inviteLoading, setInviteLoading] = useState(false);
 
   useEffect(() => {
     fetchUsers();
+    try {
+      const stored = localStorage.getItem('user');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed?.role) {
+          setCurrentAdminRole(parsed.role);
+        }
+      }
+    } catch (error) {
+      console.error('Error reading current admin role:', error);
+    }
   }, []);
-
-  useEffect(() => {
-    filterUsers();
-  }, [searchTerm, filterStatus, users]);
 
   const fetchUsers = async () => {
     try {
@@ -34,7 +70,10 @@ export default function UserManagement() {
     }
   };
 
-  const filterUsers = () => {
+  const canManageRoles = currentAdminRole === 'super_admin';
+  const canInviteStaff = ['super_admin', 'admin'].includes(currentAdminRole);
+
+  const filterUsers = useCallback(() => {
     let filtered = users;
 
     if (searchTerm) {
@@ -51,7 +90,11 @@ export default function UserManagement() {
     }
 
     setFilteredUsers(filtered);
-  };
+  }, [users, searchTerm, filterStatus]);
+
+useEffect(() => {
+  filterUsers();
+}, [filterUsers]);
 
   const updateUserStatus = async (userId, isActive) => {
     try {
@@ -67,6 +110,92 @@ export default function UserManagement() {
       fetchUsers();
     } catch (error) {
       console.error('Error updating user:', error);
+    }
+  };
+
+  const resetInviteForm = () => {
+    setInviteForm({ username: '', email: '', password: '', role: 'admin' });
+    setInviteErrors({});
+  };
+
+  const handleInviteChange = (field, value) => {
+    setInviteForm((prev) => ({
+      ...prev,
+      [field]: value
+    }));
+    if (inviteErrors[field]) {
+      setInviteErrors((prev) => ({
+        ...prev,
+        [field]: ''
+      }));
+    }
+  };
+
+  const validateInviteForm = () => {
+    const errors = {};
+
+    if (!inviteForm.username || inviteForm.username.trim().length < 3) {
+      errors.username = 'Username must be at least 3 characters';
+    }
+
+    if (!inviteForm.email) {
+      errors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inviteForm.email)) {
+      errors.email = 'Please enter a valid email address';
+    }
+
+    if (!inviteForm.password || inviteForm.password.length < 6) {
+      errors.password = 'Password must be at least 6 characters';
+    }
+
+    if (!inviteForm.role) {
+      errors.role = 'Role is required';
+    }
+
+    setInviteErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const submitInviteForm = async (event) => {
+    event.preventDefault();
+    if (!validateInviteForm()) {
+      return;
+    }
+
+    try {
+      setInviteLoading(true);
+      setInviteErrors({});
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          username: inviteForm.username.trim(),
+          email: inviteForm.email.trim(),
+          password: inviteForm.password,
+          role: inviteForm.role
+        })
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create staff account');
+      }
+
+      resetInviteForm();
+      setInviteModalOpen(false);
+      fetchUsers();
+    } catch (error) {
+      console.error('Error creating staff account:', error);
+      setInviteErrors((prev) => ({
+        ...prev,
+        general: error.message || 'Failed to create staff account'
+      }));
+    } finally {
+      setInviteLoading(false);
     }
   };
 
@@ -87,8 +216,13 @@ export default function UserManagement() {
 
   const updateUserRole = async (userId, role) => {
     try {
+      if (currentAdminRole !== 'super_admin') {
+        alert('Only super admins can change user roles.');
+        return;
+      }
+
       const token = localStorage.getItem('token');
-      await fetch(`/api/admin/users/${userId}`, {
+      const response = await fetch(`/api/admin/users/${userId}`, {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',
@@ -96,9 +230,14 @@ export default function UserManagement() {
         },
         body: JSON.stringify({ role })
       });
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({}));
+        throw new Error(result.error || result.message || 'Failed to update role');
+      }
       fetchUsers();
     } catch (error) {
       console.error('Error updating role:', error);
+      alert(error.message || 'Failed to update role');
     }
   };
 
@@ -128,9 +267,23 @@ export default function UserManagement() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-        <p className="text-gray-600 mt-2">Manage and verify user accounts</p>
+      <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
+          <p className="text-gray-600 mt-2">Manage and verify user accounts</p>
+        </div>
+        {canInviteStaff && (
+          <button
+            onClick={() => {
+              resetInviteForm();
+              setInviteModalOpen(true);
+            }}
+            className="inline-flex items-center rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-green-600"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Staff Member
+          </button>
+        )}
       </div>
 
       {/* Search and Filter */}
@@ -204,11 +357,14 @@ export default function UserManagement() {
                     <select
                       value={user.role}
                       onChange={(e) => updateUserRole(user.id, e.target.value)}
-                      className="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                      disabled={!canManageRoles || user.role === 'super_admin'}
+                      className="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-gray-100 disabled:text-gray-400"
                     >
-                      <option value="user">User</option>
-                      <option value="admin">Admin</option>
-                      <option value="moderator">Moderator</option>
+                      {ROLE_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
                     </select>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -269,6 +425,118 @@ export default function UserManagement() {
         </div>
       )}
 
+      {/* Invite Staff Modal */}
+      {inviteModalOpen && canInviteStaff && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-6">
+          <div className="w-full max-w-lg rounded-xl bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">Add Staff Member</h2>
+                <p className="text-sm text-gray-500">Create an internal account with elevated permissions.</p>
+              </div>
+              <button
+                onClick={() => {
+                  resetInviteForm();
+                  setInviteModalOpen(false);
+                }}
+                className="rounded-full p-1 text-gray-400 transition-colors hover:text-gray-600"
+              >
+                <XCircle className="h-6 w-6" />
+              </button>
+            </div>
+
+            <form onSubmit={submitInviteForm} className="px-6 py-6 space-y-5">
+              {inviteErrors.general && (
+                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {inviteErrors.general}
+                </div>
+              )}
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700">Username</label>
+                <input
+                  type="text"
+                  value={inviteForm.username}
+                  onChange={(event) => handleInviteChange('username', event.target.value)}
+                  className={`w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 ${inviteErrors.username ? 'border-red-300' : 'border-gray-300'}`}
+                  placeholder="e.g. jane.doe"
+                />
+                {inviteErrors.username && (
+                  <p className="mt-1 text-xs text-red-600">{inviteErrors.username}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700">Email address</label>
+                <input
+                  type="email"
+                  value={inviteForm.email}
+                  onChange={(event) => handleInviteChange('email', event.target.value)}
+                  className={`w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 ${inviteErrors.email ? 'border-red-300' : 'border-gray-300'}`}
+                  placeholder="name@example.com"
+                />
+                {inviteErrors.email && (
+                  <p className="mt-1 text-xs text-red-600">{inviteErrors.email}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700">Temporary password</label>
+                <input
+                  type="password"
+                  value={inviteForm.password}
+                  onChange={(event) => handleInviteChange('password', event.target.value)}
+                  className={`w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 ${inviteErrors.password ? 'border-red-300' : 'border-gray-300'}`}
+                  placeholder="Minimum 6 characters"
+                />
+                {inviteErrors.password && (
+                  <p className="mt-1 text-xs text-red-600">{inviteErrors.password}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700">Role</label>
+                <select
+                  value={inviteForm.role}
+                  onChange={(event) => handleInviteChange('role', event.target.value)}
+                  className={`w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 ${inviteErrors.role ? 'border-red-300' : 'border-gray-300'}`}
+                >
+                  {ROLE_OPTIONS.filter((option) => option.value !== 'user').map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                {inviteErrors.role && (
+                  <p className="mt-1 text-xs text-red-600">{inviteErrors.role}</p>
+                )}
+              </div>
+
+              <div className="flex items-center justify-end space-x-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    resetInviteForm();
+                    setInviteModalOpen(false);
+                  }}
+                  className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={inviteLoading}
+                  className="inline-flex items-center rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-green-600 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {inviteLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {inviteLoading ? 'Creating...' : 'Create Account'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* User Details Modal */}
       {selectedUser && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -302,13 +570,7 @@ export default function UserManagement() {
                     }`}>
                       {selectedUser.isActive ? 'Active' : 'Inactive'}
                     </span>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      selectedUser.role === 'admin'
-                        ? 'bg-red-100 text-red-700'
-                        : selectedUser.role === 'moderator'
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'bg-gray-100 text-gray-700'
-                    }`}>
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getRoleBadgeClass(selectedUser.role)}`}>
                       {selectedUser.role?.toUpperCase()}
                     </span>
                   </div>
@@ -424,10 +686,13 @@ export default function UserManagement() {
                       <User className="h-5 w-5 text-gray-600" />
                       <h4 className="text-sm font-medium text-gray-600">Profile Picture</h4>
                     </div>
-                    <img 
-                      src={selectedUser.profilePicture} 
-                      alt="Profile" 
-                      className="w-16 h-16 rounded-full object-cover"
+                    <Image
+                      src={selectedUser.profilePicture}
+                      alt="Profile"
+                      width={64}
+                      height={64}
+                      unoptimized
+                      className="h-16 w-16 rounded-full object-cover"
                     />
                   </div>
                 )}
@@ -513,15 +778,23 @@ export default function UserManagement() {
                   >
                     {selectedUser.isActive ? 'Deactivate' : 'Activate'}
                   </button>
-                  <button
-                    onClick={() => {
-                      const newRole = selectedUser.role === 'admin' ? 'user' : selectedUser.role === 'user' ? 'moderator' : 'admin';
-                      updateUserRole(selectedUser.id, newRole);
-                    }}
-                    className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg font-medium hover:bg-blue-200 transition-colors"
-                  >
-                    Change Role
-                  </button>
+                  {canManageRoles && (
+                    <button
+                      onClick={() => {
+                        const currentIndex = ROLE_OPTIONS.findIndex((opt) => opt.value === selectedUser.role);
+                        const nextIndex = (currentIndex + 1) % ROLE_OPTIONS.length;
+                        const nextRole = ROLE_OPTIONS[nextIndex].value;
+                        if (selectedUser.role === 'super_admin') {
+                          alert('Super admin role cannot be changed from this panel.');
+                          return;
+                        }
+                        updateUserRole(selectedUser.id, nextRole);
+                      }}
+                      className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg font-medium hover:bg-blue-200 transition-colors"
+                    >
+                      Cycle Role
+                    </button>
+                  )}
                   <button
                     onClick={() => {
                       if (confirm('Are you sure you want to delete this user?')) {
