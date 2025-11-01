@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   Wallet,
   Plus,
   Minus,
-  ArrowUpRight,
   ArrowDownRight,
   Eye,
   EyeOff,
@@ -13,14 +12,18 @@ import {
   TrendingDown,
   Clock,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
 
 const QUICK_ACTIONS = [
   { id: 'deposit', name: 'Deposit', description: 'Add money to your wallet', icon: Plus, color: 'green' },
   { id: 'withdraw', name: 'Withdraw', description: 'Withdraw to bank account', icon: Minus, color: 'red' },
-  { id: 'transfer', name: 'Transfer', description: 'Send to another user', icon: ArrowUpRight, color: 'purple' }
+  // { id: 'transfer', name: 'Transfer', description: 'Send to another user', icon: ArrowUpRight, color: 'purple' }
 ];
+
+const MAX_DEPOSIT_VERIFICATION_ATTEMPTS = 12;
+const DEPOSIT_VERIFICATION_INTERVAL_MS = 5000;
 
 const formatCurrency = (amount, currency = 'NGN') => {
   const numericAmount = Number(amount) || 0;
@@ -66,16 +69,37 @@ export default function WalletPage() {
   const [globalMessage, setGlobalMessage] = useState(null);
 
   const [depositState, setDepositState] = useState({ amount: '', loading: false, error: null, reference: null, authorizationUrl: null });
-  const [depositVerification, setDepositVerification] = useState({ reference: '', loading: false, error: null });
+  const depositPollTimeout = useRef(null);
+  const [depositTracking, setDepositTracking] = useState({
+    status: 'idle',
+    reference: null,
+    attempts: 0,
+    error: null
+  });
+
+  const [banks, setBanks] = useState([]);
+  const [banksLoading, setBanksLoading] = useState(false);
+  const [banksError, setBanksError] = useState(null);
+  const [bankSearch, setBankSearch] = useState('');
 
   const [withdrawState, setWithdrawState] = useState({
     amount: '',
     accountNumber: '',
     bankCode: '',
+    bankName: '',
     accountName: '',
     reason: '',
     loading: false,
     error: null
+  });
+
+  const [accountVerification, setAccountVerification] = useState({
+    status: 'idle',
+    accountName: '',
+    accountNumber: '',
+    bankCode: '',
+    error: null,
+    payload: null
   });
 
   const [transferState, setTransferState] = useState({
@@ -134,6 +158,242 @@ export default function WalletPage() {
     fetchTransactions();
   }, [fetchTransactions]);
 
+  const loadBanks = useCallback(async () => {
+    try {
+      setBanksLoading(true);
+      setBanksError(null);
+      const headers = getAuthHeaders();
+      if (!headers) {
+        setBanks([]);
+        setBanksError('You are not authenticated. Please log in again.');
+        return;
+      }
+
+      const response = await fetch('/api/payments/paystack/banks', {
+        method: 'GET',
+        headers
+      });
+
+      const result = await response.json().catch(() => ({}));
+
+      if (response.status === 401) {
+        setBanksError('You are not authenticated. Please log in again.');
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to fetch bank list');
+      }
+
+      setBanks(Array.isArray(result.banks) ? result.banks : []);
+    } catch (error) {
+      console.error('Bank list fetch error:', error);
+      setBanksError(error.message || 'Failed to load bank list');
+    } finally {
+      setBanksLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadBanks();
+  }, [loadBanks]);
+
+  useEffect(() => {
+    return () => {
+      if (depositPollTimeout.current) {
+        clearTimeout(depositPollTimeout.current);
+      }
+    };
+  }, []);
+
+  const accountVerifyTimeout = useRef(null);
+
+  const verifyAccountDetails = useCallback(async (accountNumber, bankCode) => {
+    const headers = getAuthHeaders();
+
+    if (!headers) {
+      setAccountVerification({
+        status: 'error',
+        accountName: '',
+        accountNumber,
+        bankCode,
+        error: 'You are not authenticated. Please log in again.',
+        payload: null
+      });
+      return;
+    }
+
+    setAccountVerification({
+      status: 'verifying',
+      accountName: '',
+      accountNumber,
+      bankCode,
+      error: null,
+      payload: null
+    });
+
+    try {
+      const response = await fetch('/api/payments/paystack/verify-account', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ accountNumber, bankCode })
+      });
+
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Unable to verify account');
+      }
+
+      const verifiedAccountName = result.accountName || '';
+
+      setAccountVerification({
+        status: 'success',
+        accountName: verifiedAccountName,
+        accountNumber: result.accountNumber || accountNumber,
+        bankCode,
+        error: null,
+        payload: result.payload || result
+      });
+
+      setWithdrawState((prev) => ({
+        ...prev,
+        accountName: verifiedAccountName
+      }));
+    } catch (error) {
+      console.error('Account verification error:', error);
+      setAccountVerification({
+        status: 'error',
+        accountName: '',
+        accountNumber,
+        bankCode,
+        error: error.message || 'Unable to verify account',
+        payload: null
+      });
+
+      setWithdrawState((prev) => ({
+        ...prev,
+        accountName: ''
+      }));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (accountVerifyTimeout.current) {
+      clearTimeout(accountVerifyTimeout.current);
+    }
+
+    if (withdrawState.accountNumber && withdrawState.accountNumber.length === 10 && withdrawState.bankCode) {
+      accountVerifyTimeout.current = setTimeout(() => {
+        verifyAccountDetails(withdrawState.accountNumber, withdrawState.bankCode);
+      }, 600);
+    } else {
+      setAccountVerification((prev) => {
+        if (prev.status === 'idle') {
+          return prev;
+        }
+        return {
+          status: 'idle',
+          accountName: '',
+          accountNumber: '',
+          bankCode: '',
+          error: null,
+          payload: null
+        };
+      });
+    }
+
+    return () => {
+      if (accountVerifyTimeout.current) {
+        clearTimeout(accountVerifyTimeout.current);
+      }
+    };
+  }, [withdrawState.accountNumber, withdrawState.bankCode, verifyAccountDetails]);
+
+  const pollDepositVerification = useCallback(async (reference, attempt = 0) => {
+    if (!reference) {
+      return;
+    }
+
+    setDepositTracking({ status: 'waiting', reference, attempts: attempt, error: null });
+
+    try {
+      const headers = getAuthHeaders();
+      if (!headers) {
+        setDepositTracking({
+          status: 'error',
+          reference,
+          attempts: attempt,
+          error: 'You are not authenticated. Please log in again.'
+        });
+        setGlobalMessage({ type: 'error', message: 'You are not authenticated. Please log in again.' });
+        return;
+      }
+
+      const response = await fetch('/api/payments/deposit/verify', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ reference })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const newBalance = Number(data.walletBalance ?? 0);
+        setWalletBalance(newBalance);
+        setUser((prev) => (prev ? { ...prev, walletBalance: newBalance } : prev));
+        updateStoredUser({ walletBalance: newBalance });
+        setGlobalMessage({ type: 'success', message: 'Deposit verified and wallet balance updated.' });
+        setDepositState((prev) => ({ ...prev, amount: '', reference: null, authorizationUrl: null, error: null }));
+        setDepositTracking({ status: 'success', reference: null, attempts: attempt, error: null });
+        if (depositPollTimeout.current) {
+          clearTimeout(depositPollTimeout.current);
+        }
+        depositPollTimeout.current = null;
+        fetchTransactions();
+        return;
+      }
+
+      const result = await response.json().catch(() => ({}));
+      const errorMessage = result.error || 'Awaiting Paystack confirmation';
+      const shouldRetry = (response.status >= 500 || response.status === 400 || response.status === 404)
+        && attempt + 1 < MAX_DEPOSIT_VERIFICATION_ATTEMPTS;
+
+      if (shouldRetry) {
+        if (depositPollTimeout.current) {
+          clearTimeout(depositPollTimeout.current);
+        }
+        depositPollTimeout.current = setTimeout(() => {
+          pollDepositVerification(reference, attempt + 1);
+        }, DEPOSIT_VERIFICATION_INTERVAL_MS);
+        return;
+      }
+
+      if (depositPollTimeout.current) {
+        clearTimeout(depositPollTimeout.current);
+      }
+      setDepositTracking({ status: 'error', reference, attempts: attempt, error: errorMessage });
+      setGlobalMessage({ type: 'error', message: errorMessage });
+      depositPollTimeout.current = null;
+    } catch (error) {
+      const message = error.message || 'Verification failed';
+      if (attempt + 1 < MAX_DEPOSIT_VERIFICATION_ATTEMPTS) {
+        if (depositPollTimeout.current) {
+          clearTimeout(depositPollTimeout.current);
+        }
+        depositPollTimeout.current = setTimeout(() => {
+          pollDepositVerification(reference, attempt + 1);
+        }, DEPOSIT_VERIFICATION_INTERVAL_MS);
+      } else {
+        if (depositPollTimeout.current) {
+          clearTimeout(depositPollTimeout.current);
+        }
+        setDepositTracking({ status: 'error', reference, attempts: attempt, error: message });
+        setGlobalMessage({ type: 'error', message });
+        depositPollTimeout.current = null;
+      }
+    }
+  }, [fetchTransactions]);
+
   const handleDepositInitialize = async (event) => {
     event.preventDefault();
     if (depositState.loading) return;
@@ -168,55 +428,28 @@ export default function WalletPage() {
         reference: data.reference
       }));
 
-      setGlobalMessage({ type: 'success', message: 'Deposit initialized. Complete the payment in the newly opened Paystack window, then verify using the reference.' });
-
       if (data.authorizationUrl) {
         window.open(data.authorizationUrl, '_blank');
       }
+
+      setGlobalMessage({ type: 'info', message: 'Deposit initialized. Waiting for Paystack confirmation...' });
+
+      if (depositPollTimeout.current) {
+        clearTimeout(depositPollTimeout.current);
+        depositPollTimeout.current = null;
+      }
+
+      setDepositTracking({ status: 'waiting', reference: data.reference, attempts: 0, error: null });
+      pollDepositVerification(data.reference);
     } catch (error) {
       setDepositState((prev) => ({ ...prev, error: error.message || 'Deposit initialization failed' }));
+      setDepositTracking({ status: 'idle', reference: null, attempts: 0, error: null });
+      if (depositPollTimeout.current) {
+        clearTimeout(depositPollTimeout.current);
+        depositPollTimeout.current = null;
+      }
     } finally {
       setDepositState((prev) => ({ ...prev, loading: false }));
-    }
-  };
-
-  const handleDepositVerify = async (event) => {
-    event.preventDefault();
-    if (depositVerification.loading) return;
-
-    try {
-      setDepositVerification((prev) => ({ ...prev, loading: true, error: null }));
-      setGlobalMessage(null);
-
-      const headers = getAuthHeaders();
-      if (!headers) throw new Error('You are not authenticated. Please log in again.');
-
-      const reference = depositVerification.reference || depositState.reference;
-      if (!reference) {
-        throw new Error('Enter a Paystack reference to verify');
-      }
-
-      const response = await fetch('/api/payments/deposit/verify', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ reference })
-      });
-
-      if (!response.ok) {
-        const result = await response.json().catch(() => ({}));
-        throw new Error(result.error || 'Verification failed');
-      }
-
-      const data = await response.json();
-      const newBalance = Number(data.walletBalance ?? walletBalance);
-      setWalletBalance(newBalance);
-      updateStoredUser({ walletBalance: newBalance });
-      setGlobalMessage({ type: 'success', message: 'Deposit verified and wallet balance updated.' });
-      setDepositVerification({ reference: '', loading: false, error: null });
-      setDepositState((prev) => ({ ...prev, reference: null }));
-      fetchTransactions();
-    } catch (error) {
-      setDepositVerification((prev) => ({ ...prev, error: error.message || 'Verification failed', loading: false }));
     }
   };
 
@@ -236,6 +469,18 @@ export default function WalletPage() {
         throw new Error('Enter a valid withdrawal amount greater than zero');
       }
 
+      if (!withdrawState.bankCode) {
+        throw new Error('Select a bank before requesting withdrawal');
+      }
+
+      if (!withdrawState.accountNumber || withdrawState.accountNumber.length !== 10) {
+        throw new Error('Enter a valid 10-digit account number');
+      }
+
+      if (accountVerification.status !== 'success') {
+        throw new Error('Please verify the account details before withdrawing');
+      }
+
       const response = await fetch('/api/payments/withdraw', {
         method: 'POST',
         headers,
@@ -245,7 +490,9 @@ export default function WalletPage() {
           accountNumber: withdrawState.accountNumber,
           bankCode: withdrawState.bankCode,
           accountName: withdrawState.accountName,
-          reason: withdrawState.reason
+          bankName: withdrawState.bankName,
+          reason: withdrawState.reason,
+          verificationData: accountVerification.payload || null
         })
       });
 
@@ -259,7 +506,20 @@ export default function WalletPage() {
       setWalletBalance(newBalance);
       updateStoredUser({ walletBalance: newBalance });
       setGlobalMessage({ type: 'success', message: 'Withdrawal initiated successfully.' });
-      setWithdrawState({ amount: '', accountNumber: '', bankCode: '', accountName: '', reason: '', loading: false, error: null });
+      setWithdrawState({
+        amount: '',
+        accountNumber: withdrawState.accountNumber,
+        bankCode: withdrawState.bankCode,
+        bankName: withdrawState.bankName,
+        accountName: withdrawState.accountName,
+        reason: '',
+        loading: false,
+        error: null
+      });
+      setAccountVerification((prev) => ({
+        ...prev,
+        status: 'success'
+      }));
       fetchTransactions();
     } catch (error) {
       setWithdrawState((prev) => ({ ...prev, error: error.message || 'Withdrawal failed', loading: false }));
@@ -327,12 +587,30 @@ export default function WalletPage() {
     changeType: 'positive'
   }), [walletBalance, currency]);
 
+  const filteredBanks = useMemo(() => {
+    if (!bankSearch) {
+      return banks;
+    }
+
+    const term = bankSearch.toLowerCase();
+    return banks.filter((bank) =>
+      (bank.name || '').toLowerCase().includes(term) ||
+      (bank.slug || '').toLowerCase().includes(term) ||
+      (bank.code || '').toString().includes(term)
+    );
+  }, [banks, bankSearch]);
+
+  const selectedBank = useMemo(
+    () => banks.find((bank) => bank.code === withdrawState.bankCode),
+    [banks, withdrawState.bankCode]
+  );
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">My Wallet</h1>
-          <p className="text-gray-600 mt-2">Manage deposits, withdrawals, and transfers seamlessly.</p>
+          <p className="text-gray-600 mt-2">Manage deposits and withdrawals </p>
         </div>
         <button
           onClick={() => setShowBalance((prev) => !prev)}
@@ -347,7 +625,9 @@ export default function WalletPage() {
         <div className={`rounded-lg border px-4 py-3 text-sm ${
           globalMessage.type === 'success'
             ? 'border-green-200 bg-green-50 text-green-700'
-            : 'border-red-200 bg-red-50 text-red-700'
+            : globalMessage.type === 'info'
+              ? 'border-blue-200 bg-blue-50 text-blue-700'
+              : 'border-red-200 bg-red-50 text-red-700'
         }`}>
           {globalMessage.message}
         </div>
@@ -405,7 +685,7 @@ export default function WalletPage() {
           {activeAction === 'deposit' && (
             <div className="space-y-4">
               <h2 className="text-lg font-semibold text-gray-900">Deposit funds</h2>
-              <p className="text-sm text-gray-600">Enter an amount to generate a Paystack payment link. Complete the payment, then verify to credit your wallet.</p>
+              <p className="text-sm text-gray-600">Enter an amount to generate a Paystack payment link. Complete the payment and we&apos;ll confirm it automatically.</p>
               <form onSubmit={handleDepositInitialize} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Amount</label>
@@ -433,32 +713,23 @@ export default function WalletPage() {
                   {depositState.loading ? 'Initializing...' : 'Initialize deposit'}
                 </button>
               </form>
+              {depositTracking.status === 'waiting' && depositTracking.reference && (
+                <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-700">
+                  Awaiting confirmation from Paystack... (Attempt {depositTracking.attempts + 1})
+                </div>
+              )}
 
-              <div className="border-t border-gray-200 pt-4 space-y-3">
-                <h3 className="text-sm font-semibold text-gray-900">Verify deposit</h3>
-                <p className="text-xs text-gray-600">Paste the Paystack reference after completing payment, or use the reference we generated for you.</p>
-                <form onSubmit={handleDepositVerify} className="space-y-3">
-                  <input
-                    type="text"
-                    value={depositVerification.reference || depositState.reference || ''}
-                    onChange={(event) => setDepositVerification((prev) => ({ ...prev, reference: event.target.value }))}
-                    className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 uppercase"
-                    placeholder="PAYSTACK_REFERENCE"
-                  />
-                  {depositVerification.error && (
-                    <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
-                      {depositVerification.error}
-                    </div>
-                  )}
-                  <button
-                    type="submit"
-                    disabled={depositVerification.loading}
-                    className="inline-flex items-center rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {depositVerification.loading ? 'Verifying...' : 'Verify deposit'}
-                  </button>
-                </form>
-              </div>
+              {depositTracking.status === 'success' && (
+                <div className="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-700">
+                  Deposit confirmed successfully.
+                </div>
+              )}
+
+              {depositTracking.status === 'error' && depositTracking.error && (
+                <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+                  {depositTracking.error}
+                </div>
+              )}
             </div>
           )}
 
@@ -480,39 +751,113 @@ export default function WalletPage() {
                     required
                   />
                 </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Account number</label>
-                    <input
-                      type="text"
-                      value={withdrawState.accountNumber}
-                      onChange={(event) => setWithdrawState((prev) => ({ ...prev, accountNumber: event.target.value }))}
-                      className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-                      placeholder="0123456789"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Bank code</label>
-                    <input
-                      type="text"
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Bank</label>
+                  <div className="mt-1 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={bankSearch}
+                        onChange={(event) => setBankSearch(event.target.value)}
+                        className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                        placeholder="Search bank name or code"
+                      />
+                      <button
+                        type="button"
+                        onClick={loadBanks}
+                        disabled={banksLoading}
+                        className="inline-flex items-center rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {banksLoading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Refreshing
+                          </>
+                        ) : (
+                          'Refresh'
+                        )}
+                      </button>
+                    </div>
+                    <select
                       value={withdrawState.bankCode}
-                      onChange={(event) => setWithdrawState((prev) => ({ ...prev, bankCode: event.target.value }))}
-                      className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-                      placeholder="011"
+                      onChange={(event) => {
+                        const selectedCode = event.target.value;
+                        const bank = banks.find((item) => item.code === selectedCode);
+                        setWithdrawState((prev) => ({
+                          ...prev,
+                          bankCode: selectedCode,
+                          bankName: bank?.name || '',
+                          accountName: ''
+                        }));
+                        setAccountVerification({
+                          status: 'idle',
+                          accountName: '',
+                          accountNumber: '',
+                          bankCode: '',
+                          error: null,
+                          payload: null
+                        });
+                      }}
+                      className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                      disabled={banksLoading}
                       required
-                    />
+                    >
+                      <option value="">Select a bank</option>
+                      {filteredBanks.map((bank) => (
+                        <option key={bank.code} value={bank.code}>
+                          {bank.name}
+                        </option>
+                      ))}
+                    </select>
+                    {banksError ? (
+                      <p className="text-xs text-red-600">{banksError}</p>
+                    ) : selectedBank ? (
+                      <p className="text-xs text-gray-500">Selected bank: {selectedBank.name}</p>
+                    ) : null}
                   </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Account number</label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="\\d*"
+                    maxLength={10}
+                    value={withdrawState.accountNumber}
+                    onChange={(event) => {
+                      const digitsOnly = event.target.value.replace(/\D/g, '').slice(0, 10);
+                      setWithdrawState((prev) => ({ ...prev, accountNumber: digitsOnly }));
+                    }}
+                    className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                    placeholder="0123456789"
+                    required
+                  />
+                  {accountVerification.status === 'verifying' && (
+                    <div className="mt-1 flex items-center text-xs text-blue-600">
+                      <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                      Verifying account details...
+                    </div>
+                  )}
+                  {accountVerification.status === 'success' && (
+                    <div className="mt-1 flex items-center text-xs text-green-600">
+                      <CheckCircle className="mr-1 h-3 w-3" />
+                      Account verified
+                    </div>
+                  )}
+                  {accountVerification.status === 'error' && accountVerification.error && (
+                    <div className="mt-1 text-xs text-red-600">
+                      {accountVerification.error}
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Account name</label>
                   <input
                     type="text"
                     value={withdrawState.accountName}
-                    onChange={(event) => setWithdrawState((prev) => ({ ...prev, accountName: event.target.value }))}
-                    className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-                    placeholder="John Doe"
-                    required
+                    readOnly
+                    className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm bg-gray-100 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                    placeholder={accountVerification.status === 'success' ? accountVerification.accountName : 'Account name will appear after verification'}
                   />
                 </div>
                 <div>
@@ -541,7 +886,7 @@ export default function WalletPage() {
             </div>
           )}
 
-          {activeAction === 'transfer' && (
+          {/* {activeAction === 'transfer' && (
             <div className="space-y-4">
               <h2 className="text-lg font-semibold text-gray-900">Transfer to another user</h2>
               <p className="text-sm text-gray-600">Send funds to another wallet on the platform.</p>
@@ -622,7 +967,7 @@ export default function WalletPage() {
                 </button>
               </form>
             </div>
-          )}
+          )} */}
         </div>
 
         <div className="rounded-xl border border-gray-200 bg-white shadow-sm">

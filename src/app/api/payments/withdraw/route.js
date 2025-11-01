@@ -11,7 +11,16 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { amount, currency = 'NGN', reason = 'Wallet withdrawal', accountNumber, bankCode, accountName } = body;
+    const {
+      amount,
+      currency = 'NGN',
+      reason = 'Wallet withdrawal',
+      accountNumber,
+      bankCode,
+      accountName,
+      bankName,
+      verificationData
+    } = body;
 
     const numericAmount = Number(amount);
     if (!numericAmount || Number.isNaN(numericAmount) || numericAmount <= 0) {
@@ -65,6 +74,13 @@ export async function POST(request) {
           currency,
           description: reason,
           metadata: {
+            bankDetails: {
+              accountNumber,
+              accountName,
+              bankCode,
+              bankName: bankName || null,
+              verification: verificationData || null
+            },
             paystack: {
               transfer: transferData,
               recipient: recipientResponse.data

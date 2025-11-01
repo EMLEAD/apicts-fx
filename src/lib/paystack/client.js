@@ -88,3 +88,21 @@ export const finalizeTransfer = async ({ transferCode, otp }) => {
     body: JSON.stringify(payload)
   });
 };
+
+export const fetchBanks = async ({ currency = 'NGN', type = 'nuban', perPage = 200 } = {}) => {
+  const query = new URLSearchParams({ currency, type, perPage: String(perPage) });
+  return paystackFetch(`/bank?${query.toString()}`, {
+    method: 'GET'
+  });
+};
+
+export const resolveBankAccount = async ({ accountNumber, bankCode }) => {
+  const query = new URLSearchParams({
+    account_number: accountNumber,
+    bank_code: bankCode
+  });
+
+  return paystackFetch(`/bank/resolve?${query.toString()}`, {
+    method: 'GET'
+  });
+};
