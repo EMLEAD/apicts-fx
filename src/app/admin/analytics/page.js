@@ -2,21 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { TrendingUp, Users, DollarSign, Eye, BarChart3, Activity } from 'lucide-react';
-import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell
-} from 'recharts';
 
 export default function AnalyticsDashboard() {
   const [analytics, setAnalytics] = useState({
@@ -32,7 +17,6 @@ export default function AnalyticsDashboard() {
 
   const [topPages, setTopPages] = useState([]);
   const [transactionData, setTransactionData] = useState([]);
-  const [monthlyData, setMonthlyData] = useState([]);
 
   useEffect(() => {
     fetchAnalytics();
@@ -90,6 +74,12 @@ export default function AnalyticsDashboard() {
       console.error('Error fetching analytics:', error);
     }
   };
+
+  const totalUsersBase = analytics.totalUsers > 0 ? analytics.totalUsers : 1;
+  const transactionPeak = transactionChartData.reduce((max, item) => Math.max(max, item.transactions || 0), 0) || 1;
+  const revenuePeak = revenueData.reduce((max, item) => Math.max(max, item.revenue || 0), 0) || 1;
+  const transactionStatusTotal = transactionTypeData.reduce((sum, item) => sum + (item.value || 0), 0) || 1;
+  const topPagesMaxViews = topPages.length > 0 ? Math.max(...topPages.map((page) => page.views || 0)) : 1;
 
   return (
     <div>
@@ -164,39 +154,27 @@ export default function AnalyticsDashboard() {
             <h3 className="text-lg font-semibold text-gray-900">User Growth</h3>
             <TrendingUp className="h-5 w-5 text-blue-600" />
           </div>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={userGrowthData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis 
-                dataKey="month" 
-                stroke="#888888"
-                fontSize={12}
-              />
-              <YAxis 
-                stroke="#888888"
-                fontSize={12}
-              />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'white', 
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px'
-                }}
-              />
-              <Legend />
-              <Line 
-                type="monotone" 
-                dataKey="users" 
-                stroke="#3b82f6" 
-                strokeWidth={3}
-                dot={{ fill: '#3b82f6', r: 4 }}
-                activeDot={{ r: 6 }}
-                name="Total Users"
-              />
-            </LineChart>
-          </ResponsiveContainer>
-          <div className="mt-4 text-sm text-gray-500 text-center">
-            Current: {analytics.totalUsers} users | New this month: {analytics.newUsers}
+          <div className="space-y-4">
+            {userGrowthData.map((item) => {
+              const percentage = Math.min(100, Math.round((item.users / totalUsersBase) * 100));
+              return (
+                <div key={item.month}>
+                  <div className="flex items-center justify-between text-sm text-gray-600">
+                    <span className="font-medium text-gray-900">{item.month}</span>
+                    <span>{item.users.toLocaleString()} users ({percentage}%)</span>
+                  </div>
+                  <div className="mt-2 h-2.5 w-full rounded-full bg-gray-100">
+                    <div
+                      className="h-2.5 rounded-full bg-gradient-to-r from-blue-500 to-blue-600"
+                      style={{ width: `${percentage}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-6 text-sm text-gray-500 text-center">
+            Current: {analytics.totalUsers} users · New this month: {analytics.newUsers}
           </div>
         </div>
 
@@ -206,41 +184,32 @@ export default function AnalyticsDashboard() {
             <h3 className="text-lg font-semibold text-gray-900">Transaction Volume (Last 7 Days)</h3>
             <Activity className="h-5 w-5 text-green-600" />
           </div>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={transactionChartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis 
-                dataKey="day" 
-                stroke="#888888"
-                fontSize={12}
-              />
-              <YAxis 
-                stroke="#888888"
-                fontSize={12}
-              />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'white', 
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px'
-                }}
-              />
-              <Legend />
-              <Bar 
-                dataKey="transactions" 
-                fill="#10b981"
-                radius={[8, 8, 0, 0]}
-                name="Transactions"
-              />
-            </BarChart>
-          </ResponsiveContainer>
-          <div className="mt-4 text-sm text-gray-500 text-center">
+          <div className="space-y-4">
+            {transactionChartData.map((item) => {
+              const percentage = Math.min(100, Math.round(((item.transactions || 0) / transactionPeak) * 100));
+              return (
+                <div key={item.day}>
+                  <div className="flex items-center justify-between text-sm text-gray-600">
+                    <span className="font-medium text-gray-900">{item.day}</span>
+                    <span>{(item.transactions || 0).toLocaleString()} tx</span>
+                  </div>
+                  <div className="mt-2 h-2.5 w-full rounded-full bg-gray-100">
+                    <div
+                      className="h-2.5 rounded-full bg-gradient-to-r from-green-500 to-green-600"
+                      style={{ width: `${percentage}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-6 text-sm text-gray-500 text-center">
             Total: {analytics.totalTransactions} transactions
           </div>
         </div>
       </div>
 
-      {/* Second Row Charts */}
+      {/* Second Row Visualisations */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         {/* Revenue Trends */}
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
@@ -248,77 +217,56 @@ export default function AnalyticsDashboard() {
             <h3 className="text-lg font-semibold text-gray-900">Revenue Trends</h3>
             <DollarSign className="h-5 w-5 text-green-600" />
           </div>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={revenueData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis 
-                dataKey="month" 
-                stroke="#888888"
-                fontSize={12}
-              />
-              <YAxis 
-                stroke="#888888"
-                fontSize={12}
-                tickFormatter={(value) => `₦${value}`}
-              />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'white', 
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px'
-                }}
-                formatter={(value) => `₦${value.toLocaleString()}`}
-              />
-              <Legend />
-              <Line 
-                type="monotone" 
-                dataKey="revenue" 
-                stroke="#10b981" 
-                strokeWidth={3}
-                dot={{ fill: '#10b981', r: 4 }}
-                activeDot={{ r: 6 }}
-                name="Revenue (NGN)"
-              />
-            </LineChart>
-          </ResponsiveContainer>
-          <div className="mt-4 text-sm text-gray-500 text-center">
-            Total: ₦{analytics.totalRevenue.toLocaleString()} | This Month: ₦{analytics.monthlyRevenue.toLocaleString()}
+          <div className="space-y-4">
+            {revenueData.map((item) => {
+              const percentage = revenuePeak > 0 ? Math.min(100, Math.round((item.revenue / revenuePeak) * 100)) : 0;
+              return (
+                <div key={item.month}>
+                  <div className="flex items-center justify-between text-sm text-gray-600">
+                    <span className="font-medium text-gray-900">{item.month}</span>
+                    <span>₦{item.revenue.toLocaleString()}</span>
+                  </div>
+                  <div className="mt-2 h-2.5 w-full rounded-full bg-gray-100">
+                    <div
+                      className="h-2.5 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600"
+                      style={{ width: `${percentage}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-6 text-sm text-gray-500 text-center">
+            Total: ₦{analytics.totalRevenue.toLocaleString()} · This Month: ₦{analytics.monthlyRevenue.toLocaleString()}
           </div>
         </div>
 
-        {/* Transaction Status Distribution */}
+        {/* Transaction Status */}
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900">Transaction Status</h3>
             <BarChart3 className="h-5 w-5 text-purple-600" />
           </div>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={transactionTypeData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                outerRadius={100}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                {transactionTypeData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'white', 
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px'
-                }}
-              />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="mt-4 text-sm text-gray-500 text-center">
+          <div className="space-y-4">
+            {transactionTypeData.map((item) => {
+              const percentage = transactionStatusTotal > 0 ? Math.round((item.value / transactionStatusTotal) * 100) : 0;
+              return (
+                <div key={item.name}>
+                  <div className="flex items-center justify-between text-sm text-gray-600">
+                    <span className="font-medium text-gray-900">{item.name}</span>
+                    <span>{item.value.toLocaleString()} ({percentage}%)</span>
+                  </div>
+                  <div className="mt-2 h-2.5 w-full rounded-full bg-gray-100">
+                    <div
+                      className="h-2.5 rounded-full"
+                      style={{ width: `${percentage}%`, backgroundColor: item.color }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-6 text-sm text-gray-500 text-center">
             Total: {analytics.totalTransactions} transactions
           </div>
         </div>
@@ -345,7 +293,7 @@ export default function AnalyticsDashboard() {
                     <div className="w-32 bg-gray-200 rounded-full h-2">
                       <div 
                         className="bg-red-600 h-2 rounded-full" 
-                        style={{ width: `${(page.views / topPages[0]?.views) * 100}%` }}
+                        style={{ width: `${Math.min(100, Math.round(((page.views || 0) / topPagesMaxViews) * 100))}%` }}
                       />
                     </div>
                   </div>

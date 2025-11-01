@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Mail, Lock, User, CheckCircle } from "lucide-react";
 import { signInWithGoogle } from '@/lib/firebase/auth';
 import Navbar from '@/Components/NavBar';
 import Footer from '@/Components/Footer';
 
-export default function SignupPage() {
+function SignupPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialReferralCode = searchParams?.get('ref') || searchParams?.get('referral') || '';
@@ -461,5 +461,13 @@ export default function SignupPage() {
       
       <Footer />
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">Loading...</div>}>
+      <SignupPageContent />
+    </Suspense>
   );
 }

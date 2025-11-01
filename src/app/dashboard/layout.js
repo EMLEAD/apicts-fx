@@ -19,7 +19,8 @@ import {
   BarChart3,
   ChevronRight,
   ClipboardList,
-  BadgePercent
+  BadgePercent,
+  ArrowUpRight
 } from 'lucide-react';
 import Navbar from '@/Components/NavBar';
 
