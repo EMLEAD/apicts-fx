@@ -38,6 +38,18 @@ const adminNavigationItems = [
   { name: 'Admin Transfers', href: '/dashboard/admin/transfers', icon: ArrowUpRight }
 ];
 
+const normalizeUser = (userData) => {
+  if (!userData || typeof userData !== 'object') {
+    return null;
+  }
+
+  return {
+    ...userData,
+    walletBalance: Number(userData.walletBalance ?? 0),
+    currency: userData.currency || 'NGN'
+  };
+};
+
 export default function DashboardLayout({ children }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -47,38 +59,96 @@ export default function DashboardLayout({ children }) {
   const [mobileSubMenuOpen, setMobileSubMenuOpen] = useState(false);
 
   useEffect(() => {
-    // Check if user is authenticated
     const token = localStorage.getItem('token');
     if (!token) {
       router.push('/login');
-      return;
+      return () => {};
     }
 
-    // Decode token to get user info
+    let isMounted = true;
+    let decodedUser = null;
+
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      setUser({
+      const payload = JSON.parse(atob(token.split('.')[1] || ''));
+      decodedUser = {
         id: payload.userId,
         username: payload.username,
         email: payload.email,
         role: payload.role
-      });
+      };
     } catch (error) {
       console.error('Token decode error:', error);
       localStorage.removeItem('token');
       router.push('/login');
+      return () => {};
     }
 
-    setLoading(false);
+    let storedUser = null;
+    const stored = localStorage.getItem('user');
+    if (stored) {
+      try {
+        storedUser = normalizeUser(JSON.parse(stored));
+      } catch (error) {
+        console.error('Failed to parse stored user', error);
+      }
+    }
+
+    const initialUser = normalizeUser({
+      ...decodedUser,
+      ...(storedUser || {})
+    });
+
+    if (initialUser && Object.keys(initialUser).length > 0) {
+      setUser(initialUser);
+      setLoading(false);
+    }
+
+    const fetchUserProfile = async () => {
+      try {
+        const response = await fetch('/api/auth/me', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const normalizedUser = normalizeUser(data.user);
+          if (normalizedUser && isMounted) {
+            setUser((prev) => ({ ...(prev || {}), ...normalizedUser }));
+            localStorage.setItem('user', JSON.stringify(normalizedUser));
+            setLoading(false);
+          }
+        } else if (response.status === 401) {
+          if (isMounted) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            router.push('/login');
+          }
+        } else {
+          const errorPayload = await response.json().catch(() => ({}));
+          console.error('Failed to fetch user profile:', errorPayload.error || response.statusText);
+          if (isMounted && !initialUser) {
+            setLoading(false);
+          }
+        }
+      } catch (error) {
+        console.error('Dashboard layout user fetch error:', error);
+        if (isMounted && !initialUser) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchUserProfile();
+
+    return () => {
+      isMounted = false;
+    };
   }, [router]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    
-    // Clear cookie
     document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-    
     router.push('/login');
   };
 
@@ -101,19 +171,15 @@ export default function DashboardLayout({ children }) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Main Navigation */}
       <Navbar />
 
-      {/* Dashboard Sub Navigation */}
       <nav className="bg-white border-b border-gray-200 sticky top-16 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-14">
-            {/* Dashboard Title */}
             <div className="flex items-center">
               <h2 className="text-lg font-semibold text-gray-900">Dashboard</h2>
             </div>
 
-            {/* Desktop Sub Navigation */}
             <div className="hidden md:flex md:items-center md:space-x-1">
               {navigationItems.map((item) => {
                 const Icon = item.icon;
@@ -135,7 +201,6 @@ export default function DashboardLayout({ children }) {
               })}
             </div>
 
-            {/* Mobile Sub Menu Button */}
             <button
               onClick={() => setMobileSubMenuOpen(!mobileSubMenuOpen)}
               className="md:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100"
@@ -145,7 +210,6 @@ export default function DashboardLayout({ children }) {
           </div>
         </div>
 
-        {/* Mobile Sub Navigation Menu */}
         {mobileSubMenuOpen && (
           <div className="md:hidden bg-white border-t border-gray-200">
             <div className="px-2 pt-2 pb-3 space-y-1">
@@ -176,7 +240,6 @@ export default function DashboardLayout({ children }) {
         )}
       </nav>
 
-      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {children}
       </main>

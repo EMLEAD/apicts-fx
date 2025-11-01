@@ -66,16 +66,100 @@ export async function GET(request) {
       where: { status: 'published' }
     });
 
-    // Mock user growth data
-    const userGrowth = await User.findAll({
-      attributes: [
-        [User.sequelize.fn('DATE', User.sequelize.col('createdAt')), 'date'],
-        [User.sequelize.fn('COUNT', User.sequelize.col('id')), 'count']
-      ],
-      group: [User.sequelize.fn('DATE', User.sequelize.col('createdAt'))],
-      order: [[User.sequelize.fn('DATE', User.sequelize.col('createdAt')), 'ASC']],
-      limit: 30
+    const months = Array.from({ length: 6 }, (_, idx) => {
+      const date = new Date();
+      date.setMonth(date.getMonth() - (5 - idx), 1);
+      date.setHours(0, 0, 0, 0);
+      const label = date.toLocaleString('default', { month: 'short' });
+      const start = new Date(date);
+      const end = new Date(date);
+      end.setMonth(end.getMonth() + 1);
+      return { label, start, end };
     });
+
+    const userGrowthCounts = await Promise.all(
+      months.map(({ start, end }) =>
+        User.count({
+          where: {
+            createdAt: {
+              [Op.gte]: start,
+              [Op.lt]: end
+            }
+          }
+        })
+      )
+    );
+
+    const userGrowth = months.map((bucket, index) => ({
+      month: bucket.label,
+      users: userGrowthCounts[index] || 0
+    }));
+
+    const revenueSums = await Promise.all(
+      months.map(({ start, end }) =>
+        Transaction.sum('amount', {
+          where: {
+            status: 'completed',
+            createdAt: {
+              [Op.gte]: start,
+              [Op.lt]: end
+            }
+          }
+        })
+      )
+    );
+
+    const revenueByMonth = months.map((bucket, index) => ({
+      month: bucket.label,
+      revenue: revenueSums[index] || 0
+    }));
+
+    const days = Array.from({ length: 7 }, (_, idx) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (6 - idx));
+      date.setHours(0, 0, 0, 0);
+      const label = date.toLocaleDateString('default', { weekday: 'short' });
+      const start = new Date(date);
+      const end = new Date(date);
+      end.setDate(end.getDate() + 1);
+      return { label, start, end };
+    });
+
+    const dailyTransactionCounts = await Promise.all(
+      days.map(({ start, end }) =>
+        Transaction.count({
+          where: {
+            createdAt: {
+              [Op.gte]: start,
+              [Op.lt]: end
+            }
+          }
+        })
+      )
+    );
+
+    const transactionsByDay = days.map((bucket, index) => ({
+      day: bucket.label,
+      transactions: dailyTransactionCounts[index] || 0
+    }));
+
+    const statusDefinitions = [
+      { name: 'Completed', status: 'completed', color: '#22c55e' },
+      { name: 'Pending', status: 'pending', color: '#eab308' },
+      { name: 'Failed', status: 'failed', color: '#ef4444' }
+    ];
+
+    const statusCounts = await Promise.all(
+      statusDefinitions.map((statusDef) =>
+        Transaction.count({ where: { status: statusDef.status } })
+      )
+    );
+
+    const transactionStatus = statusDefinitions.map((definition, index) => ({
+      name: definition.name,
+      value: statusCounts[index] || 0,
+      color: definition.color
+    }));
 
     return NextResponse.json({
       totalUsers,
@@ -86,9 +170,11 @@ export async function GET(request) {
       monthlyRevenue,
       blogViews,
       vlogViews,
-      topPages: topPages.map(p => ({ path: `/blog/${p.slug}`, views: p.views })),
-      userGrowth: userGrowth,
-      transactions: [] // Mock transaction data
+      topPages: topPages.map((p) => ({ path: `/blog/${p.slug}`, views: p.views || 0 })),
+      userGrowth,
+      transactions: transactionsByDay,
+      revenueByMonth,
+      transactionStatus
     }, { status: 200 });
   } catch (error) {
     console.error('Error fetching analytics:', error);
