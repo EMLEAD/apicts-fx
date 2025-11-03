@@ -19,8 +19,13 @@ import {
   X,
   CheckCircle,
   Clock,
-  AlertCircle
+  AlertCircle,
+  ClipboardList,
+  BadgePercent,
+  ArrowUpRight
 } from 'lucide-react';
+
+const ADMIN_ROLES = ['super_admin', 'admin', 'manager', 'support'];
 
 export default function AdminLayout({ children }) {
   const router = useRouter();
@@ -35,7 +40,7 @@ export default function AdminLayout({ children }) {
       setUser(userObj);
       
       // Check if user is admin
-      if (userObj.role !== 'admin') {
+      if (!ADMIN_ROLES.includes(userObj.role)) {
         router.push('/admin-login');
       }
     } else {
@@ -52,6 +57,9 @@ export default function AdminLayout({ children }) {
     { name: 'Vlog Posts', href: '/admin/vlog', icon: Video },
     { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
     { name: 'Security', href: '/admin/security', icon: Shield },
+    { name: 'Plans', href: '/admin/plans', icon: ClipboardList },
+    { name: 'Coupons', href: '/admin/coupons', icon: BadgePercent },
+    { name: 'Transfers', href: '/admin/transfers', icon: ArrowUpRight },
   ];
 
   const handleLogout = () => {

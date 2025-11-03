@@ -1,5 +1,10 @@
 const { DataTypes } = require('sequelize');
 const bcrypt = require('bcryptjs');
+const { randomBytes } = require('crypto');
+
+const generateReferralCode = () => {
+  return randomBytes(4).toString('hex').toUpperCase();
+};
 
 module.exports = (sequelize) => {
   const User = sequelize.define('User', {
@@ -33,7 +38,7 @@ module.exports = (sequelize) => {
       }
     },
     role: {
-      type: DataTypes.ENUM('user', 'admin', 'moderator'),
+      type: DataTypes.ENUM('super_admin', 'admin', 'manager', 'support', 'user'),
       defaultValue: 'user'
     },
     isActive: {
@@ -62,6 +67,19 @@ module.exports = (sequelize) => {
       type: DataTypes.STRING,
       defaultValue: 'NGN',
       allowNull: false
+    },
+    referralCode: {
+      type: DataTypes.STRING(16),
+      allowNull: true,
+      unique: true
+    },
+    referredBy: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      references: {
+        model: 'users',
+        key: 'id'
+      }
     }
   }, {
     timestamps: true,
@@ -72,11 +90,34 @@ module.exports = (sequelize) => {
           const salt = await bcrypt.genSalt(10);
           user.password = await bcrypt.hash(user.password, salt);
         }
+
+        if (!user.referralCode) {
+          let codeGenerated = false;
+          let attempts = 0;
+
+          while (!codeGenerated && attempts < 5) {
+            const code = generateReferralCode();
+            const existing = await sequelize.models.User.findOne({ where: { referralCode: code } });
+            if (!existing) {
+              user.referralCode = code;
+              codeGenerated = true;
+            }
+            attempts += 1;
+          }
+
+          if (!codeGenerated) {
+            user.referralCode = `${user.username}-${Date.now()}`.toUpperCase();
+          }
+        }
       },
       beforeUpdate: async (user) => {
         if (user.changed('password')) {
           const salt = await bcrypt.genSalt(10);
           user.password = await bcrypt.hash(user.password, salt);
+        }
+
+        if (user.changed('referralCode') && user.referralCode) {
+          user.referralCode = user.referralCode.trim().toUpperCase();
         }
       }
     }

@@ -149,6 +149,21 @@ class EmailService {
     
     return results;
   }
+
+  async sendAdminInviteEmail(userEmail, userName, tempPassword, inviterName, assignedRole) {
+    return this.sendEmail({
+      to: userEmail,
+      subject: 'You have been granted access to APICTS Admin',
+      template: 'admin-invite',
+      data: {
+        userName,
+        userEmail,
+        tempPassword,
+        inviterName,
+        assignedRole
+      }
+    });
+  }
 }
 
 module.exports = new EmailService();

@@ -1,27 +1,6 @@
 import { NextResponse } from 'next/server';
 import { VlogPost, User } from '@/lib/db/models';
-import jwt from 'jsonwebtoken';
-
-async function authenticateAdmin(request) {
-  try {
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return { authenticated: false, error: 'No token provided' };
-    }
-
-    const token = authHeader.substring(7);
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
-    const user = await User.findByPk(decoded.userId);
-    if (!user || user.role !== 'admin') {
-      return { authenticated: false, error: 'Unauthorized' };
-    }
-
-    return { authenticated: true, user, userId: decoded.userId };
-  } catch (error) {
-    return { authenticated: false, error: error.message };
-  }
-}
+import { authenticateAdmin } from '@/lib/middleware/adminAuth';
 
 export async function GET(request) {
   try {
@@ -48,7 +27,7 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const auth = await authenticateAdmin(request);
+    const auth = await authenticateAdmin(request, { allowRoles: ['super_admin', 'admin', 'manager'] });
     if (!auth.authenticated) {
       return NextResponse.json({ error: auth.error }, { status: 401 });
     }
@@ -56,7 +35,7 @@ export async function POST(request) {
     const body = await request.json();
     const post = await VlogPost.create({
       ...body,
-      authorId: auth.userId
+      authorId: auth.user.id
     });
 
     return NextResponse.json({ post }, { status: 201 });

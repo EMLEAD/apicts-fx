@@ -16,7 +16,7 @@ module.exports = (sequelize) => {
       }
     },
     type: {
-      type: DataTypes.ENUM('deposit', 'withdrawal', 'exchange', 'transfer'),
+      type: DataTypes.ENUM('deposit', 'withdrawal', 'exchange', 'transfer', 'referral'),
       allowNull: false
     },
     status: {

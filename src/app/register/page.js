@@ -2,26 +2,37 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Mail, Lock, User, CheckCircle } from "lucide-react";
 import { signInWithGoogle } from '@/lib/firebase/auth';
 import Navbar from '@/Components/NavBar';
 import Footer from '@/Components/Footer';
 
-export default function SignupPage() {
+function SignupPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialReferralCode = searchParams?.get('ref') || searchParams?.get('referral') || '';
   const [formData, setFormData] = useState({
     username: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    referralCode: initialReferralCode
   });
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [success, setSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  useEffect(() => {
+    if (!initialReferralCode) return;
+    setFormData(prev => ({
+      ...prev,
+      referralCode: initialReferralCode
+    }));
+  }, [initialReferralCode]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -386,6 +397,22 @@ export default function SignupPage() {
                     )}
                   </div>
 
+                  {/* Referral Code */}
+                  <div>
+                    <label className="block text-gray-700 mb-2 font-medium" htmlFor="referralCode">
+                      Referral Code <span className="text-xs text-gray-400">(optional)</span>
+                    </label>
+                    <input
+                      id="referralCode"
+                      name="referralCode"
+                      type="text"
+                      value={formData.referralCode || ''}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 uppercase"
+                      placeholder="e.g. ABC123"
+                    />
+                  </div>
+
                   {/* Terms */}
                   <div className="flex items-start gap-3">
                     <input 
@@ -434,5 +461,13 @@ export default function SignupPage() {
       
       <Footer />
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">Loading...</div>}>
+      <SignupPageContent />
+    </Suspense>
   );
 }
