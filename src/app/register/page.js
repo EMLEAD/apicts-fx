@@ -280,7 +280,7 @@ function SignupPageContent() {
 
                   {/* Username */}
                   <div>
-                    <label className="block text-gray-700 mb-2 font-medium" htmlFor="username">
+                    <label className="block text-black mb-2 font-medium" htmlFor="username">
                       Username
                     </label>
                     <div className="relative">
@@ -306,7 +306,7 @@ function SignupPageContent() {
 
                   {/* Email */}
                   <div>
-                    <label className="block text-gray-700 mb-2 font-medium" htmlFor="email">
+                    <label className="block text-black mb-2 font-medium" htmlFor="email">
                       Email Address
                     </label>
                     <div className="relative">
@@ -333,7 +333,7 @@ function SignupPageContent() {
 
                   {/* Password */}
                   <div>
-                    <label className="block text-gray-700 mb-2 font-medium" htmlFor="password">
+                    <label className="block text-black mb-2 font-medium" htmlFor="password">
                       Password
                     </label>
                     <div className="relative">
@@ -366,7 +366,7 @@ function SignupPageContent() {
 
                   {/* Confirm Password */}
                   <div>
-                    <label className="block text-gray-700 mb-2 font-medium" htmlFor="confirmPassword">
+                    <label className="block text-black mb-2 font-medium" htmlFor="confirmPassword">
                       Confirm Password
                     </label>
                     <div className="relative">
@@ -399,7 +399,7 @@ function SignupPageContent() {
 
                   {/* Referral Code */}
                   <div>
-                    <label className="block text-gray-700 mb-2 font-medium" htmlFor="referralCode">
+                    <label className="block text-black mb-2 font-medium" htmlFor="referralCode">
                       Referral Code <span className="text-xs text-gray-400">(optional)</span>
                     </label>
                     <input

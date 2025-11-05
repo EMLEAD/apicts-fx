@@ -219,7 +219,7 @@ export default function LoginPage() {
 
                   {/* Email */}
                   <div>
-                    <label className="block text-gray-700 mb-2 font-medium" htmlFor="email">
+                    <label className="block text-black mb-2 font-medium" htmlFor="email">
                       Email Address
                     </label>
                     <div className="relative">
@@ -245,7 +245,7 @@ export default function LoginPage() {
 
                   {/* Password */}
                   <div>
-                    <label className="block text-gray-700 mb-2 font-medium" htmlFor="password">
+                    <label className="block text-black mb-2 font-medium" htmlFor="password">
                       Password
                     </label>
                     <div className="relative">
