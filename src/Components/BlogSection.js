@@ -1,46 +1,88 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Calendar, User, ArrowRight, Clock } from "lucide-react";
+import { Calendar, User, ArrowRight, Clock, Loader2 } from "lucide-react";
+
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { 
+    month: 'short', 
+    day: 'numeric', 
+    year: 'numeric' 
+  });
+};
+
+const calculateReadTime = (content) => {
+  if (!content) return '3 min read';
+  const wordsPerMinute = 200;
+  const words = content.split(/\s+/).length;
+  const minutes = Math.ceil(words / wordsPerMinute);
+  return `${minutes} min read`;
+};
+
+const getCategoryColor = (tags) => {
+  if (!tags || !Array.isArray(tags) || tags.length === 0) {
+    return 'bg-blue-500';
+  }
+  const category = tags[0].toLowerCase();
+  if (category.includes('education') || category.includes('tutorial')) {
+    return 'bg-blue-500';
+  }
+  if (category.includes('crypto') || category.includes('bitcoin')) {
+    return 'bg-green-500';
+  }
+  if (category.includes('security') || category.includes('verification')) {
+    return 'bg-rose-500';
+  }
+  return 'bg-blue-500';
+};
 
 export default function BlogSection() {
-  const blogPosts = [
-    {
-      id: 1,
-      title: "Understanding CFDs Trading: A Beginner's Guide",
-      excerpt: "Learn the fundamentals of CFDs analysis(Fundamentals and Technicals), how prices are determined, and tips to be a profitable trader at APICTS-FX ACADEMY.",
-      image: "/images/stock-exchange-trading-forex-finance-graphic-concept.jpg",
-      category: "Education",
-      author: "APICTS Team",
-      date: "Jan 15, 2025",
-      readTime: "5 min read",
-      categoryColor: "bg-blue-500"
-    },
-    {
-      id: 2,
-      title: "Cryptocurrency Trading in Nigeria: What You Need to Know",
-      excerpt: "Explore the latest regulations, best practices, and opportunities in the Nigerian cryptocurrency market.",
-      image: "/images/bitcoin-crypto-currency-diagram.jpg",
-      category: "Cryptocurrency",
-      author: "John Okafor",
-      date: "Jan 12, 2025",
-      readTime: "7 min read",
-      categoryColor: "bg-green-500"
-    },
-    {
-      id: 3,
-      title: "NIN Verification: Securing Your Financial Transactions",
-      excerpt: "Why identity verification matters and how NIN integration is making online exchanges safer for everyone.",
-      image: "/images/nimc.png",
-      category: "Security",
-      author: "Sarah Adeyemi",
-      date: "Jan 10, 2025",
-      readTime: "4 min read",
-      categoryColor: "bg-rose-500"
-    },
-    
-  ];
+  const [blogPosts, setBlogPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchBlogPosts();
+  }, []);
+
+  const fetchBlogPosts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await fetch('/api/blog/posts?limit=3&offset=0');
+      const data = await res.json();
+      
+      if (res.ok && data.posts) {
+        // Map API response to component format
+        const formattedPosts = data.posts.map((post) => ({
+          id: post.id,
+          title: post.title,
+          excerpt: post.excerpt || post.content?.substring(0, 150) + '...' || 'No excerpt available',
+          image: post.featuredImage || '/images/stock-exchange-trading-forex-finance-graphic-concept.jpg',
+          category: post.tags && post.tags.length > 0 ? post.tags[0] : 'General',
+          author: post.author?.username || 'APICTS Team',
+          date: formatDate(post.createdAt),
+          readTime: calculateReadTime(post.content),
+          categoryColor: getCategoryColor(post.tags),
+          slug: post.slug
+        }));
+        setBlogPosts(formattedPosts);
+      } else {
+        throw new Error(data.error || 'Failed to fetch blog posts');
+      }
+    } catch (err) {
+      console.error('Error fetching blog posts:', err);
+      setError(err.message);
+      // Set empty array on error to prevent breaking the UI
+      setBlogPosts([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
@@ -60,8 +102,25 @@ export default function BlogSection() {
         </div>
 
         {/* Blog Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {blogPosts.map((post) => (
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="flex flex-col items-center">
+              <Loader2 className="h-8 w-8 animate-spin text-red-600 mb-4" />
+              <p className="text-gray-600">Loading blog posts...</p>
+            </div>
+          </div>
+        ) : error ? (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+            <p className="text-red-700">{error}</p>
+            <p className="text-sm text-red-600 mt-2">Please try again later.</p>
+          </div>
+        ) : blogPosts.length === 0 ? (
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-12 text-center">
+            <p className="text-gray-600">No blog posts available at the moment.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {blogPosts.map((post) => (
             <article 
               key={post.id}
               className="group bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-2"
@@ -115,7 +174,7 @@ export default function BlogSection() {
                     <span className="text-sm text-gray-700 font-medium">{post.author}</span>
                   </div>
 
-                  <Link href={`/blog/${post.id}`}>
+                  <Link href={`/blog/${post.slug || post.id}`}>
                     <button className="text-red-600 hover:text-green-600 font-semibold text-sm flex items-center gap-1 group/btn">
                       Read More
                       <ArrowRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
@@ -124,8 +183,9 @@ export default function BlogSection() {
                 </div>
               </div>
             </article>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {/* View All Button */}
         <div className="text-center mt-12">

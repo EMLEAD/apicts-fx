@@ -64,3 +64,5 @@ export async function POST(request) {
     return NextResponse.json({ error: error.message || 'Deposit initialization failed' }, { status: 500 });
   }
 }
+
+

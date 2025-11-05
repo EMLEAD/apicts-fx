@@ -60,6 +60,15 @@ module.exports = (sequelize) => {
     category: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    requiresSubscription: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: false
+    },
+    metadata: {
+      type: DataTypes.JSON,
+      allowNull: true
     }
   }, {
     timestamps: true,

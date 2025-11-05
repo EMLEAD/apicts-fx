@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { BlogLike } from '@/lib/db/models';
+import { BlogLike, BlogPost } from '@/lib/db/models';
 import jwt from 'jsonwebtoken';
 
 async function authenticateUser(request) {
@@ -18,6 +18,22 @@ async function authenticateUser(request) {
   }
 }
 
+async function resolvePostId(id) {
+  // Check if id is a UUID
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+  
+  if (isUUID) {
+    return id;
+  } else {
+    // Look up by slug
+    const post = await BlogPost.findOne({
+      where: { slug: id, status: 'published' },
+      attributes: ['id']
+    });
+    return post ? post.id : null;
+  }
+}
+
 export async function GET(request, { params }) {
   try {
     const auth = await authenticateUser(request);
@@ -27,16 +43,21 @@ export async function GET(request, { params }) {
     }
 
     const { id } = params;
+    const postId = await resolvePostId(id);
+    
+    if (!postId) {
+      return NextResponse.json({ liked: false, count: 0 }, { status: 200 });
+    }
 
     const like = await BlogLike.findOne({
       where: {
-        postId: id,
+        postId: postId,
         userId: auth.userId
       }
     });
 
     const likeCount = await BlogLike.count({
-      where: { postId: id }
+      where: { postId: postId }
     });
 
     return NextResponse.json({ 
