@@ -75,3 +75,5 @@ module.exports = (sequelize) => {
 
   return Coupon;
 };
+
+

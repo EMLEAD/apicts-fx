@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { authenticate } from '@/lib/middleware/auth';
 import { Transaction } from '@/lib/db/models';
+import { Op } from 'sequelize';
 
 export async function GET(request) {
   try {
@@ -14,15 +15,54 @@ export async function GET(request) {
     const offset = parseInt(searchParams.get('offset') || '0', 10);
     const type = searchParams.get('type');
     const status = searchParams.get('status');
+    const dateFilter = searchParams.get('dateFilter') || 'all';
+    const search = searchParams.get('search') || '';
 
+    // Always filter by authenticated user's ID - this is the most important security check
     const where = { userId: auth.user.id };
 
-    if (type) {
+    if (type && type !== 'all') {
       where.type = type;
     }
 
-    if (status) {
+    if (status && status !== 'all') {
       where.status = status;
+    }
+
+    // Date filtering
+    if (dateFilter !== 'all') {
+      const now = new Date();
+      let startDate;
+
+      switch (dateFilter) {
+        case 'today':
+          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          break;
+        case 'week':
+          startDate = new Date(now);
+          startDate.setDate(now.getDate() - 7);
+          break;
+        case 'month':
+          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+          break;
+        default:
+          startDate = null;
+      }
+
+      if (startDate) {
+        where.createdAt = {
+          [Op.gte]: startDate
+        };
+      }
+    }
+
+    // Search filtering (by description or id)
+    // userId is already in the where clause, so it will be ANDed with the search condition
+    if (search) {
+      where[Op.or] = [
+        { description: { [Op.like]: `%${search}%` } },
+        { id: { [Op.like]: `%${search}%` } }
+      ];
     }
 
     const transactions = await Transaction.findAndCountAll({
@@ -46,3 +86,5 @@ export async function GET(request) {
     return NextResponse.json({ error: error.message || 'Failed to fetch transactions' }, { status: 500 });
   }
 }
+
+

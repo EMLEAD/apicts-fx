@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Play, Search, Video } from 'lucide-react';
+import Image from 'next/image';
+import { Plus, Edit, Trash2, Play, Search, Video, Lock } from 'lucide-react';
 
 export default function VlogManagement() {
   const [posts, setPosts] = useState([]);
@@ -14,9 +15,11 @@ export default function VlogManagement() {
     slug: '',
     description: '',
     videoUrl: '',
+    thumbnail: '',
     category: '',
     status: 'draft',
-    tags: []
+    tags: [],
+    requiresSubscription: false
   });
 
   useEffect(() => {
@@ -59,7 +62,7 @@ export default function VlogManagement() {
       const url = editingPost
         ? `/api/admin/vlog/${editingPost.id}`
         : '/api/admin/vlog';
-      const method = editingPost ? 'PATCH' : 'POST';
+      const method = editingPost ? 'PUT' : 'POST';
 
       await fetch(url, {
         method,
@@ -72,7 +75,7 @@ export default function VlogManagement() {
 
       setShowAddModal(false);
       setEditingPost(null);
-      setFormData({ title: '', slug: '', description: '', videoUrl: '', category: '', status: 'draft', tags: [] });
+      setFormData({ title: '', slug: '', description: '', videoUrl: '', thumbnail: '', category: '', status: 'draft', tags: [], requiresSubscription: false });
       fetchPosts();
     } catch (error) {
       console.error('Error saving post:', error);
@@ -86,9 +89,11 @@ export default function VlogManagement() {
       slug: post.slug,
       description: post.description || '',
       videoUrl: post.videoUrl,
+      thumbnail: post.thumbnail || '',
       category: post.category || '',
       status: post.status,
-      tags: post.tags || []
+      tags: post.tags || [],
+      requiresSubscription: post.requiresSubscription || false
     });
     setShowAddModal(true);
   };
@@ -119,7 +124,7 @@ export default function VlogManagement() {
         <button
           onClick={() => {
             setEditingPost(null);
-            setFormData({ title: '', slug: '', description: '', videoUrl: '', category: '', status: 'draft', tags: [] });
+            setFormData({ title: '', slug: '', description: '', videoUrl: '', thumbnail: '', category: '', status: 'draft', tags: [], requiresSubscription: false });
             setShowAddModal(true);
           }}
           className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2"
@@ -149,7 +154,13 @@ export default function VlogManagement() {
           <div key={post.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
             <div className="relative">
               {post.thumbnail ? (
-                <img src={post.thumbnail} alt={post.title} className="w-full h-48 object-cover" />
+                <Image
+                  src={post.thumbnail}
+                  alt={post.title}
+                  width={400}
+                  height={192}
+                  className="w-full h-48 object-cover"
+                />
               ) : (
                 <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
                   <Video className="h-12 w-12 text-gray-400" />
@@ -161,13 +172,21 @@ export default function VlogManagement() {
             </div>
             <div className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  post.status === 'published' ? 'bg-green-100 text-green-700' :
-                  post.status === 'draft' ? 'bg-gray-100 text-gray-700' :
-                  'bg-yellow-100 text-yellow-700'
-                }`}>
-                  {post.status}
-                </span>
+                <div className="flex items-center space-x-2">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    post.status === 'published' ? 'bg-green-100 text-green-700' :
+                    post.status === 'draft' ? 'bg-gray-100 text-gray-700' :
+                    'bg-yellow-100 text-yellow-700'
+                  }`}>
+                    {post.status}
+                  </span>
+                  {post.requiresSubscription && (
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700 flex items-center space-x-1">
+                      <Lock className="h-3 w-3" />
+                      <span>Premium</span>
+                    </span>
+                  )}
+                </div>
                 <span className="text-sm text-gray-500">{post.views || 0} views</span>
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">{post.title}</h3>
@@ -239,6 +258,16 @@ export default function VlogManagement() {
                 />
               </div>
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Thumbnail URL (Optional)</label>
+                <input
+                  type="url"
+                  value={formData.thumbnail || ''}
+                  onChange={(e) => setFormData({ ...formData, thumbnail: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  placeholder="https://example.com/thumbnail.jpg"
+                />
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
                 <textarea
                   value={formData.description}
@@ -268,6 +297,22 @@ export default function VlogManagement() {
                   <option value="published">Published</option>
                   <option value="archived">Archived</option>
                 </select>
+              </div>
+              <div>
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.requiresSubscription || false}
+                    onChange={(e) => setFormData({ ...formData, requiresSubscription: e.target.checked })}
+                    className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700">
+                    Requires Subscription (Premium Content)
+                  </span>
+                </label>
+                <p className="text-xs text-gray-500 mt-1 ml-6">
+                  Check this box to make this video available only to users with active subscriptions
+                </p>
               </div>
               <div className="flex space-x-4">
                 <button

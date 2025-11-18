@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { BlogComment, User } from '@/lib/db/models';
+import { BlogComment, User, BlogPost } from '@/lib/db/models';
 import jwt from 'jsonwebtoken';
 
 async function authenticateUser(request) {
@@ -23,13 +23,34 @@ async function authenticateUser(request) {
   }
 }
 
+async function resolvePostId(id) {
+  // Check if id is a UUID
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+  
+  if (isUUID) {
+    return id;
+  } else {
+    // Look up by slug
+    const post = await BlogPost.findOne({
+      where: { slug: id, status: 'published' },
+      attributes: ['id']
+    });
+    return post ? post.id : null;
+  }
+}
+
 export async function GET(request, { params }) {
   try {
     const { id } = params;
+    const postId = await resolvePostId(id);
+    
+    if (!postId) {
+      return NextResponse.json({ error: 'Blog post not found' }, { status: 404 });
+    }
 
     const comments = await BlogComment.findAll({
       where: {
-        postId: id,
+        postId: postId,
         parentId: null, // Only top-level comments
         status: 'approved'
       },
@@ -76,6 +97,12 @@ export async function POST(request, { params }) {
     }
 
     const { id } = params;
+    const postId = await resolvePostId(id);
+    
+    if (!postId) {
+      return NextResponse.json({ error: 'Blog post not found' }, { status: 404 });
+    }
+    
     const body = await request.json();
     const { content, parentId } = body;
 
@@ -84,7 +111,7 @@ export async function POST(request, { params }) {
     }
 
     const comment = await BlogComment.create({
-      postId: id,
+      postId: postId,
       userId: auth.userId,
       content: content.trim(),
       parentId: parentId || null,

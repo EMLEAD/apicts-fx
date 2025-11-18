@@ -182,11 +182,11 @@ export default function BlogPostPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white ">
       <Navbar />
       
       {/* Back Button */}
-      <div className="container mx-auto px-6 pt-6">
+      <div className="container mx-auto mt-12 px-6 pt-8">
         <Link href="/blog">
           <button className="inline-flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors mb-4">
             <ArrowLeft size={20} />

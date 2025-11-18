@@ -18,6 +18,22 @@ async function authenticateUser(request) {
   }
 }
 
+async function resolvePostId(id) {
+  // Check if id is a UUID
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+  
+  if (isUUID) {
+    return id;
+  } else {
+    // Look up by slug
+    const post = await BlogPost.findOne({
+      where: { slug: id, status: 'published' },
+      attributes: ['id']
+    });
+    return post ? post.id : null;
+  }
+}
+
 export async function POST(request, { params }) {
   try {
     const auth = await authenticateUser(request);
@@ -26,11 +42,16 @@ export async function POST(request, { params }) {
     }
 
     const { id } = params;
+    const postId = await resolvePostId(id);
+    
+    if (!postId) {
+      return NextResponse.json({ error: 'Blog post not found' }, { status: 404 });
+    }
 
     // Check if user already liked this post
     const existingLike = await BlogLike.findOne({
       where: {
-        postId: id,
+        postId: postId,
         userId: auth.userId
       }
     });
@@ -40,13 +61,13 @@ export async function POST(request, { params }) {
     }
 
     await BlogLike.create({
-      postId: id,
+      postId: postId,
       userId: auth.userId
     });
 
     // Get updated like count
     const likeCount = await BlogLike.count({
-      where: { postId: id }
+      where: { postId: postId }
     });
 
     return NextResponse.json({ liked: true, count: likeCount }, { status: 201 });
@@ -67,10 +88,15 @@ export async function DELETE(request, { params }) {
     }
 
     const { id } = params;
+    const postId = await resolvePostId(id);
+    
+    if (!postId) {
+      return NextResponse.json({ error: 'Blog post not found' }, { status: 404 });
+    }
 
     const deleted = await BlogLike.destroy({
       where: {
-        postId: id,
+        postId: postId,
         userId: auth.userId
       }
     });
@@ -81,7 +107,7 @@ export async function DELETE(request, { params }) {
 
     // Get updated like count
     const likeCount = await BlogLike.count({
-      where: { postId: id }
+      where: { postId: postId }
     });
 
     return NextResponse.json({ liked: false, count: likeCount }, { status: 200 });

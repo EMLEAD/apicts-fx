@@ -17,10 +17,7 @@ import {
   CreditCard,
   Wallet,
   BarChart3,
-  ChevronRight,
-  ClipboardList,
-  BadgePercent,
-  ArrowUpRight
+  ChevronRight
 } from 'lucide-react';
 import Navbar from '@/Components/NavBar';
 
@@ -30,12 +27,6 @@ const dashboardNavigationItems = [
   { name: 'Subscription', href: '/dashboard/subscription', icon: CreditCard },
   { name: 'Wallet', href: '/dashboard/wallet', icon: Wallet },
   { name: 'Transactions', href: '/dashboard/transactions', icon: BarChart3 },
-];
-
-const adminNavigationItems = [
-  { name: 'Manage Plans', href: '/dashboard/admin/plans', icon: ClipboardList },
-  { name: 'Manage Coupons', href: '/dashboard/admin/coupons', icon: BadgePercent },
-  { name: 'Admin Transfers', href: '/dashboard/admin/transfers', icon: ArrowUpRight }
 ];
 
 const normalizeUser = (userData) => {
@@ -164,10 +155,9 @@ export default function DashboardLayout({ children }) {
     return null;
   }
 
-  const adminRoles = ['super_admin', 'admin', 'manager', 'support'];
-  const navigationItems = adminRoles.includes(user.role)
-    ? [...dashboardNavigationItems, ...adminNavigationItems]
-    : dashboardNavigationItems;
+  // All users (including admins) see the same dashboard navigation
+  // Admin-specific features are accessed through the admin panel
+  const navigationItems = dashboardNavigationItems;
 
   return (
     <div className="min-h-screen bg-gray-50">

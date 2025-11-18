@@ -51,3 +51,5 @@ module.exports = (sequelize) => {
 
   return UserPlan;
 };
+
+
