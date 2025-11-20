@@ -22,10 +22,11 @@ import {
   AlertCircle,
   ClipboardList,
   BadgePercent,
-  ArrowUpRight
+  ArrowUpRight,
+  Home
 } from 'lucide-react';
 
-const ADMIN_ROLES = ['super_admin', 'admin', 'manager', 'support'];
+const ADMIN_ROLES = ['super_admin', 'admin', 'moderator'];
 
 export default function AdminLayout({ children }) {
   const router = useRouter();
@@ -50,6 +51,7 @@ export default function AdminLayout({ children }) {
 
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+    { name: 'Hero Section', href: '/admin/hero', icon: Home },
     { name: 'User Management', href: '/admin/users', icon: Users },
     { name: 'Transactions', href: '/admin/transactions', icon: TrendingUp },
     { name: 'Exchange Rates', href: '/admin/rates', icon: DollarSign },

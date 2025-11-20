@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { Plan, UserPlan } from '@/lib/db/models';
+import { Plan, UserPlan, User } from '@/lib/db/models';
 import { authenticateAdmin } from '@/lib/middleware/adminAuth';
 
 const PLAN_STATUSES = ['draft', 'active', 'inactive'];

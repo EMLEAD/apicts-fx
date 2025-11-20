@@ -35,9 +35,13 @@ export async function POST(request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
+    // Get folder from query params or use default
+    const { searchParams } = new URL(request.url);
+    const folder = searchParams.get('folder') || 'apicts/images';
+
     // Upload to Cloudinary
     const result = await uploadToCloudinary(buffer, {
-      folder: 'apicts/images',
+      folder: folder,
       resource_type: 'image',
       transformation: [
         { quality: 'auto' },

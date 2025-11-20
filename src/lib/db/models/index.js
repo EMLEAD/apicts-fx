@@ -13,6 +13,7 @@ const CouponModel = require('./Coupon');
 const CouponRedemptionModel = require('./CouponRedemption');
 const ReferralModel = require('./Referral');
 const AffiliateApplicationModel = require('./AffiliateApplication');
+const HeroContentModel = require('./HeroContent');
 
 // Initialize models
 const User = UserModel(sequelize);
@@ -29,6 +30,7 @@ const Coupon = CouponModel(sequelize);
 const CouponRedemption = CouponRedemptionModel(sequelize);
 const Referral = ReferralModel(sequelize);
 const AffiliateApplication = AffiliateApplicationModel(sequelize);
+const HeroContent = HeroContentModel(sequelize);
 
 // Define associations
 User.hasMany(Contact, { foreignKey: 'userId', as: 'contacts' });
@@ -113,6 +115,7 @@ module.exports = {
   CouponRedemption,
   Referral,
   AffiliateApplication,
+  HeroContent,
   syncDatabase
 };
 
