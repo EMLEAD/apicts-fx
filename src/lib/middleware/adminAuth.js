@@ -1,7 +1,7 @@
 import { User } from '@/lib/db/models';
 import jwt from 'jsonwebtoken';
 
-export const ADMIN_ROLES = ['super_admin', 'admin', 'manager', 'support'];
+export const ADMIN_ROLES = ['super_admin', 'admin', 'moderator'];
 export const SUPER_ADMIN_ONLY = ['super_admin'];
 
 export async function authenticateAdmin(request, options = {}) {

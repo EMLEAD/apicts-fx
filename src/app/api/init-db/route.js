@@ -19,7 +19,7 @@ export async function GET(request) {
       {
         message: 'Database initialized successfully',
         status: 'connected',
-        tables: ['users', 'contacts', 'plans', 'user_plans', 'coupons', 'coupon_redemptions', 'referrals', 'affiliate_applications', 'transactions', 'exchange_rates']
+        tables: ['users', 'contacts', 'plans', 'user_plans', 'coupons', 'coupon_redemptions', 'referrals', 'affiliate_applications', 'transactions', 'exchange_rates', 'hero_content']
       },
       { status: 200 }
     );

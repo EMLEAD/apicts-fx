@@ -71,7 +71,7 @@ export default function UserManagement() {
   };
 
   const canManageRoles = currentAdminRole === 'super_admin';
-  const canInviteStaff = ['super_admin', 'admin'].includes(currentAdminRole);
+  const canInviteStaff = currentAdminRole === 'super_admin';
 
   const filterUsers = useCallback(() => {
     let filtered = users;

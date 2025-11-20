@@ -13,6 +13,7 @@
     "db:migrate": "node add-wallet-migration.js",
     "db:migrate:comments": "node add-blog-comments-likes-migration.js",
     "db:migrate:vlog": "node add-vlog-subscription-migration.js",
+    "db:seed:hero": "node seed-hero-content.js",
     "verify": "node verify-setup.js",
     "test:email": "node test-email.js",
     "email:test": "node test-email.js"

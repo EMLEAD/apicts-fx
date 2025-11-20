@@ -31,8 +31,9 @@ export default function AdminLoginPage() {
       const data = await res.json();
 
       if (data.success) {
-        // Check if user is admin
-        if (data.data.user.role === 'admin') {
+        // Check if user has admin privileges (super_admin, admin, or moderator)
+        const adminRoles = ['super_admin', 'admin', 'moderator','support'];
+        if (adminRoles.includes(data.data.user.role)) {
           // Store user data and token
           localStorage.setItem('user', JSON.stringify(data.data.user));
           localStorage.setItem('token', data.data.token);

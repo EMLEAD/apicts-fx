@@ -6,18 +6,95 @@ import { ArrowRight, TrendingUp, Shield, Zap } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export default function Hero() {
-  // carousel images + state
-  const images = [
-    "/images/software-pc-screen-used-analyzing-cryptocurrency-investment-purchases.jpg",
-    "/images/chart.jpg",
-    "/images/deriv.jpg",
-  ];
+  const [heroData, setHeroData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [current, setCurrent] = useState(0);
 
   useEffect(() => {
-    const id = setInterval(() => setCurrent((c) => (c + 1) % images.length), 4500);
-    return () => clearInterval(id);
-  }, [images.length]);
+    fetchHeroData();
+  }, []);
+
+  const fetchHeroData = async () => {
+    try {
+      const res = await fetch('/api/hero');
+      const data = await res.json();
+      if (data.success && data.hero) {
+        setHeroData(data.hero);
+      }
+    } catch (error) {
+      console.error('Error fetching hero data:', error);
+      // Use default values on error
+      setHeroData({
+        badge: '🇳🇬 CAC Registered • Leading Exchange Provider',
+        title: 'Global Currency Exchange',
+        titleHighlight: 'Made Simple',
+        description: 'Trade fiat currencies, e-currencies, and cryptocurrencies with confidence. Secure, fast, and reliable exchange services powered by advanced technology.',
+        ctaPrimaryText: 'Get Started Now',
+        ctaPrimaryLink: '/register',
+        ctaSecondaryText: 'View Live Rates',
+        ctaSecondaryLink: '/rates',
+        rating: '4.9/5 Rating',
+        customerCount: '10,000+',
+        customerLabel: 'Happy Customers',
+        carouselImages: [
+          '/images/software-pc-screen-used-analyzing-cryptocurrency-investment-purchases.jpg',
+          '/images/chart.jpg',
+          '/images/deriv.jpg'
+        ]
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (heroData?.carouselImages?.length > 0) {
+      const id = setInterval(() => setCurrent((c) => (c + 1) % heroData.carouselImages.length), 4500);
+      return () => clearInterval(id);
+    }
+  }, [heroData?.carouselImages?.length]);
+
+  // Skeleton loader component
+  const SkeletonLoader = () => (
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black/90 backdrop-blur-md pt-20">
+      <div className="container mx-auto px-6 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          {/* Left Content Skeleton */}
+          <div className="space-y-6">
+            <div className="h-8 w-64 bg-gray-700/50 rounded-full animate-pulse"></div>
+            <div className="space-y-3">
+              <div className="h-16 bg-gray-700/50 rounded-lg animate-pulse"></div>
+              <div className="h-16 bg-gray-700/50 rounded-lg animate-pulse w-3/4"></div>
+            </div>
+            <div className="h-24 bg-gray-700/50 rounded-lg animate-pulse"></div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-20 bg-gray-700/50 rounded-lg animate-pulse"></div>
+              ))}
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4 pt-6">
+              <div className="h-14 bg-gray-700/50 rounded-lg animate-pulse"></div>
+              <div className="h-14 bg-gray-700/50 rounded-lg animate-pulse"></div>
+            </div>
+            <div className="h-6 bg-gray-700/50 rounded-lg animate-pulse w-2/3"></div>
+          </div>
+
+          {/* Right Content Skeleton */}
+          <div className="relative">
+            <div className="relative mb-8 mt-8">
+              <div className="h-64 bg-gray-700/50 rounded-2xl animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+
+  if (loading || !heroData) {
+    return <SkeletonLoader />;
+  }
+
+  const images = heroData.carouselImages || [];
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black/90 backdrop-blur-md pt-20">
@@ -32,23 +109,26 @@ export default function Hero() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
           <div className="text-white space-y-6">
-            <div className="inline-block">
-              <span className="bg-red-600 text-white text-sm font-semibold px-4 py-2 rounded-full shadow-lg">
-                🇳🇬 CAC Registered • Leading Exchange Provider
-              </span>
-            </div>
+            {heroData.badge && (
+              <div className="inline-block">
+                <span className="bg-red-600 text-white text-sm font-semibold px-4 py-2 rounded-full shadow-lg">
+                  {heroData.badge}
+                </span>
+              </div>
+            )}
             
             <h1 className="text-5xl md:text-6xl font-bold leading-tight">
-              Global Currency Exchange
+              {heroData.title}
               <span className="block bg-gradient-to-r from-red-600 to-red-500 bg-clip-text text-transparent">
-                Made Simple
+                {heroData.titleHighlight}
               </span>
             </h1>
             
-            <p className="text-xl text-blue-100 leading-relaxed">
-              Trade fiat currencies, e-currencies, and cryptocurrencies with <span className="text-red-600 font-semibold">confidence</span>. 
-              <span className="text-red-600 font-semibold">Secure</span>, fast, and reliable exchange services powered by advanced technology.
-            </p>
+            {heroData.description && (
+              <p className="text-xl text-blue-100 leading-relaxed">
+                {heroData.description}
+              </p>
+            )}
 
             {/* Feature highlights */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
@@ -85,143 +165,99 @@ export default function Hero() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 pt-6">
-              <Link href="/register">
+              <Link href={heroData.ctaPrimaryLink || '/register'}>
                 <button className="group bg-gradient-to-r from-red-600 to-red-500 text-white px-8 py-4 rounded-lg font-semibold hover:from-red-700 hover:to-red-600 transition-all duration-300 shadow-xl hover:shadow-2xl hover:-translate-y-1 flex items-center justify-center gap-2">
-                  Get Started Now
+                  {heroData.ctaPrimaryText || 'Get Started Now'}
                   <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
                 </button>
               </Link>
               
-              <Link href="/rates">
+              <Link href={heroData.ctaSecondaryLink || '/rates'}>
                 <button className="border-2 border-red-300 text-red-600 px-8 py-4 rounded-lg font-semibold hover:bg-red-50 hover:border-red-400 transition-all duration-300 shadow-lg">
-                  View Live Rates
+                  {heroData.ctaSecondaryText || 'View Live Rates'}
                 </button>
               </Link>
             </div>
 
             {/* Trust indicators */}
-            <div className="flex items-center gap-6 pt-4 text-sm">
-              <div className="flex items-center gap-2">
-                <span className="text-yellow-400 text-2xl">★★★★★</span>
-                <span className="text-blue-200">4.9/5 Rating</span>
+            {(heroData.rating || heroData.customerCount) && (
+              <div className="flex items-center gap-6 pt-4 text-sm">
+                {heroData.rating && (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <span className="text-yellow-400 text-2xl">★★★★★</span>
+                      <span className="text-blue-200">{heroData.rating}</span>
+                    </div>
+                    {heroData.customerCount && <div className="h-6 w-px bg-white/30"></div>}
+                  </>
+                )}
+                {heroData.customerCount && (
+                  <div className="text-blue-200">
+                    <span className="font-bold text-white">{heroData.customerCount}</span> {heroData.customerLabel || 'Happy Customers'}
+                  </div>
+                )}
               </div>
-              <div className="h-6 w-px bg-white/30"></div>
-              <div className="text-blue-200">
-                <span className="font-bold text-white">10,000+</span> Happy Customers
-              </div>
-            </div>
+            )}
           </div>
 
           {/* Right Content - Image/Illustration */}
           <div className="relative">
             {/* Animated carousel (replaces single Image div) */}
-            <div className="relative mb-8 mt-8">
-              <div className="relative h-64 rounded-2xl overflow-hidden shadow-2xl">
-                {images.map((src, idx) => (
-                  <div
-                    key={src}
-                    className={`absolute inset-0 transition-opacity duration-1000 ease-in transform ${
-                      idx === current ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
-                    }`}
-                  >
-                    <Image src={src} alt={`hero-${idx}`} fill className="object-cover" />
-                  </div>
-                ))}
+            {images.length > 0 && (
+              <div className="relative mb-8 mt-8">
+                <div className="relative h-64 rounded-2xl overflow-hidden shadow-2xl">
+                  {images.map((src, idx) => (
+                    <div
+                      key={`${src}-${idx}`}
+                      className={`absolute inset-0 transition-opacity duration-1000 ease-in transform ${
+                        idx === current ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
+                      }`}
+                    >
+                      <Image src={src} alt={`hero-${idx}`} fill className="object-cover" />
+                    </div>
+                  ))}
 
                 {/* Prev / Next controls */}
-                <button
-                  type="button"
-                  aria-label="Previous slide"
-                  onClick={() => setCurrent((c) => (c === 0 ? images.length - 1 : c - 1))}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 p-2 rounded-full shadow-lg border border-gray-200"
-                >
-                  ‹
-                </button>
-                <button
-                  type="button"
-                  aria-label="Next slide"
-                  onClick={() => setCurrent((c) => (c === images.length - 1 ? 0 : c + 1))}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 p-2 rounded-full shadow-lg border border-gray-200"
-                >
-                  ›
-                </button>
-
-                {/* pagination dots */}
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
-                  {images.map((_, i) => (
+                {images.length > 1 && (
+                  <>
                     <button
-                      key={i}
-                      onClick={() => setCurrent(i)}
-                      aria-label={`Go to slide ${i + 1}`}
-                      className={`w-2.5 h-2.5 rounded-full transition-all ${
-                        i === current ? "bg-red-600 scale-110" : "bg-gray-400"
-                      }`}
                       type="button"
-                    />
-                  ))}
+                      aria-label="Previous slide"
+                      onClick={() => setCurrent((c) => (c === 0 ? images.length - 1 : c - 1))}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 p-2 rounded-full shadow-lg border border-gray-200"
+                    >
+                      ‹
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Next slide"
+                      onClick={() => setCurrent((c) => (c === images.length - 1 ? 0 : c + 1))}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 p-2 rounded-full shadow-lg border border-gray-200"
+                    >
+                      ›
+                    </button>
+                  </>
+                )}
+
+                  {/* pagination dots */}
+                  {images.length > 1 && (
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
+                      {images.map((_, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setCurrent(i)}
+                          aria-label={`Go to slide ${i + 1}`}
+                          className={`w-2.5 h-2.5 rounded-full transition-all ${
+                            i === current ? "bg-red-600 scale-110" : "bg-gray-400"
+                          }`}
+                          type="button"
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
-
-            <div className="relative bg-gradient-to-br from-white/95 to-white/85 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-gray-200">
-              {/* Exchange Card Mockup */}
-              <div className="bg-white rounded-xl p-6 shadow-xl">
-                <h3 className="text-gray-800 font-bold text-lg mb-4">Quick Exchange</h3>
-                
-                <div className="space-y-4">
-                  <div className="bg-blue-50 rounded-lg p-4">
-                    <label className="text-xs text-gray-600 mb-1 block">You Send</label>
-                    <div className="flex justify-between items-center">
-                      <input 
-                        type="text" 
-                        value="1,000" 
-                        className="bg-transparent text-2xl font-bold text-gray-800 outline-none w-full"
-                        readOnly
-                      />
-                      <span className="text-lg font-semibold text-blue-600">USD</span>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-center">
-                    <div className="bg-blue-600 p-2 rounded-full">
-                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-                      </svg>
-                    </div>
-                  </div>
-
-                  <div className="bg-green-50 rounded-lg p-4">
-                    <label className="text-xs text-gray-600 mb-1 block">You Receive</label>
-                    <div className="flex justify-between items-center">
-                      <input 
-                        type="text" 
-                        value="1,560,000" 
-                        className="bg-transparent text-2xl font-bold text-gray-800 outline-none w-full"
-                        readOnly
-                      />
-                      <span className="text-lg font-semibold text-green-600">NGN</span>
-                    </div>
-                  </div>
-
-                  <button className="w-full bg-gradient-to-r from-red-600 to-red-500 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-1500">
-                    Exchange Now
-                  </button>
-                </div>
-
-                <div className="mt-4 flex items-center justify-between text-xs text-gray-500">
-                  <span>Rate: 1 USD = 1,560 NGN</span>
-                  <span className="text-red-600 font-semibold">Live</span>
-                </div>
-              </div>
-
-              {/* Floating badges */}
-              <div className="absolute -top-4 -right-4 bg-red-600 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg animate-bounce">
-                ✓ Verified
-              </div>
-              <div className="absolute -bottom-4 -left-4 bg-red-600 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
-                24/7 Support
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

@@ -1,5 +1,5 @@
 const { testConnection, sequelize } = require('./sequelize');
-const { syncDatabase, Plan, UserPlan, Coupon, CouponRedemption, Referral, AffiliateApplication, User } = require('./models');
+const { syncDatabase, Plan, UserPlan, Coupon, CouponRedemption, Referral, AffiliateApplication, User, HeroContent } = require('./models');
 
 let isInitialized = false;
 
@@ -26,6 +26,9 @@ const ensureAdditionalTables = async () => {
     if (AffiliateApplication) {
       await AffiliateApplication.sync({ alter: true });
     }
+    if (HeroContent) {
+      await HeroContent.sync({ alter: true });
+    }
   } catch (syncError) {
     console.log('\x1b[33m%s\x1b[0m', '⚠️  Failed to ensure new tables with alter:true, attempting alter:false...');
     if (Plan) {
@@ -48,6 +51,9 @@ const ensureAdditionalTables = async () => {
     }
     if (AffiliateApplication) {
       await AffiliateApplication.sync({ alter: false });
+    }
+    if (HeroContent) {
+      await HeroContent.sync({ alter: false });
     }
   }
 };
@@ -96,7 +102,7 @@ const initializeDatabase = async () => {
     console.log('='.repeat(60));
     console.log('\x1b[32m%s\x1b[0m', '   ✅ MySQL connection established');
     console.log('\x1b[32m%s\x1b[0m', '   ✅ Tables synchronized');
-    console.log('\x1b[36m%s\x1b[0m', '   📊 Available models: User, Contact, Plan, UserPlan, Coupon, CouponRedemption, Referral, Transaction, ExchangeRate, BlogPost, VlogPost');
+    console.log('\x1b[36m%s\x1b[0m', '   📊 Available models: User, Contact, Plan, UserPlan, Coupon, CouponRedemption, Referral, Transaction, ExchangeRate, BlogPost, VlogPost, HeroContent');
     console.log('\x1b[36m%s\x1b[0m', '   🌐 API endpoints ready at /api/*');
     console.log('='.repeat(60) + '\n');
     
