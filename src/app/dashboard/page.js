@@ -409,7 +409,6 @@ export default function Dashboard() {
           <div>
             {showBalance ? (
               <p className="text-4xl font-bold">{formatCurrency(user.walletBalance || 0, currency)}</p>
-              <p className="text-4xl font-bold">₦500,450.00</p>
             ) : (
               <p className="text-4xl font-bold">••••••</p>
             )}
