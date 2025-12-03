@@ -355,7 +355,7 @@ export default function SubscriptionPage() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-8 ">
         <h1 className="text-3xl font-bold text-gray-900 pt-10">Subscription & Billing</h1>
         <p className="text-gray-600 mt-2">Manage your subscription plan and billing information.</p>
       </div>

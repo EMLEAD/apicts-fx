@@ -201,7 +201,7 @@ export default function BlogSection() {
         {/* place this where you want the plans to appear, e.g. below CTAs */}
 <div className="mt-10">
   <h2 className="text-black text-2xl font-semibold mb-4">Choose a Plan</h2>
-  <div className="bg-white/5 p-6 rounded-2xl">
+  <div className="bg-white/5 p-6 rounded-2xl border border-gray-200 shadow-sm">
     <PlansList/>
   </div>
 </div>

@@ -607,7 +607,7 @@ export default function WalletPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mt-10">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">My Wallet</h1>
           <p className="text-gray-600 mt-2">Manage deposits and withdrawals </p>

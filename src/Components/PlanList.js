@@ -65,7 +65,7 @@ export default function PlansList({ limit = 3 }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 ">
       {plans.map((plan) => (
-        <div key={plan.id} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+        <div key={plan.id} className="bg-white rounded-2xl p-6 shadow-sm border border-red-600">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-red-600">{plan.name}</h3>
             {plan.metadata?.popular && <span className="text-xs bg-red-600 text-white px-2 py-1 rounded">Popular</span>}
@@ -90,7 +90,7 @@ export default function PlansList({ limit = 3 }) {
           <div>
             <a
               href={`/dashboard/subscription?plan=${encodeURIComponent(plan.id)}`}
-              className="block text-center bg-black hover:bg-red-700 text-white px-4 py-2 rounded-md font-semibold"
+              className="block text-center bg-gray-100 hover:bg-red-700 text-black px-4 py-2 rounded-md font-semibold"
             >
               Choose
             </a>

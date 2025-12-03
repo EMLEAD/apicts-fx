@@ -1,4 +1,5 @@
-const PAYSTACK_BASE_URL = 'https://api.paystack.co';
+const 
+PAYSTACK_BASE_URL = "https://api.paystack.co";
 
 const getSecretKey = () => {
   const key = process.env.PAYSTACK_SECRET_KEY;
@@ -7,6 +8,16 @@ const getSecretKey = () => {
   }
   return key;
 };
+
+const getPublicKey = () => {
+  const key = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
+  if (!key) {
+    throw new Error('NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY is not configured');
+  }
+  return key;
+};
+
+export { PAYSTACK_BASE_URL, getSecretKey, getPublicKey };
 
 const paystackFetch = async (path, options = {}) => {
   const secretKey = getSecretKey();
