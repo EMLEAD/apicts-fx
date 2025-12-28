@@ -214,7 +214,7 @@ export default function VideosPage() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-8 mt-10">
         <h1 className="text-3xl font-bold text-gray-900">Educational Videos</h1>
         <p className="text-gray-600 mt-2">Learn trading strategies, market analysis, and stay updated with the latest trends.</p>
         {hasActiveSubscription ? (

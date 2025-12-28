@@ -130,12 +130,12 @@ export default function Navbar() {
         
         {/* Buttons */}
         <div className="hidden md:flex space-x-4 items-center">
-          <MessageCircle 
+          {/* <MessageCircle 
             size={38} 
             className={`cursor-pointer hover:scale-110 transition-all duration-300 ease-in-out ${
               isScrolled ? 'text-green-600 hover:text-green-300' : 'text-white hover:text-rose-600'
             }`}
-          />
+          /> */}
           
           {user ? (
             // User is authenticated - show user menu
