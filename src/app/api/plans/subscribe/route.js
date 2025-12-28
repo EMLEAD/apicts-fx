@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { authenticate } from '@/lib/middleware/auth';
 import { Plan, UserPlan, User, Transaction, Referral } from '@/lib/db/models';
 import emailService from '@/lib/email/service';
+import telegramService from '@/lib/telegram/service';
 
 export async function POST(request) {
   try {
@@ -143,6 +144,28 @@ export async function POST(request) {
         );
       } catch (error) {
         console.error('Failed to send referral email:', error.message);
+      }
+    }
+
+    // Add user to Telegram group if plan has one and user has Telegram linked
+    if (status === 'active' && plan.telegramGroupId && user.telegramUserId) {
+      try {
+        await telegramService.addUserToGroup(
+          plan.telegramGroupId,
+          parseInt(user.telegramUserId)
+        );
+        
+        // Send welcome message
+        await telegramService.sendWelcomeMessage(
+          parseInt(user.telegramUserId),
+          plan.name,
+          plan.telegramGroupInviteLink
+        );
+        
+        console.log(`✅ Added user ${user.username} to ${plan.name} Telegram group`);
+      } catch (error) {
+        console.error('❌ Error adding user to Telegram group:', error);
+        // Don't fail subscription if Telegram fails - just log it
       }
     }
 

@@ -57,9 +57,11 @@ export default function AdminLayout({ children }) {
     { name: 'Exchange Rates', href: '/admin/rates', icon: DollarSign },
     { name: 'Blog Posts', href: '/admin/blog', icon: FileText },
     { name: 'Vlog Posts', href: '/admin/vlog', icon: Video },
+    { name: 'Documents', href: '/admin/documents', icon: FileText },
     { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
     { name: 'Security', href: '/admin/security', icon: Shield },
     { name: 'Plans', href: '/admin/plans', icon: ClipboardList },
+    { name: 'Site Settings', href: '/admin/site-settings', icon: Settings },
     { name: 'Coupons', href: '/admin/coupons', icon: BadgePercent },
     { name: 'Transfers', href: '/admin/transfers', icon: ArrowUpRight },
   ];

@@ -1,10 +1,17 @@
 import { NextResponse } from 'next/server';
+import { authenticateAdmin } from '@/lib/middleware/adminAuth';
 const { uploadToCloudinary } = require('@/lib/cloudinary/upload');
 
 export async function POST(request) {
   try {
+    // Authenticate admin
+    const auth = await authenticateAdmin(request, { allowRoles: ['super_admin', 'admin', 'manager'] });
+    if (!auth.authenticated) {
+      return NextResponse.json({ error: auth.error }, { status: 401 });
+    }
+
     const formData = await request.formData();
-    const file = formData.get('document');
+    const file = formData.get('document') || formData.get('file');
     const documentType = formData.get('documentType') || 'general';
 
     if (!file) {

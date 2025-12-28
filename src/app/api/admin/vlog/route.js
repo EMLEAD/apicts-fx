@@ -33,9 +33,27 @@ export async function POST(request) {
     }
 
     const body = await request.json();
+    const { accessType, planIds, ...otherFields } = body;
+
+    // Validate accessType
+    const validAccessTypes = ['all', 'subscribers_only', 'specific_plans'];
+    const finalAccessType = validAccessTypes.includes(accessType) ? accessType : 'all';
+
+    // Handle planIds based on accessType
+    let finalPlanIds = [];
+    if (finalAccessType === 'specific_plans' && Array.isArray(planIds)) {
+      finalPlanIds = planIds;
+    }
+
+    // Set requiresSubscription based on accessType for backward compatibility
+    const requiresSubscription = finalAccessType !== 'all';
+
     const post = await VlogPost.create({
-      ...body,
-      authorId: auth.user.id
+      ...otherFields,
+      authorId: auth.user.id,
+      accessType: finalAccessType,
+      planIds: finalPlanIds,
+      requiresSubscription
     });
 
     return NextResponse.json({ post }, { status: 201 });

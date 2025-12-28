@@ -15,6 +15,7 @@ export async function GET(request) {
     let hasActiveSubscription = false;
     let userId = null;
     let userSubscription = null;
+    let userPlanId = null;
 
     try {
       const auth = await authenticate(request);
@@ -29,6 +30,7 @@ export async function GET(request) {
           order: [['startedAt', 'DESC']]
         });
         hasActiveSubscription = !!userSubscription;
+        userPlanId = userSubscription?.planId || null;
       }
     } catch (error) {
       // User is not authenticated, continue without subscription
@@ -57,8 +59,34 @@ export async function GET(request) {
       offset
     });
 
-    // Format videos and mark subscription-required ones
+    // Format videos and check access based on accessType and planIds
     const formattedVideos = videos.rows.map(video => {
+      const accessType = video.accessType || 'all';
+      const planIds = video.planIds || [];
+      
+      let canAccess = false;
+      let isLocked = false;
+
+      // Determine access based on accessType
+      if (accessType === 'all') {
+        // Everyone can access
+        canAccess = true;
+        isLocked = false;
+      } else if (accessType === 'subscribers_only') {
+        // Any active subscription grants access
+        canAccess = hasActiveSubscription;
+        isLocked = !hasActiveSubscription;
+      } else if (accessType === 'specific_plans') {
+        // Only specific plan subscribers can access
+        if (hasActiveSubscription && userPlanId && planIds.includes(userPlanId)) {
+          canAccess = true;
+          isLocked = false;
+        } else {
+          canAccess = false;
+          isLocked = true;
+        }
+      }
+
       const videoData = {
         id: video.id,
         title: video.title,
@@ -74,12 +102,14 @@ export async function GET(request) {
         createdAt: video.createdAt,
         updatedAt: video.updatedAt,
         requiresSubscription: video.requiresSubscription || false,
-        isLocked: video.requiresSubscription && !hasActiveSubscription,
-        canAccess: !video.requiresSubscription || hasActiveSubscription
+        accessType: accessType,
+        planIds: planIds,
+        isLocked: isLocked,
+        canAccess: canAccess
       };
 
       // Hide video URL if locked
-      if (videoData.isLocked) {
+      if (isLocked) {
         videoData.videoUrl = null;
       }
 

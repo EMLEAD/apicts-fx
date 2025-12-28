@@ -35,7 +35,29 @@ export async function PUT(request, { params }) {
     }
 
     const body = await request.json();
-    await post.update(body);
+    const { accessType, planIds, ...otherFields } = body;
+
+    // Validate accessType
+    const validAccessTypes = ['all', 'subscribers_only', 'specific_plans'];
+    const finalAccessType = validAccessTypes.includes(accessType) ? accessType : post.accessType || 'all';
+
+    // Handle planIds based on accessType
+    let finalPlanIds = post.planIds || [];
+    if (finalAccessType === 'specific_plans' && Array.isArray(planIds)) {
+      finalPlanIds = planIds;
+    } else if (finalAccessType !== 'specific_plans') {
+      finalPlanIds = [];
+    }
+
+    // Set requiresSubscription based on accessType for backward compatibility
+    const requiresSubscription = finalAccessType !== 'all';
+
+    await post.update({
+      ...otherFields,
+      accessType: finalAccessType,
+      planIds: finalPlanIds,
+      requiresSubscription
+    });
 
     return NextResponse.json({ post }, { status: 200 });
   } catch (error) {

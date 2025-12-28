@@ -14,6 +14,8 @@ const CouponRedemptionModel = require('./CouponRedemption');
 const ReferralModel = require('./Referral');
 const AffiliateApplicationModel = require('./AffiliateApplication');
 const HeroContentModel = require('./HeroContent');
+const SiteSettingsModel = require('./SiteSettings');
+const DocumentModel = require('./Document');
 
 // Initialize models
 const User = UserModel(sequelize);
@@ -31,6 +33,8 @@ const CouponRedemption = CouponRedemptionModel(sequelize);
 const Referral = ReferralModel(sequelize);
 const AffiliateApplication = AffiliateApplicationModel(sequelize);
 const HeroContent = HeroContentModel(sequelize);
+const SiteSettings = SiteSettingsModel(sequelize);
+const Document = DocumentModel(sequelize);
 
 // Define associations
 User.hasMany(Contact, { foreignKey: 'userId', as: 'contacts' });
@@ -88,6 +92,10 @@ Referral.belongsTo(Plan, { foreignKey: 'planId', as: 'plan' });
 User.hasMany(AffiliateApplication, { foreignKey: 'userId', as: 'affiliateApplications', onDelete: 'SET NULL' });
 AffiliateApplication.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
+// Documents associations
+User.hasMany(Document, { foreignKey: 'authorId', as: 'documents' });
+Document.belongsTo(User, { foreignKey: 'authorId', as: 'author' });
+
 // Sync database
 const syncDatabase = async (options = {}) => {
   try {
@@ -116,6 +124,8 @@ module.exports = {
   Referral,
   AffiliateApplication,
   HeroContent,
+  SiteSettings,
+  Document,
   syncDatabase
 };
 

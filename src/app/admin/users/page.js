@@ -711,17 +711,18 @@ useEffect(() => {
               </div>
 
               {/* Wallet Management */}
-              <div className="mt-6 pt-6 border-t border-gray-200">
-                <div className="flex items-center justify-between mb-4">
-                  <h4 className="text-lg font-semibold text-gray-900">Wallet Management</h4>
-                  <button
-                    onClick={() => setShowWalletForm(!showWalletForm)}
-                    className="px-4 py-2 bg-green-100 text-green-700 rounded-lg font-medium hover:bg-green-200 transition-colors flex items-center space-x-2"
-                  >
-                    <Wallet className="h-4 w-4" />
-                    <span>{showWalletForm ? 'Cancel' : 'Update Balance'}</span>
-                  </button>
-                </div>
+              {currentAdminRole === 'super_admin' && (
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-lg font-semibold text-gray-900">Wallet Management</h4>
+                    <button
+                      onClick={() => setShowWalletForm(!showWalletForm)}
+                      className="px-4 py-2 bg-green-100 text-green-700 rounded-lg font-medium hover:bg-green-200 transition-colors flex items-center space-x-2"
+                    >
+                      <Wallet className="h-4 w-4" />
+                      <span>{showWalletForm ? 'Cancel' : 'Update Balance'}</span>
+                    </button>
+                  </div>
 
                 {showWalletForm && (
                   <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
@@ -808,6 +809,7 @@ useEffect(() => {
                   </button>
                 </div>
               </div>
+              )}
             </div>
           </div>
         </div>

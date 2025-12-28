@@ -14,6 +14,11 @@ export default function Navbar() {
   const [user, setUser] = useState(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [isDashboard, setIsDashboard] = useState(false);
+  const [siteSettings, setSiteSettings] = useState({
+    logoUrl: '/images/apicts-logo.jpg',
+    logoWidth: 42,
+    logoHeight: 42
+  });
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -44,7 +49,28 @@ export default function Navbar() {
 
     // Check if we're in dashboard
     setIsDashboard(pathname.startsWith('/dashboard'));
+
+    // Fetch site settings
+    fetchSiteSettings();
   }, [pathname]);
+
+  const fetchSiteSettings = async () => {
+    try {
+      const response = await fetch('/api/site-settings');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.settings) {
+          setSiteSettings({
+            logoUrl: data.settings.logoUrl || '/images/apicts-logo.jpg',
+            logoWidth: data.settings.logoWidth || 42,
+            logoHeight: data.settings.logoHeight || 42
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching site settings:', error);
+    }
+  };
 
   // useEffect(() => {
   //   const handleScroll = () => {
@@ -64,10 +90,10 @@ export default function Navbar() {
         {/* Logo */}
         <Link href="/" className="group">
           <Image 
-            src="/images/apicts-logo.jpg" 
+            src={siteSettings.logoUrl} 
             alt="Logo" 
-            width={42} 
-            height={42} 
+            width={siteSettings.logoWidth} 
+            height={siteSettings.logoHeight} 
             className="h-10 w-10 rounded-full cursor-pointer border-2 border-white shadow-md hover:scale-110 hover:rotate-6 transition-all duration-500 ease-in-out group-hover:shadow-xl" 
           />
         </Link>

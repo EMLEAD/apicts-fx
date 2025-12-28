@@ -6,6 +6,21 @@ import { useState, useEffect } from "react";
 
 export default function Footer() {
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [siteSettings, setSiteSettings] = useState({
+    socialLinks: {
+      youtube: 'https://www.youtube.com/@apictsforex',
+      twitter: '',
+      linkedin: '',
+      instagram: '',
+      facebook: '',
+      telegram: ''
+    },
+    contactInfo: {
+      email: 'support@apicts.com',
+      phone: '+2348139399978',
+      address: 'Km 18, Topaz Plaza, New Road, Lekki Ajah, Lagos'
+    }
+  });
 
   useEffect(() => {
     const handleScroll = () => {
@@ -13,8 +28,40 @@ export default function Footer() {
     };
 
     window.addEventListener('scroll', handleScroll);
+    
+    // Fetch site settings
+    fetchSiteSettings();
+    
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const fetchSiteSettings = async () => {
+    try {
+      const response = await fetch('/api/site-settings');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.settings) {
+          setSiteSettings({
+            socialLinks: data.settings.socialLinks || {
+              youtube: 'https://www.youtube.com/@apictsforex',
+              twitter: '',
+              linkedin: '',
+              instagram: '',
+              facebook: '',
+              telegram: ''
+            },
+            contactInfo: data.settings.contactInfo || {
+              email: 'support@apicts.com',
+              phone: '+2348139399978',
+              address: 'Km 18, Topaz Plaza, New Road, Lekki Ajah, Lagos'
+            }
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching site settings:', error);
+    }
+  };
 
   const scrollToTop = () => {
     window.scrollTo({
@@ -110,17 +157,16 @@ export default function Footer() {
           <ul className="space-y-3 text-sm">
             <li className="flex items-start gap-2 group/link">
               <span className="font-semibold text-red-400 group-hover/link:text-green-400 transition-colors duration-300">Email:</span>
-              <span className="group-hover/link:text-green-400 transition-colors duration-300">support@apicts.com</span>
+              <span className="group-hover/link:text-green-400 transition-colors duration-300">{siteSettings.contactInfo.email}</span>
             </li>
             <li className="flex items-start gap-2 group/link">
               <span className="font-semibold text-red-400 group-hover/link:text-green-400 transition-colors duration-300">Phone:</span>
-              <span className="group-hover/link:text-green-400 transition-colors duration-300">+2348139399978</span>
+              <span className="group-hover/link:text-green-400 transition-colors duration-300">{siteSettings.contactInfo.phone}</span>
             </li>
             <li className="flex items-start gap-2 group/link">
               <span className="font-semibold text-red-400 group-hover/link:text-green-400 transition-colors duration-300">Address:</span>
               <span className="group-hover/link:text-green-400 transition-colors duration-300">
-                Km 18, Topaz Plaza, New Road,<br />
-                Lekki Ajah, Lagos
+                {siteSettings.contactInfo.address}
               </span>
             </li>
           </ul>
@@ -136,18 +182,26 @@ export default function Footer() {
           <span className="group-hover:text-green-400 transition-colors duration-300">Apicts © 2025. All rights reserved.</span>
         </p>
         <div className="flex space-x-6 mt-4 md:mt-0">
-          <a href="https://www.youtube.com/@apictsforex" className="text-white hover:text-red-400 transition-colors duration-300">
-            <Youtube size={24} />
-          </a>
-          <a href="#" className="text-white hover:text-green-400 transition-all duration-300 hover:scale-110 hover:-translate-y-1">
-            <Twitter size={24} />
-          </a>
-          <a href="#" className="text-white hover:text-green-400 transition-all duration-300 hover:scale-110 hover:-translate-y-1">
-            <Linkedin size={24} />
-          </a>
-          <a href="#" className="text-white hover:text-green-400 transition-all duration-300 hover:scale-110 hover:-translate-y-1">
-            <Instagram size={24} />
-          </a>
+          {siteSettings.socialLinks.youtube && (
+            <a href={siteSettings.socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="text-white hover:text-red-400 transition-colors duration-300">
+              <Youtube size={24} />
+            </a>
+          )}
+          {siteSettings.socialLinks.twitter && (
+            <a href={siteSettings.socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="text-white hover:text-green-400 transition-all duration-300 hover:scale-110 hover:-translate-y-1">
+              <Twitter size={24} />
+            </a>
+          )}
+          {siteSettings.socialLinks.linkedin && (
+            <a href={siteSettings.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="text-white hover:text-green-400 transition-all duration-300 hover:scale-110 hover:-translate-y-1">
+              <Linkedin size={24} />
+            </a>
+          )}
+          {siteSettings.socialLinks.instagram && (
+            <a href={siteSettings.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="text-white hover:text-green-400 transition-all duration-300 hover:scale-110 hover:-translate-y-1">
+              <Instagram size={24} />
+            </a>
+          )}
         </div>
       </div>
 
