@@ -80,6 +80,16 @@ module.exports = (sequelize) => {
         model: 'users',
         key: 'id'
       }
+    },
+    telegramUserId: {
+      type: DataTypes.BIGINT,
+      allowNull: true,
+      comment: 'Telegram user ID (numeric)'
+    },
+    telegramUsername: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      comment: 'Telegram username (@username)'
     }
   }, {
     timestamps: true,

@@ -10,6 +10,7 @@ export default function VlogManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
+  const [plans, setPlans] = useState([]);
   const [formData, setFormData] = useState({
     title: '',
     slug: '',
@@ -19,11 +20,14 @@ export default function VlogManagement() {
     category: '',
     status: 'draft',
     tags: [],
-    requiresSubscription: false
+    requiresSubscription: false,
+    accessType: 'all',
+    planIds: []
   });
 
   useEffect(() => {
     fetchPosts();
+    fetchPlans();
   }, []);
 
   useEffect(() => {
@@ -40,6 +44,19 @@ export default function VlogManagement() {
       setPosts(data.posts || []);
     } catch (error) {
       console.error('Error fetching posts:', error);
+    }
+  };
+
+  const fetchPlans = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/admin/plans', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setPlans(data.plans || []);
+    } catch (error) {
+      console.error('Error fetching plans:', error);
     }
   };
 
@@ -93,7 +110,9 @@ export default function VlogManagement() {
       category: post.category || '',
       status: post.status,
       tags: post.tags || [],
-      requiresSubscription: post.requiresSubscription || false
+      requiresSubscription: post.requiresSubscription || false,
+      accessType: post.accessType || 'all',
+      planIds: post.planIds || []
     });
     setShowAddModal(true);
   };
@@ -124,7 +143,7 @@ export default function VlogManagement() {
         <button
           onClick={() => {
             setEditingPost(null);
-            setFormData({ title: '', slug: '', description: '', videoUrl: '', thumbnail: '', category: '', status: 'draft', tags: [], requiresSubscription: false });
+            setFormData({ title: '', slug: '', description: '', videoUrl: '', thumbnail: '', category: '', status: 'draft', tags: [], requiresSubscription: false, accessType: 'all', planIds: [] });
             setShowAddModal(true);
           }}
           className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2"
@@ -299,21 +318,48 @@ export default function VlogManagement() {
                 </select>
               </div>
               <div>
-                <label className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.requiresSubscription || false}
-                    onChange={(e) => setFormData({ ...formData, requiresSubscription: e.target.checked })}
-                    className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
-                  />
-                  <span className="text-sm font-medium text-gray-700">
-                    Requires Subscription (Premium Content)
-                  </span>
-                </label>
-                <p className="text-xs text-gray-500 mt-1 ml-6">
-                  Check this box to make this video available only to users with active subscriptions
+                <label className="block text-sm font-medium text-gray-700 mb-2">Access Control</label>
+                <select
+                  value={formData.accessType}
+                  onChange={(e) => setFormData({ ...formData, accessType: e.target.value, planIds: e.target.value === 'specific_plans' ? formData.planIds : [] })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                >
+                  <option value="all">All Users (Free & Subscribed)</option>
+                  <option value="subscribers_only">All Subscribers (Any Active Plan)</option>
+                  <option value="specific_plans">Specific Plans Only</option>
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  {formData.accessType === 'all' && 'Everyone can watch this video'}
+                  {formData.accessType === 'subscribers_only' && 'Only users with any active subscription can watch'}
+                  {formData.accessType === 'specific_plans' && 'Only users subscribed to selected plans can watch'}
                 </p>
               </div>
+              {formData.accessType === 'specific_plans' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Select Plans</label>
+                  <div className="space-y-2 max-h-48 overflow-y-auto border border-gray-300 rounded-lg p-3">
+                    {plans.map((plan) => (
+                      <label key={plan.id} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <input
+                          type="checkbox"
+                          checked={formData.planIds.includes(plan.id)}
+                          onChange={(e) => {
+                            const newPlanIds = e.target.checked
+                              ? [...formData.planIds, plan.id]
+                              : formData.planIds.filter(id => id !== plan.id);
+                            setFormData({ ...formData, planIds: newPlanIds });
+                          }}
+                          className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                        />
+                        <span className="text-sm text-gray-700">{plan.name} - ${plan.price}/{plan.billingCycle}</span>
+                      </label>
+                    ))}
+                  </div>
+                  {formData.planIds.length === 0 && (
+                    <p className="text-xs text-red-500 mt-1">Please select at least one plan</p>
+                  )}
+                </div>
+              )}
               <div className="flex space-x-4">
                 <button
                   type="button"

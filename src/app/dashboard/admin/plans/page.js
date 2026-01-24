@@ -9,7 +9,9 @@ import {
   Users,
   Loader2,
   X,
-  ShieldCheck
+  ShieldCheck,
+  MessageCircle,
+  ExternalLink
 } from 'lucide-react';
 
 const statusOptions = [
@@ -63,6 +65,10 @@ export default function AdminPlansPage() {
   const [subscriptionPlan, setSubscriptionPlan] = useState(null);
   const [subscriptionsLoading, setSubscriptionsLoading] = useState(false);
   const [subscriptionsError, setSubscriptionsError] = useState(null);
+  const [creatingGroup, setCreatingGroup] = useState({});
+  const [telegramModalOpen, setTelegramModalOpen] = useState(false);
+  const [telegramFormData, setTelegramFormData] = useState({ groupId: '', groupName: '', inviteLink: '' });
+  const [selectedPlanForTelegram, setSelectedPlanForTelegram] = useState(null);
 
   const getAuthHeaders = useCallback(() => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
@@ -304,6 +310,76 @@ export default function AdminPlansPage() {
     setSubscriptionsError(null);
   };
 
+  const openTelegramModal = (plan) => {
+    setSelectedPlanForTelegram(plan);
+    setTelegramFormData({ groupId: '', groupName: '', inviteLink: '' });
+    setTelegramModalOpen(true);
+  };
+
+  const createTelegramGroup = async () => {
+    if (!selectedPlanForTelegram) return;
+    
+    const planId = selectedPlanForTelegram.id;
+    setCreatingGroup(prev => ({ ...prev, [planId]: true }));
+    setError(null);
+    try {
+      const headers = getAuthHeaders();
+      if (!headers) {
+        setError('Authentication required. Please log in again.');
+        return;
+      }
+
+      const res = await fetch(`/api/admin/plans/${planId}/telegram/create`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(telegramFormData)
+      });
+      
+      const data = await res.json();
+      if (res.ok) {
+        setError(null);
+        setTelegramModalOpen(false);
+        await fetchPlans();
+        alert(`✅ Telegram group linked successfully!\n\nGroup: ${data.group?.groupName || 'N/A'}\nYou can now view it by clicking "View Group"`);
+      } else {
+        setError(data.error || 'Failed to link Telegram group');
+        alert(`❌ Error: ${data.error || 'Failed to link Telegram group'}`);
+      }
+    } catch (error) {
+      console.error('Error linking Telegram group:', error);
+      setError(`Network error: ${error.message}`);
+      alert(`❌ Network Error: ${error.message}`);
+    } finally {
+      setCreatingGroup(prev => ({ ...prev, [planId]: false }));
+    }
+  };
+
+  const testTelegramConnection = async () => {
+    try {
+      const headers = getAuthHeaders();
+      if (!headers) {
+        alert('Authentication required');
+        return;
+      }
+
+      // Test Telegram bot configuration
+      const res = await fetch('/api/admin/telegram/test', {
+        method: 'GET',
+        headers
+      });
+
+      const data = await res.json();
+      
+      if (data.configured) {
+        alert(`✅ Telegram Bot Connected Successfully!\n\nBot Username: @${data.bot.username}\nBot ID: ${data.bot.id}\nBot Name: ${data.bot.firstName}\n\nYou can now create Telegram groups for your plans!`);
+      } else {
+        alert(`❌ Telegram Bot Not Configured\n\n${data.error}\n\n${data.details || ''}\n\nSteps to fix:\n1. Get bot token from @BotFather on Telegram\n2. Add TELEGRAM_BOT_TOKEN to .env.local\n3. Restart your server\n4. Test again`);
+      }
+    } catch (error) {
+      alert(`❌ Error: ${error.message}\n\nPlease check:\n1. Server is running\n2. API endpoint is accessible`);
+    }
+  };
+
   if (!userRoleChecked) {
     return (
       <div className="min-h-[400px] flex items-center justify-center">
@@ -319,16 +395,26 @@ export default function AdminPlansPage() {
           <h1 className="text-2xl font-bold text-gray-900">Manage Subscription Plans</h1>
           <p className="text-sm text-gray-600 mt-1 max-w-2xl">
             Create, update, and organize the plans your users can subscribe to. Use the subscribers view to
-            see who is currently enrolled in each plan.
+            see who is currently enrolled in each plan. Each plan can have its own Telegram group.
           </p>
         </div>
-        <button
-          onClick={openCreateForm}
-          className="inline-flex items-center justify-center rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-600 transition-colors"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Create Plan
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={testTelegramConnection}
+            className="inline-flex items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 shadow-sm hover:bg-blue-100 transition-colors"
+            title="Test server connection"
+          >
+            <MessageCircle className="h-4 w-4 mr-2" />
+            Test Connection
+          </button>
+          <button
+            onClick={openCreateForm}
+            className="inline-flex items-center justify-center rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-600 transition-colors"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Create Plan
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -417,33 +503,77 @@ export default function AdminPlansPage() {
                 </div>
               </div>
 
-              <div className="border-t border-gray-100 px-5 py-4 flex flex-wrap gap-2">
-                <button
-                  onClick={() => handleViewSubscriptions(plan)}
-                  className="inline-flex items-center rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  <Users className="h-4 w-4 mr-2" />
-                  View Subscribers
-                </button>
-                <button
-                  onClick={() => openEditForm(plan)}
-                  className="inline-flex items-center rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  <Pencil className="h-4 w-4 mr-2" />
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(plan.id)}
-                  disabled={deletingId === plan.id}
-                  className="inline-flex items-center rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {deletingId === plan.id ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Trash2 className="h-4 w-4 mr-2" />
-                  )}
-                  Delete
-                </button>
+              <div className="border-t border-gray-100 px-5 py-4 space-y-3">
+                {/* Telegram Group Section */}
+                {plan.telegramGroupId ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+                      <div className="flex items-center gap-2">
+                        <MessageCircle className="h-4 w-4 text-green-600" />
+                        <div>
+                          <span className="text-sm font-medium text-green-700 block">Telegram Group Created</span>
+                          <span className="text-xs text-green-600">{plan.telegramGroupName || 'Group'}</span>
+                        </div>
+                      </div>
+                      <a
+                        href={plan.telegramGroupInviteLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center text-sm text-green-600 hover:text-green-700 font-medium"
+                      >
+                        View Group
+                        <ExternalLink className="h-3 w-3 ml-1" />
+                      </a>
+                    </div>
+                    <div className="text-xs text-gray-500 p-2 bg-gray-50 rounded">
+                      <strong>Group ID:</strong> {plan.telegramGroupId}<br/>
+                      <strong>Invite Link:</strong> <a href={plan.telegramGroupInviteLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-all">{plan.telegramGroupInviteLink}</a>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => openTelegramModal(plan)}
+                      className="w-full inline-flex items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 transition-colors"
+                    >
+                      <MessageCircle className="h-4 w-4 mr-2" />
+                      Link Telegram Group
+                    </button>
+                    <p className="text-xs text-gray-500 px-1">
+                      💡 Create a group manually, add bot as admin, then link it here
+                    </p>
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => handleViewSubscriptions(plan)}
+                    className="inline-flex items-center rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <Users className="h-4 w-4 mr-2" />
+                    View Subscribers
+                  </button>
+                  <button
+                    onClick={() => openEditForm(plan)}
+                    className="inline-flex items-center rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <Pencil className="h-4 w-4 mr-2" />
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(plan.id)}
+                    disabled={deletingId === plan.id}
+                    className="inline-flex items-center rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {deletingId === plan.id ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Trash2 className="h-4 w-4 mr-2" />
+                    )}
+                    Delete
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -683,6 +813,111 @@ export default function AdminPlansPage() {
                   </p>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Telegram Group Modal */}
+      {telegramModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+          <div className="w-full max-w-lg rounded-xl bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">Link Telegram Group</h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  For plan: {selectedPlanForTelegram?.name}
+                </p>
+              </div>
+              <button
+                onClick={() => setTelegramModalOpen(false)}
+                className="rounded-full p-1 text-gray-400 transition-colors hover:text-gray-600"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            <div className="px-6 py-6 space-y-5">
+              <div className="rounded-lg bg-blue-50 border border-blue-200 p-4">
+                <h3 className="text-sm font-semibold text-blue-900 mb-2">📋 Setup Instructions</h3>
+                <ol className="text-xs text-blue-800 space-y-1 list-decimal list-inside">
+                  <li>Create a new Telegram group manually</li>
+                  <li>Add your bot as an administrator</li>
+                  <li>Give bot permissions: Invite Users & Restrict Members</li>
+                  <li>Get the group ID (use @userinfobot or similar)</li>
+                  <li>Create a permanent invite link</li>
+                  <li>Enter the details below</li>
+                </ol>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  Group ID <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={telegramFormData.groupId}
+                  onChange={(e) => setTelegramFormData(prev => ({ ...prev, groupId: e.target.value }))}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  placeholder="e.g., -1001234567890"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  The numeric ID of your Telegram group (starts with -)
+                </p>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  Group Name
+                </label>
+                <input
+                  type="text"
+                  value={telegramFormData.groupName}
+                  onChange={(e) => setTelegramFormData(prev => ({ ...prev, groupName: e.target.value }))}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  placeholder="e.g., Premium Members Group"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  Optional: Display name for the group
+                </p>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  Invite Link <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={telegramFormData.inviteLink}
+                  onChange={(e) => setTelegramFormData(prev => ({ ...prev, inviteLink: e.target.value }))}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  placeholder="https://t.me/+xxxxx"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  The permanent invite link to your group
+                </p>
+              </div>
+
+              <div className="flex items-center justify-end space-x-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setTelegramModalOpen(false)}
+                  className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={createTelegramGroup}
+                  disabled={!telegramFormData.groupId || !telegramFormData.inviteLink || creatingGroup[selectedPlanForTelegram?.id]}
+                  className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {creatingGroup[selectedPlanForTelegram?.id] && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  {creatingGroup[selectedPlanForTelegram?.id] ? 'Linking...' : 'Link Group'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

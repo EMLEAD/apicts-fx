@@ -3,6 +3,7 @@ import { authenticate } from '@/lib/middleware/auth';
 import { Transaction, User, Plan, UserPlan, Referral } from '@/lib/db/models';
 import { verifyTransaction } from '@/lib/paystack/client';
 import emailService from '@/lib/email/service';
+import telegramService from '@/lib/telegram/service';
 
 export async function POST(request) {
   try {
@@ -227,6 +228,28 @@ export async function POST(request) {
     }
 
     await user.reload();
+
+    // Add user to Telegram group if plan has one and user has Telegram linked
+    if (plan.telegramGroupId && user.telegramUserId) {
+      try {
+        await telegramService.addUserToGroup(
+          plan.telegramGroupId,
+          parseInt(user.telegramUserId)
+        );
+        
+        // Send welcome message
+        await telegramService.sendWelcomeMessage(
+          parseInt(user.telegramUserId),
+          plan.name,
+          plan.telegramGroupInviteLink
+        );
+        
+        console.log(`✅ Added user ${user.username} to ${plan.name} Telegram group`);
+      } catch (error) {
+        console.error('❌ Error adding user to Telegram group:', error);
+        // Don't fail subscription if Telegram fails - just log it
+      }
+    }
 
     return NextResponse.json({
       success: true,

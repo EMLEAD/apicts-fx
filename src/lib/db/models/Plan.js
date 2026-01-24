@@ -49,6 +49,26 @@ module.exports = (sequelize) => {
       type: DataTypes.DECIMAL(5, 2),
       allowNull: false,
       defaultValue: 0
+    },
+    telegramGroupId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      comment: 'Telegram group/channel ID for this plan'
+    },
+    telegramGroupInviteLink: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      comment: 'Permanent invite link to the Telegram group'
+    },
+    telegramGroupName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      comment: 'Name of the Telegram group'
+    },
+    hasTelegramGroup: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      comment: 'Whether this plan has a Telegram group configured'
     }
   }, {
     timestamps: true,
