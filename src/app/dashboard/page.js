@@ -20,6 +20,8 @@ import {
 import TradingSpikesWidget from '@/Components/TradingSpikesWidget';
 import MarketOverviewWidget from '@/Components/MarketOverviewWidget';
 import TradingTest from '@/Components/TradingTest';
+import ReferralLink from '@/Components/ReferralWidget';
+// import ReferralWidget from "@/Components/ReferralWidget";
 import { CryptoMarketOverview, CryptoTradingPair, CryptoIcon } from '@/Components/CryptoIcons';
 
 const formatCurrency = (amount, currency = 'NGN') => {
@@ -393,6 +395,11 @@ export default function Dashboard() {
             {summaryError}
           </p>
         )}
+      </div>
+
+      {/* Referral widget */}
+      <div className="mb-6">
+        <ReferralLink apiEndpoint="/api/auth/referral" />
       </div>
 
       <div className="bg-gradient-to-r from-red-600 to-red-700 rounded-2xl p-6 mb-8 text-white">

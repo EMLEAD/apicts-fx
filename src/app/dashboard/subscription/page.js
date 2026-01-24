@@ -468,7 +468,109 @@ export default function SubscriptionPage() {
 
       {/* Available Plans */}
       <div className="mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">Available Plans</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-6">Signal Plans</h2>
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-red-600" />
+          </div>
+        ) : plans.length === 0 ? (
+          <div className="bg-gray-50 rounded-xl border border-gray-200 p-12 text-center">
+            <p className="text-gray-600">No plans available at the moment.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {plans.map((plan) => {
+              const isSubscribed = isSubscribedToPlan(plan.id);
+              const isPopular = plan.displayOrder === 1 || (plan.metadata?.popular === true);
+              
+              return (
+                <div
+                  key={plan.id}
+                  className={`relative bg-white rounded-xl shadow-sm border-2 transition-all ${
+                    isSubscribed
+                      ? 'border-green-500 shadow-lg'
+                      : isPopular
+                      ? 'border-red-500 shadow-lg'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  {isSubscribed && (
+                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                      <div className="bg-green-600 text-white px-4 py-1 rounded-full text-sm font-medium flex items-center space-x-1">
+                        <CheckCircle className="h-4 w-4" />
+                        <span>Current Plan</span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {!isSubscribed && isPopular && (
+                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                      <div className="bg-red-600 text-white px-4 py-1 rounded-full text-sm font-medium flex items-center space-x-1">
+                        <Star className="h-4 w-4" />
+                        <span>Most Popular</span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="p-6">
+                    <div className="text-center mb-6">
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">{plan.name}</h3>
+                      {plan.description && (
+                        <p className="text-gray-600 text-sm mb-4">{plan.description}</p>
+                      )}
+                      <div className="flex items-baseline justify-center">
+                        <span className="text-4xl font-bold text-gray-900">
+                          {formatCurrency(plan.price, plan.currency)}
+                        </span>
+                        <span className="text-gray-600 ml-1">/month</span>
+                      </div>
+                    </div>
+
+                    {plan.features && plan.features.length > 0 && (
+                      <div className="space-y-3 mb-6">
+                        {plan.features.map((feature, index) => (
+                          <div key={index} className="flex items-center space-x-2">
+                            <Check className="h-4 w-4 text-green-600 flex-shrink-0" />
+                            <span className="text-sm text-gray-600">{feature}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <button
+                      onClick={() => handleSubscribe(plan.id)}
+                      disabled={isSubscribed || subscribing === plan.id}
+                      className={`w-full py-3 rounded-lg font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+                        isSubscribed
+                          ? 'bg-green-600 text-white cursor-not-allowed'
+                          : isPopular
+                          ? 'bg-red-600 text-white hover:bg-green-600'
+                          : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      {subscribing === plan.id ? (
+                        <span className="flex items-center justify-center space-x-2">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>Subscribing...</span>
+                        </span>
+                      ) : isSubscribed ? (
+                        'Current Plan'
+                      ) : (
+                        'Subscribe Now'
+                      )}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+
+      {/* Available Plans educational plans*/}
+        <div className="mb-8">
+        <h2 className="text-xl font-semibold text-gray-900 mb-6">educational Plans</h2>
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-red-600" />
