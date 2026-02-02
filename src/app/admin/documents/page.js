@@ -182,7 +182,7 @@ export default function DocumentManagement() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex items-center justify-between mt-12">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Document Management</h1>
           <p className="text-gray-600 mt-2">Manage PDFs and downloadable resources</p>
@@ -277,12 +277,15 @@ export default function DocumentManagement() {
 
       {/* Add/Edit Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
-          <div className="bg-white rounded-xl p-8 max-w-3xl w-full mx-4 my-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              {editingDocument ? 'Edit' : 'Create'} Document
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl w-full max-w-2xl max-h-[85vh] flex flex-col">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-2xl font-bold text-gray-900">
+                {editingDocument ? 'Edit' : 'Create'} Document
+              </h2>
+            </div>
+            <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+              <div className="overflow-y-auto px-6 py-4 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Upload File</label>
                 <div className="flex items-center space-x-4">
@@ -412,7 +415,8 @@ export default function DocumentManagement() {
                   )}
                 </div>
               )}
-              <div className="flex space-x-4">
+              </div>
+              <div className="border-t border-gray-200 p-6 flex space-x-4">
                 <button
                   type="button"
                   onClick={() => {

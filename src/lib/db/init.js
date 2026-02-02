@@ -1,5 +1,5 @@
 const { testConnection, sequelize } = require('./sequelize');
-const { syncDatabase, Plan, UserPlan, Coupon, CouponRedemption, Referral, AffiliateApplication, User, HeroContent } = require('./models');
+const { syncDatabase, Plan, UserPlan, Coupon, CouponRedemption, Referral, AffiliateApplication, User, HeroContent, UserDocument } = require('./models');
 
 let isInitialized = false;
 
@@ -29,6 +29,9 @@ const ensureAdditionalTables = async () => {
     if (HeroContent) {
       await HeroContent.sync({ alter: true });
     }
+    if (UserDocument) {
+      await UserDocument.sync({ alter: true });
+    }
   } catch (syncError) {
     console.log('\x1b[33m%s\x1b[0m', '⚠️  Failed to ensure new tables with alter:true, attempting alter:false...');
     if (Plan) {
@@ -54,6 +57,9 @@ const ensureAdditionalTables = async () => {
     }
     if (HeroContent) {
       await HeroContent.sync({ alter: false });
+    }
+    if (UserDocument) {
+      await UserDocument.sync({ alter: false });
     }
   }
 };

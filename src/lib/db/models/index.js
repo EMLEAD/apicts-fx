@@ -16,6 +16,7 @@ const AffiliateApplicationModel = require('./AffiliateApplication');
 const HeroContentModel = require('./HeroContent');
 const SiteSettingsModel = require('./SiteSettings');
 const DocumentModel = require('./Document');
+const UserDocumentModel = require('./UserDocument');
 
 // Initialize models
 const User = UserModel(sequelize);
@@ -35,6 +36,7 @@ const AffiliateApplication = AffiliateApplicationModel(sequelize);
 const HeroContent = HeroContentModel(sequelize);
 const SiteSettings = SiteSettingsModel(sequelize);
 const Document = DocumentModel(sequelize);
+const UserDocument = UserDocumentModel(sequelize);
 
 // Define associations
 User.hasMany(Contact, { foreignKey: 'userId', as: 'contacts' });
@@ -96,6 +98,11 @@ AffiliateApplication.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 User.hasMany(Document, { foreignKey: 'authorId', as: 'documents' });
 Document.belongsTo(User, { foreignKey: 'authorId', as: 'author' });
 
+// User Documents (Verification) associations
+User.hasMany(UserDocument, { foreignKey: 'userId', as: 'verificationDocuments', onDelete: 'CASCADE' });
+UserDocument.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+UserDocument.belongsTo(User, { foreignKey: 'verifiedBy', as: 'verifier' });
+
 // Sync database
 const syncDatabase = async (options = {}) => {
   try {
@@ -126,6 +133,7 @@ module.exports = {
   HeroContent,
   SiteSettings,
   Document,
+  UserDocument,
   syncDatabase
 };
 

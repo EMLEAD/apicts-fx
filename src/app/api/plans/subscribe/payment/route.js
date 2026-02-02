@@ -38,7 +38,7 @@ export async function POST(request) {
     // Initialize Paystack transaction
     const paystackResponse = await initializeTransaction({
       email: auth.user.email,
-      amount: numericAmount * 100, // Convert to kobo (Paystack uses kobo)
+      amount: numericAmount,
       metadata: {
         userId: auth.user.id,
         planId: plan.id,
