@@ -1,4 +1,4 @@
-require('dotenv').config({ path: '.env.local' });
+require('dotenv').config({ path: '.env' });
 
 module.exports = {
   development: {
@@ -49,12 +49,7 @@ module.exports = {
     dialect: process.env.DB_DIALECT || 'mysql',
     logging: false,
     timezone: '+00:00',
-    dialectOptions: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false
-      }
-    }
+   
   }
 };
 
