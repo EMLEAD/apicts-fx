@@ -87,7 +87,7 @@ const initializeDatabase = async () => {
       console.error('\x1b[33m%s\x1b[0m', '   📝 Troubleshooting:');
       console.error('      1. Check if MySQL is running');
       console.error('      2. Verify .env.local credentials');
-      console.error('      3. Make sure database "apicts_db" exists');
+      console.error('      3. Make sure database "eucloudwww1773163351543_" exists');
       console.error('      4. Check MySQL port (default: 3306)');
       console.error('\x1b[33m%s\x1b[0m', '   📖 See QUICK_START.md for setup instructions');
       console.log('='.repeat(60) + '\n');

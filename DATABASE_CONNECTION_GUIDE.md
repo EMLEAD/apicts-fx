@@ -32,7 +32,7 @@ When MySQL is properly configured and running, you'll see:
 **What this means:**
 - ✅ MySQL is running and accessible
 - ✅ Credentials in `.env.local` are correct
-- ✅ Database `apicts_db` exists
+- ✅ Database `eucloudwww1773163351543_` exists
 - ✅ Tables `users` and `contacts` are created/updated
 - ✅ All API endpoints are ready to use
 
@@ -57,7 +57,7 @@ If there's a connection problem, you'll see:
    📝 Troubleshooting:
       1. Check if MySQL is running
       2. Verify .env.local credentials
-      3. Make sure database "apicts_db" exists
+      3. Make sure database "eucloudwww1773163351543_" exists
       4. Check MySQL port (default: 3306)
    📖 See QUICK_START.md for setup instructions
 ============================================================
@@ -101,10 +101,10 @@ sudo service mysql status
 mysql -u root -p
 # Enter your password
 SHOW DATABASES;
-# You should see 'apicts_db' in the list
+# You should see 'eucloudwww1773163351543_' in the list
 
 # If not, create it:
-CREATE DATABASE apicts_db;
+CREATE DATABASE eucloudwww1773163351543_;
 EXIT;
 ```
 
@@ -115,7 +115,7 @@ Make sure your `.env.local` file has correct credentials:
 ```env
 DB_HOST=localhost
 DB_PORT=3306
-DB_NAME=apicts_db
+DB_NAME=eucloudwww1773163351543_
 DB_USER=root
 DB_PASSWORD=your_actual_password  # Or empty if no password
 DB_DIALECT=mysql

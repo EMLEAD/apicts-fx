@@ -11,7 +11,7 @@ async function addTelegramPlanColumns() {
     const results = await sequelize.query(`
       SELECT COLUMN_NAME 
       FROM INFORMATION_SCHEMA.COLUMNS 
-      WHERE TABLE_SCHEMA = '${process.env.DB_NAME || 'apicts_db'}' 
+      WHERE TABLE_SCHEMA = '${process.env.DB_NAME || 'eucloudwww1773163351543_'}' 
       AND TABLE_NAME = 'plans' 
       AND COLUMN_NAME IN ('telegramGroupId', 'telegramGroupInviteLink', 'telegramGroupName', 'hasTelegramGroup')
     `, { type: QueryTypes.SELECT });

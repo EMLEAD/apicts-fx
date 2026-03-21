@@ -79,7 +79,7 @@ Create `.env.local` with:
 ```env
 JWT_SECRET=apicts_super_secret_jwt_key_2024_secure_random_string_change_in_production
 DB_HOST=localhost
-DB_NAME=apicts_db
+DB_NAME=eucloudwww1773163351543_
 DB_USER=root
 DB_PASSWORD=your_password
 ```

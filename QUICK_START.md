@@ -42,7 +42,7 @@ Here's what happens:
    📝 Troubleshooting:
       1. Check if MySQL is running
       2. Verify .env.local credentials
-      3. Make sure database "apicts_db" exists
+      3. Make sure database "eucloudwww1773163351543_" exists
       4. Check MySQL port (default: 3306)
    📖 See QUICK_START.md for setup instructions
 ============================================================
@@ -61,20 +61,20 @@ Make sure MySQL is installed and running.
 ```bash
 # Using MySQL command line
 mysql -u root -p
-CREATE DATABASE apicts_db;
+CREATE DATABASE eucloudwww1773163351543_;
 EXIT;
 ```
 
 Or use phpMyAdmin if you have XAMPP/WAMP:
 - Open: http://localhost/phpmyadmin
-- Click "New" to create database named `apicts_db`
+- Click "New" to create database named `eucloudwww1773163351543_`
 
 ### 3. Configure Environment
 Create `.env.local` file (copy from `.env.example`):
 ```env
 DB_HOST=localhost
 DB_PORT=3306
-DB_NAME=apicts_db
+DB_NAME=eucloudwww1773163351543_
 DB_USER=root
 DB_PASSWORD=your_actual_password
 DB_DIALECT=mysql
@@ -172,7 +172,7 @@ npm start
    - Windows: Check Services for "MySQL" or start XAMPP/WAMP
    - XAMPP: Make sure MySQL is started in control panel
 2. Verify `.env.local` credentials
-3. Make sure database `apicts_db` exists
+3. Make sure database `eucloudwww1773163351543_` exists
 4. Check MySQL port (default: 3306)
 5. If using XAMPP with empty password, set `DB_PASSWORD=` (empty)
 

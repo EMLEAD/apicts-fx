@@ -24,14 +24,14 @@ This project includes a complete backend setup with Sequelize ORM and MySQL data
 Open MySQL terminal (mysql command line or phpMyAdmin) and create a database:
 
 ```sql
-CREATE DATABASE apicts_db;
+CREATE DATABASE eucloudwww1773163351543_;
 ```
 
 Or using MySQL command line:
 ```bash
 mysql -u root -p
 # Enter password
-CREATE DATABASE apicts_db;
+CREATE DATABASE eucloudwww1773163351543_;
 EXIT;
 ```
 
@@ -49,7 +49,7 @@ Edit `.env.local` with your database credentials:
 ```env
 DB_HOST=localhost
 DB_PORT=3306
-DB_NAME=apicts_db
+DB_NAME=eucloudwww1773163351543_
 DB_USER=root
 DB_PASSWORD=your_actual_password
 DB_DIALECT=mysql
@@ -369,7 +369,7 @@ mysql -u root -p
 SHOW DATABASES;
 
 # Select database
-USE apicts_db;
+USE eucloudwww1773163351543_;
 
 # Show tables
 SHOW TABLES;

@@ -16,7 +16,7 @@ Open `.env.local` and make sure it has ALL these variables:
 ```env
 DB_HOST=localhost
 DB_PORT=3306
-DB_NAME=apicts_db
+DB_NAME=eucloudwww1773163351543_
 DB_USER=root
 DB_PASSWORD=your_mysql_password
 DB_DIALECT=mysql
@@ -30,7 +30,7 @@ NODE_ENV=development
 ```env
 DB_HOST=localhost
 DB_PORT=3306
-DB_NAME=apicts_db
+DB_NAME=eucloudwww1773163351543_
 DB_USER=root
 DB_PASSWORD=
 DB_DIALECT=mysql
@@ -41,13 +41,13 @@ DB_DIALECT=mysql
 
 Open MySQL/phpMyAdmin and run:
 ```sql
-CREATE DATABASE apicts_db;
+CREATE DATABASE eucloudwww1773163351543_;
 ```
 
 Or via command line:
 ```bash
 mysql -u root -p
-CREATE DATABASE apicts_db;
+CREATE DATABASE eucloudwww1773163351543_;
 EXIT;
 ```
 
