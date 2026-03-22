@@ -79,12 +79,21 @@ export default function PlansList({ limit = 3 }) {
           </div>
 
           <div className="space-y-2 mb-4">
-            {(plan.features || []).slice(0, 4).map((f, i) => (
-              <div key={i} className="text-sm text-gray-600 flex items-center gap-2">
-                <span className="text-green-600">•</span>
-                <span>{f}</span>
-              </div>
-            ))}
+            {(() => {
+              try {
+                const features = typeof plan.features === 'string' 
+                  ? JSON.parse(plan.features) 
+                  : (Array.isArray(plan.features) ? plan.features : []);
+                return features.slice(0, 4).map((f, i) => (
+                  <div key={i} className="text-sm text-gray-600 flex items-center gap-2">
+                    <span className="text-green-600">•</span>
+                    <span>{f}</span>
+                  </div>
+                ));
+              } catch (e) {
+                return null;
+              }
+            })()}
           </div>
 
           <div>
