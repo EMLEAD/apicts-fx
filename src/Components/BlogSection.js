@@ -26,19 +26,22 @@ const calculateReadTime = (content) => {
 
 const getCategoryColor = (tags) => {
   if (!tags || !Array.isArray(tags) || tags.length === 0) {
-    return 'bg-blue-500';
+    return 'bg-gradient-to-r from-blue-600 to-blue-500 text-white';
   }
   const category = tags[0].toLowerCase();
-  if (category.includes('education') || category.includes('tutorial')) {
-    return 'bg-blue-500';
+  if (category.includes('education') || category.includes('tutorial') || category.includes('training') || category.includes('fundamental')) {
+    return 'bg-gradient-to-r from-blue-600 to-blue-500 text-white';
   }
-  if (category.includes('crypto') || category.includes('bitcoin')) {
-    return 'bg-green-500';
+  if (category.includes('crypto') || category.includes('bitcoin') || category.includes('trading')) {
+    return 'bg-gradient-to-r from-green-600 to-green-500 text-white';
   }
-  if (category.includes('security') || category.includes('verification')) {
-    return 'bg-rose-500';
+  if (category.includes('security') || category.includes('verification') || category.includes('scam')) {
+    return 'bg-gradient-to-r from-rose-600 to-rose-500 text-white';
   }
-  return 'bg-blue-500';
+  if (category.includes('news') || category.includes('market') || category.includes('session')) {
+    return 'bg-gradient-to-r from-amber-500 to-orange-500 text-white';
+  }
+  return 'bg-gradient-to-r from-blue-600 to-blue-500 text-white';
 };
 
 export default function BlogSection() {
@@ -59,18 +62,28 @@ export default function BlogSection() {
       
       if (res.ok && data.posts) {
         // Map API response to component format
-        const formattedPosts = data.posts.map((post) => ({
-          id: post.id,
-          title: post.title,
-          excerpt: post.excerpt || post.content?.substring(0, 150) + '...' || 'No excerpt available',
-          image: post.featuredImage || '/images/stock-exchange-trading-forex-finance-graphic-concept.jpg',
-          category: post.tags && post.tags.length > 0 ? post.tags[0] : 'General',
-          author: post.author?.username || 'APICTS Team',
-          date: formatDate(post.createdAt),
-          readTime: calculateReadTime(post.content),
-          categoryColor: getCategoryColor(post.tags),
-          slug: post.slug
-        }));
+        const formattedPosts = data.posts.map((post) => {
+          // Parse tags from JSON string
+          let parsedTags = [];
+          try {
+            parsedTags = typeof post.tags === 'string' ? JSON.parse(post.tags) : (Array.isArray(post.tags) ? post.tags : []);
+          } catch (e) {
+            parsedTags = [];
+          }
+          
+          return {
+            id: post.id,
+            title: post.title,
+            excerpt: post.excerpt || (post.content ? post.content.replace(/<[^>]*>/g, '').substring(0, 150) + '...' : 'No excerpt available'),
+            image: post.featuredImage || '/images/stock-exchange-trading-forex-finance-graphic-concept.jpg',
+            category: parsedTags.length > 0 ? parsedTags[0] : 'General',
+            author: post.author?.username || 'APICTS Team',
+            date: formatDate(post.createdAt),
+            readTime: calculateReadTime(post.content),
+            categoryColor: getCategoryColor(parsedTags),
+            slug: post.slug
+          };
+        });
         setBlogPosts(formattedPosts);
       } else {
         throw new Error(data.error || 'Failed to fetch blog posts');
@@ -135,8 +148,8 @@ export default function BlogSection() {
                   className="object-cover group-hover:scale-110 transition-transform duration-500"
                 />
                 {/* Category Badge */}
-                <div className="absolute top-4 left-4">
-                  <span className={`${post.categoryColor} text-white text-xs font-semibold px-3 py-1 rounded-full`}>
+                <div className="absolute top-4 left-4 z-10">
+                  <span className={`${post.categoryColor} text-xs font-bold px-4 py-2 rounded-full shadow-lg backdrop-blur-sm`}>
                     {post.category}
                   </span>
                 </div>
@@ -145,38 +158,38 @@ export default function BlogSection() {
               {/* Content */}
               <div className="p-6">
                 {/* Meta Info */}
-                <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
-                  <div className="flex items-center gap-1">
-                    <Calendar size={16} />
+                <div className="flex items-center gap-4 text-sm text-gray-600 mb-3 font-medium">
+                  <div className="flex items-center gap-1.5 bg-gray-100 px-2 py-1 rounded-md">
+                    <Calendar size={14} className="text-blue-600" />
                     <span>{post.date}</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Clock size={16} />
+                  <div className="flex items-center gap-1.5 bg-gray-100 px-2 py-1 rounded-md">
+                    <Clock size={14} className="text-green-600" />
                     <span>{post.readTime}</span>
                   </div>
                 </div>
 
                 {/* Title */}
-                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors duration-300 line-clamp-2">
+                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-red-600 transition-colors duration-300 line-clamp-2 leading-tight">
                   {post.title}
                 </h3>
 
                 {/* Excerpt */}
-                <p className="text-gray-600 mb-4 line-clamp-3">
+                <p className="text-gray-700 mb-4 line-clamp-3 leading-relaxed font-medium">
                   {post.excerpt}
                 </p>
 
                 {/* Footer */}
                 <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-green-500 flex items-center justify-center text-white text-sm font-bold">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white text-sm font-bold shadow-md">
                       {post.author.charAt(0)}
                     </div>
-                    <span className="text-sm text-gray-700 font-medium">{post.author}</span>
+                    <span className="text-sm text-gray-800 font-semibold">{post.author}</span>
                   </div>
 
                   <Link href={`/blog/${post.slug || post.id}`}>
-                    <button className="text-red-600 hover:text-green-600 font-semibold text-sm flex items-center gap-1 group/btn">
+                    <button className="text-red-600 hover:text-red-700 font-bold text-sm flex items-center gap-1.5 group/btn bg-red-50 hover:bg-red-100 px-3 py-2 rounded-lg transition-all duration-300">
                       Read More
                       <ArrowRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
                     </button>
