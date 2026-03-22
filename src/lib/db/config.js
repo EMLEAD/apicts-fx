@@ -1,4 +1,8 @@
-// Next.js automatically loads .env files
+// Load .env file in production (Next.js doesn't auto-load in standalone mode)
+if (process.env.NODE_ENV === 'production') {
+  require('dotenv').config();
+}
+
 // Debug: Log environment variables (remove in production after testing)
 console.log('DB_HOST:', process.env.DB_HOST);
 console.log('DB_NAME:', process.env.DB_NAME);
