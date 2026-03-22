@@ -1,6 +1,4 @@
-const path = require('path');
-require('dotenv').config({ path: path.resolve(process.cwd(), '.env') });
-
+// Next.js automatically loads .env files
 // Debug: Log environment variables (remove in production after testing)
 console.log('DB_HOST:', process.env.DB_HOST);
 console.log('DB_NAME:', process.env.DB_NAME);
