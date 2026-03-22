@@ -8,10 +8,10 @@ console.log('NODE_ENV:', process.env.NODE_ENV);
 
 module.exports = {
   development: {
-    username: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || 'password',
+    username: process.env.DB_USER || 'apicts',
+    password: process.env.DB_PASSWORD || 'apicts',
     database: process.env.DB_NAME || 'eucloudwww1773163351543_',
-    host: process.env.DB_HOST || 'localhost',
+    host: process.env.DB_HOST || '100.42.177.149',
     port: process.env.DB_PORT || 3306,
     dialect: process.env.DB_DIALECT || 'mysql',
     logging: false,
@@ -37,8 +37,8 @@ module.exports = {
     }
   },
   test: {
-    username: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || 'password',
+    username: process.env.DB_USER || 'apicts',
+    password: process.env.DB_PASSWORD || 'apicts',
     database: process.env.DB_NAME + '_test' || 'eucloudwww1773163351543__test',
     host: process.env.DB_HOST || 'localhost',
     port: process.env.DB_PORT || 3306,
@@ -47,11 +47,11 @@ module.exports = {
     timezone: '+00:00'
   },
   production: {
-    username: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
+    username: process.env.DB_USER || 'apicts',
+    password: process.env.DB_PASSWORD || 'apicts',
+    database: process.env.DB_NAME || 'eucloudwww1773163351543_',
+    host: process.env.DB_HOST || '100.42.177.149',
+    port: process.env.DB_PORT || 3306,
     dialect: process.env.DB_DIALECT || 'mysql',
     logging: false,
     timezone: '+00:00',
