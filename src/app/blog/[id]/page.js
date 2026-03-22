@@ -214,21 +214,30 @@ export default function BlogPostPage() {
         {/* Header */}
         <header className="mb-8">
           {/* Tags */}
-          {post.tags && post.tags.length > 0 && (
-            <div className="flex items-center gap-2 mb-4">
-              <Tag className="h-4 w-4 text-blue-600" />
-              <div className="flex flex-wrap gap-2">
-                {post.tags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
+          {(() => {
+            try {
+              const tags = typeof post.tags === 'string' 
+                ? JSON.parse(post.tags) 
+                : (Array.isArray(post.tags) ? post.tags : []);
+              return tags.length > 0 && (
+                <div className="flex items-center gap-2 mb-4">
+                  <Tag className="h-4 w-4 text-blue-600" />
+                  <div className="flex flex-wrap gap-2">
+                    {tags.map((tag, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              );
+            } catch (e) {
+              return null;
+            }
+          })()}
 
           {/* Title */}
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">

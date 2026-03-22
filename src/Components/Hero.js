@@ -19,7 +19,14 @@ export default function Hero() {
       const res = await fetch('/api/hero');
       const data = await res.json();
       if (data.success && data.hero) {
-        setHeroData(data.hero);
+        // Parse JSON strings from database
+        const hero = {
+          ...data.hero,
+          carouselImages: typeof data.hero.carouselImages === 'string' 
+            ? JSON.parse(data.hero.carouselImages) 
+            : (Array.isArray(data.hero.carouselImages) ? data.hero.carouselImages : [])
+        };
+        setHeroData(hero);
       }
     } catch (error) {
       console.error('Error fetching hero data:', error);
