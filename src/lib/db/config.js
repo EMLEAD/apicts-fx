@@ -9,7 +9,7 @@ console.log('NODE_ENV:', process.env.NODE_ENV);
 module.exports = {
   development: {
     username: process.env.DB_USER || 'apicts',
-    password: process.env.DB_PASSWORD || 'apicts',
+    password: process.env.DB_PASSWORD || 'L~atk7393',
     database: process.env.DB_NAME || 'eucloudwww1773163351543_',
     host: process.env.DB_HOST || '100.42.177.149',
     port: process.env.DB_PORT || 3306,
@@ -38,7 +38,7 @@ module.exports = {
   },
   test: {
     username: process.env.DB_USER || 'apicts',
-    password: process.env.DB_PASSWORD || 'apicts',
+    password: process.env.DB_PASSWORD || 'L~atk7393',
     database: process.env.DB_NAME + '_test' || 'eucloudwww1773163351543__test',
     host: process.env.DB_HOST || 'localhost',
     port: process.env.DB_PORT || 3306,
@@ -48,7 +48,7 @@ module.exports = {
   },
   production: {
     username: process.env.DB_USER || 'apicts',
-    password: process.env.DB_PASSWORD || 'apicts',
+    password: process.env.DB_PASSWORD || 'L~atk7393',
     database: process.env.DB_NAME || 'eucloudwww1773163351543_',
     host: process.env.DB_HOST || '100.42.177.149',
     port: process.env.DB_PORT || 3306,
