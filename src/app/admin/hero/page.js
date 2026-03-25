@@ -38,6 +38,21 @@ export default function HeroManagement() {
       const data = await res.json();
       if (data.hero) {
         setHero(data.hero);
+        
+        // Parse carouselImages if it's a JSON string
+        let parsedCarouselImages = [];
+        if (data.hero.carouselImages) {
+          try {
+            parsedCarouselImages = typeof data.hero.carouselImages === 'string'
+              ? JSON.parse(data.hero.carouselImages)
+              : data.hero.carouselImages;
+            parsedCarouselImages = Array.isArray(parsedCarouselImages) ? parsedCarouselImages : [];
+          } catch (e) {
+            console.error('Failed to parse carouselImages:', e);
+            parsedCarouselImages = [];
+          }
+        }
+        
         setFormData({
           badge: data.hero.badge || '',
           title: data.hero.title || '',
@@ -50,7 +65,7 @@ export default function HeroManagement() {
           rating: data.hero.rating || '',
           customerCount: data.hero.customerCount || '',
           customerLabel: data.hero.customerLabel || '',
-          carouselImages: data.hero.carouselImages || []
+          carouselImages: parsedCarouselImages
         });
       }
     } catch (error) {

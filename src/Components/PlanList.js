@@ -71,12 +71,11 @@ export default function PlansList({ limit = 3 }) {
             {plan.metadata?.popular && <span className="text-xs bg-red-600 text-white px-2 py-1 rounded">Popular</span>}
           </div>
 
-          <p className="text-sm text-gray-600 mb-4">{plan.description}</p>
-
-          <div className="flex items-baseline justify-center mb-4">
+          <div className="flex items-baseline justify-center mb-2">
             <span className="text-3xl font-bold text-red-600">{formatCurrency(plan.price, plan.currency)}</span>
-            <span className="text-sm text-gray-500 ml-2">/month</span>
           </div>
+          
+          <p className="text-sm text-gray-600 text-center mb-4 font-medium">{plan.description}</p>
 
           <div className="space-y-2 mb-4">
             {(() => {
