@@ -4,6 +4,12 @@ const { syncDatabase, Plan, UserPlan, Coupon, CouponRedemption, Referral, Affili
 let isInitialized = false;
 
 const ensureAdditionalTables = async () => {
+  // Skip sync in production to avoid startup timeout (tables already exist)
+  if (process.env.NODE_ENV === 'production') {
+    console.log('\x1b[33m%s\x1b[0m', '⚡ Production mode: Skipping table sync for faster startup');
+    return;
+  }
+  
   try {
     if (User) {
       await User.sync({ alter: true });
