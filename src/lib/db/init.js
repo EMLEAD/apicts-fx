@@ -1,9 +1,15 @@
 const { testConnection, sequelize } = require('./sequelize');
-const { syncDatabase, Plan, UserPlan, Coupon, CouponRedemption, Referral, AffiliateApplication, User, HeroContent } = require('./models');
+const { syncDatabase, Plan, UserPlan, Coupon, CouponRedemption, Referral, AffiliateApplication, User, HeroContent, UserDocument } = require('./models');
 
 let isInitialized = false;
 
 const ensureAdditionalTables = async () => {
+  // Skip sync in production to avoid startup timeout (tables already exist)
+  if (process.env.NODE_ENV === 'production') {
+    console.log('\x1b[33m%s\x1b[0m', '⚡ Production mode: Skipping table sync for faster startup');
+    return;
+  }
+  
   try {
     if (User) {
       await User.sync({ alter: true });
@@ -28,6 +34,9 @@ const ensureAdditionalTables = async () => {
     }
     if (HeroContent) {
       await HeroContent.sync({ alter: true });
+    }
+    if (UserDocument) {
+      await UserDocument.sync({ alter: true });
     }
   } catch (syncError) {
     console.log('\x1b[33m%s\x1b[0m', '⚠️  Failed to ensure new tables with alter:true, attempting alter:false...');
@@ -55,6 +64,9 @@ const ensureAdditionalTables = async () => {
     if (HeroContent) {
       await HeroContent.sync({ alter: false });
     }
+    if (UserDocument) {
+      await UserDocument.sync({ alter: false });
+    }
   }
 };
 
@@ -81,7 +93,7 @@ const initializeDatabase = async () => {
       console.error('\x1b[33m%s\x1b[0m', '   📝 Troubleshooting:');
       console.error('      1. Check if MySQL is running');
       console.error('      2. Verify .env.local credentials');
-      console.error('      3. Make sure database "apicts_db" exists');
+      console.error('      3. Make sure database "eucloudwww1773163351543_" exists');
       console.error('      4. Check MySQL port (default: 3306)');
       console.error('\x1b[33m%s\x1b[0m', '   📖 See QUICK_START.md for setup instructions');
       console.log('='.repeat(60) + '\n');

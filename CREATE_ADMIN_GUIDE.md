@@ -69,7 +69,7 @@ curl -X POST http://localhost:3000/api/admin/create-admin \
 If you have direct MySQL access, you can manually insert an admin user:
 
 ```sql
-USE apicts_db;
+USE eucloudwww1773163351543_;
 
 -- Hash the password first using bcrypt
 INSERT INTO users (id, username, email, password, role, isActive, createdAt, updatedAt)
@@ -112,7 +112,7 @@ Ensure your `.env.local` file has:
 ```env
 JWT_SECRET=apicts_super_secret_jwt_key_2024_secure_random_string_change_in_production
 DB_HOST=localhost
-DB_NAME=apicts_db
+DB_NAME=eucloudwww1773163351543_
 DB_USER=root
 DB_PASSWORD=your_password
 ```

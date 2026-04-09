@@ -147,7 +147,7 @@ Authorization: Bearer <your_jwt_token>
    ```env
    JWT_SECRET=your_secure_secret_key
    DB_HOST=localhost
-   DB_NAME=apicts_db
+   DB_NAME=eucloudwww1773163351543_
    ```
 
 2. **Database Initialization**

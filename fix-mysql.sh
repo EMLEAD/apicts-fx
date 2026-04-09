@@ -33,7 +33,7 @@ sleep 5
 # Step 6: Create database
 echo "6. Creating database..."
 mysql -u root -ppassword << EOF
-CREATE DATABASE IF NOT EXISTS apicts_db;
+CREATE DATABASE IF NOT EXISTS eucloudwww1773163351543_;
 SHOW DATABASES;
 EXIT;
 EOF
@@ -45,7 +45,7 @@ cat > .env.local << 'EOF'
 DB_HOST=localhost
 DB_PORT=3306
 DB_DIALECT=mysql
-DB_NAME=apicts_db
+DB_NAME=eucloudwww1773163351543_
 DB_USER=root
 DB_PASSWORD=password
 
@@ -78,7 +78,7 @@ EOF
 
 echo "✅ MySQL setup complete!"
 echo "📝 Password set to: password"
-echo "🗄️  Database created: apicts_db"
+echo "🗄️  Database created: eucloudwww1773163351543_"
 echo "📄 .env.local file updated"
 echo ""
 echo "Now you can run your application!"

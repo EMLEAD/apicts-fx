@@ -18,12 +18,14 @@ import {
   Wallet,
   BarChart3,
   ChevronRight,
-  FileText
+  FileText,
+  UserCircle
 } from 'lucide-react';
 import Navbar from '@/Components/NavBar';
 
 const dashboardNavigationItems = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
+  { name: 'Profile', href: '/dashboard/profile', icon: UserCircle },
   { name: 'Videos', href: '/dashboard/videos', icon: Video },
   { name: 'Documents', href: '/dashboard/documents', icon: FileText },
   { name: 'Subscription', href: '/dashboard/subscription', icon: CreditCard },

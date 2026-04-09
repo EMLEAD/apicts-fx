@@ -11,7 +11,7 @@ async function addWalletColumns() {
     const results = await sequelize.query(`
       SELECT COLUMN_NAME 
       FROM INFORMATION_SCHEMA.COLUMNS 
-      WHERE TABLE_SCHEMA = '${process.env.DB_NAME || 'apicts_db'}' 
+      WHERE TABLE_SCHEMA = '${process.env.DB_NAME || 'eucloudwww1773163351543_'}' 
       AND TABLE_NAME = 'users' 
       AND COLUMN_NAME IN ('walletBalance', 'currency')
     `, { type: QueryTypes.SELECT });

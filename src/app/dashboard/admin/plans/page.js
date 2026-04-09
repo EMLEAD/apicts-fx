@@ -153,7 +153,17 @@ export default function AdminPlansPage() {
       description: plan.description || '',
       price: plan.price?.toString() || '0',
       currency: plan.currency || 'NGN',
-      features: Array.isArray(plan.features) ? plan.features.join('\n') : '',
+      features: (() => {
+        if (!plan.features) return '';
+        try {
+          const parsed = typeof plan.features === 'string' 
+            ? JSON.parse(plan.features) 
+            : plan.features;
+          return Array.isArray(parsed) ? parsed.join('\n') : '';
+        } catch (e) {
+          return '';
+        }
+      })(),
       status: plan.status || 'draft',
       displayOrder: plan.displayOrder ?? 0,
       metadata: plan.metadata || {},
@@ -180,13 +190,15 @@ export default function AdminPlansPage() {
 
   const transformFeatures = (value) => {
     if (!value) {
-      return [];
+      return "[]";
     }
 
-    return value
+    const features = value
       .split(/\r?\n/)
       .map((item) => item.trim())
       .filter(Boolean);
+    
+    return JSON.stringify(features);
   };
 
   const handleSubmit = async (event) => {
@@ -491,15 +503,28 @@ export default function AdminPlansPage() {
 
                 <div>
                   <p className="text-xs uppercase tracking-wide text-gray-500 mb-2">Features</p>
-                  {Array.isArray(plan.features) && plan.features.length > 0 ? (
-                    <ul className="space-y-1 text-sm text-gray-700 list-disc list-inside">
-                      {plan.features.map((feature, idx) => (
-                        <li key={`${plan.id}-feature-${idx}`}>{feature}</li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-sm text-gray-500">No features listed.</p>
-                  )}
+                  {(() => {
+                    let features = [];
+                    if (plan.features) {
+                      try {
+                        features = typeof plan.features === 'string'
+                          ? JSON.parse(plan.features)
+                          : plan.features;
+                        features = Array.isArray(features) ? features : [];
+                      } catch (e) {
+                        features = [];
+                      }
+                    }
+                    return features.length > 0 ? (
+                      <ul className="space-y-1 text-sm text-gray-700 list-disc list-inside">
+                        {features.map((feature, idx) => (
+                          <li key={`${plan.id}-feature-${idx}`}>{feature}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-gray-500">No features listed.</p>
+                    );
+                  })()}
                 </div>
               </div>
 

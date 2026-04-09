@@ -29,7 +29,7 @@ if (fs.existsSync(envPath)) {
   console.log(`
 DB_HOST=localhost
 DB_PORT=3306
-DB_NAME=apicts_db
+DB_NAME=eucloudwww1773163351543_
 DB_USER=root
 DB_PASSWORD=your_password
 DB_DIALECT=mysql
@@ -74,15 +74,15 @@ const mysql = require('mysql2/promise');
     
     // Check if database exists
     const [databases] = await connection.query('SHOW DATABASES');
-    const dbExists = databases.some(db => db.Database === (process.env.DB_NAME || 'apicts_db'));
+    const dbExists = databases.some(db => db.Database === (process.env.DB_NAME || 'eucloudwww1773163351543_'));
     
     if (dbExists) {
-      console.log(`   ✅ Database '${process.env.DB_NAME || 'apicts_db'}' exists`);
+      console.log(`   ✅ Database '${process.env.DB_NAME || 'eucloudwww1773163351543_'}' exists`);
     } else {
-      console.log(`   ❌ Database '${process.env.DB_NAME || 'apicts_db'}' does NOT exist`);
+      console.log(`   ❌ Database '${process.env.DB_NAME || 'eucloudwww1773163351543_'}' does NOT exist`);
       console.log('\n   📝 Create it with:');
       console.log(`   mysql -u root -p`);
-      console.log(`   CREATE DATABASE ${process.env.DB_NAME || 'apicts_db'};`);
+      console.log(`   CREATE DATABASE ${process.env.DB_NAME || 'eucloudwww1773163351543_'};`);
     }
     
     await connection.end();

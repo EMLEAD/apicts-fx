@@ -41,20 +41,29 @@ export default function Footer() {
       if (response.ok) {
         const data = await response.json();
         if (data.settings) {
+          // Parse JSON strings from database
+          const socialLinks = typeof data.settings.socialLinks === 'string' 
+            ? JSON.parse(data.settings.socialLinks) 
+            : (data.settings.socialLinks || {
+                youtube: 'https://www.youtube.com/@apictsforex',
+                twitter: '',
+                linkedin: '',
+                instagram: '',
+                facebook: '',
+                telegram: ''
+              });
+          
+          const contactInfo = typeof data.settings.contactInfo === 'string' 
+            ? JSON.parse(data.settings.contactInfo) 
+            : (data.settings.contactInfo || {
+                email: 'support@apicts.com',
+                phone: '+2348139399978',
+                address: 'Km 18, Topaz Plaza, New Road, Lekki Ajah, Lagos'
+              });
+
           setSiteSettings({
-            socialLinks: data.settings.socialLinks || {
-              youtube: 'https://www.youtube.com/@apictsforex',
-              twitter: '',
-              linkedin: '',
-              instagram: '',
-              facebook: '',
-              telegram: ''
-            },
-            contactInfo: data.settings.contactInfo || {
-              email: 'support@apicts.com',
-              phone: '+2348139399978',
-              address: 'Km 18, Topaz Plaza, New Road, Lekki Ajah, Lagos'
-            }
+            socialLinks,
+            contactInfo
           });
         }
       }

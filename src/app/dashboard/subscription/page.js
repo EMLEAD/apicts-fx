@@ -89,8 +89,24 @@ export default function SubscriptionPage() {
       console.log('Fetched plans:', data);
       
       if (data.success && Array.isArray(data.plans)) {
+        // Parse features for each plan
+        const parsedPlans = data.plans.map(plan => {
+          if (plan.features) {
+            try {
+              const parsedFeatures = typeof plan.features === 'string'
+                ? JSON.parse(plan.features)
+                : plan.features;
+              plan.features = Array.isArray(parsedFeatures) ? parsedFeatures : [];
+            } catch (e) {
+              console.error('Failed to parse plan features:', e);
+              plan.features = [];
+            }
+          }
+          return plan;
+        });
+        
         // Filter to only show active plans on the frontend
-        const activePlans = data.plans.filter(plan => plan.status === 'active');
+        const activePlans = parsedPlans.filter(plan => plan.status === 'active');
         setPlans(activePlans);
         
         if (activePlans.length === 0) {
@@ -124,6 +140,20 @@ export default function SubscriptionPage() {
       }
 
       const data = await response.json();
+      
+      // Parse features if it's a JSON string
+      if (data.subscription?.plan?.features) {
+        try {
+          const parsedFeatures = typeof data.subscription.plan.features === 'string'
+            ? JSON.parse(data.subscription.plan.features)
+            : data.subscription.plan.features;
+          data.subscription.plan.features = Array.isArray(parsedFeatures) ? parsedFeatures : [];
+        } catch (e) {
+          console.error('Failed to parse plan features:', e);
+          data.subscription.plan.features = [];
+        }
+      }
+      
       setCurrentSubscription(data.subscription);
     } catch (err) {
       console.error('Error fetching subscription:', err);
@@ -286,10 +316,18 @@ export default function SubscriptionPage() {
       setSuccess(null);
       setPaymentTracking({ status: 'idle', reference: null, attempts: 0, error: null });
 
-      const headers = getAuthHeaders();
-      if (!headers) {
+      // Check for token
+      const token = localStorage.getItem('token');
+      console.log('Token exists:', !!token);
+      
+      if (!token) {
         throw new Error('You are not authenticated. Please log in again.');
       }
+
+      const headers = {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      };
 
       // Initialize payment
       const response = await fetch('/api/plans/subscribe/payment', {
@@ -300,7 +338,13 @@ export default function SubscriptionPage() {
 
       if (!response.ok) {
         const result = await response.json().catch(() => ({}));
-        throw new Error(result.error || 'Payment initialization failed');
+        console.error('Payment API error:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: result.error,
+          details: result
+        });
+        throw new Error(result.error || `Payment initialization failed (${response.status})`);
       }
 
       const data = await response.json();
@@ -416,7 +460,7 @@ export default function SubscriptionPage() {
                 <span className="text-sm font-medium text-gray-600">Amount</span>
               </div>
               <p className="text-lg font-semibold text-gray-900">
-                {formatCurrency(currentPlan.price, currentPlan.currency)}/month
+                {formatCurrency(currentPlan.price, currentPlan.currency)}
               </p>
             </div>
             
@@ -617,15 +661,14 @@ export default function SubscriptionPage() {
                   <div className="p-6">
                     <div className="text-center mb-6">
                       <h3 className="text-xl font-semibold text-gray-900 mb-2">{plan.name}</h3>
-                      {plan.description && (
-                        <p className="text-gray-600 text-sm mb-4">{plan.description}</p>
-                      )}
-                      <div className="flex items-baseline justify-center">
+                      <div className="flex items-baseline justify-center mb-2">
                         <span className="text-4xl font-bold text-gray-900">
                           {formatCurrency(plan.price, plan.currency)}
                         </span>
-                        <span className="text-gray-600 ml-1">/month</span>
                       </div>
+                      {plan.description && (
+                        <p className="text-gray-600 text-sm font-medium">{plan.description}</p>
+                      )}
                     </div>
 
                     {plan.features && plan.features.length > 0 && (
