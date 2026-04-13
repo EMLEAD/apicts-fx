@@ -69,7 +69,7 @@ export default function Features() {
           {features.map((feature, index) => (
             <div
               key={index}
-              className="relative bg-white rounded-xl p-8 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group overflow-hidden"
+              className={`relative bg-white rounded-xl p-8 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group overflow-hidden ${index >= 3 ? "hidden lg:block" : ""}`}
             >
               {/* Background gradient on hover */}
               <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-green-50 to-rose-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -110,12 +110,12 @@ export default function Features() {
                 </div>
                 <div className="text-sm text-gray-600 font-medium">Active Users</div>
               </div>
-              <div>
+              {/* <div>
                 <div className="text-4xl font-bold bg-gradient-to-r from-green-500 to-emerald-600 bg-clip-text text-transparent mb-2">
-                  ₦50B+
+                  
                 </div>
                 <div className="text-sm text-gray-600 font-medium">Transactions Processed</div>
-              </div>
+              </div> */}
               <div>
                 <div className="text-4xl font-bold bg-gradient-to-r from-rose-500 to-red-600 bg-clip-text text-transparent mb-2">
                   50+

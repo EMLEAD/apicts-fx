@@ -6,6 +6,7 @@ import Services from "@/Components/Services";
 import HowItWorks from "@/Components/HowItWorks";
 import BlogSection from "@/Components/BlogSection";
 import CtaSection from "@/Components/CtaSection";
+// import PlanList from "@/Components/PlanList";
 // import Login from "@/Components/Login";
 
 export default function Home() {

@@ -2,24 +2,33 @@
 
 import { useEffect, useState } from "react";
 
-export default function ReferralWidget({ apiEndpoint = "src/lib/db/models" }) {
-  const [referral, setReferral] = useState("");
-  const [loading, setLoading] = useState(true);
+export default function ReferralWidget({ apiEndpoint = "/api/auth/me", referralCode: initialReferralCode = "" }) {
+  const [referral, setReferral] = useState(initialReferralCode || "");
+  const [loading, setLoading] = useState(!initialReferralCode);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState("");
 
   useEffect(() => {
+    if (initialReferralCode) {
+      setReferral(initialReferralCode);
+      setLoading(false);
+      setError("");
+      return;
+    }
+
     let mounted = true;
     const fetchReferral = async () => {
       setLoading(true);
       setError("");
       try {
-        const res = await fetch(apiEndpoint, { credentials: "include" });
+        const token = typeof window !== "undefined" ? window.localStorage.getItem("token") : null;
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await fetch(apiEndpoint, { headers });
         const data = await res.json();
-        const code = data?.referralCode || data?.code || data?.referral || "";
+        const code = data?.user?.referralCode || data?.referralCode || data?.code || data?.referral || "";
         if (!mounted) return;
         if (!res.ok) {
-          setError(data?.message || "Unable to fetch referral code");
+          setError(data?.message || data?.error || "Unable to fetch referral code");
         } else {
           setReferral(code);
         }
@@ -32,11 +41,13 @@ export default function ReferralWidget({ apiEndpoint = "src/lib/db/models" }) {
 
     fetchReferral();
     return () => { mounted = false; };
-  }, [apiEndpoint]);
+  }, [apiEndpoint, initialReferralCode]);
 
   const getBaseUrl = () => {
+    const envUrl = process.env.NEXT_PUBLIC_SITE_URL;
+    if (envUrl) return envUrl;
     if (typeof window !== "undefined") return window.location.origin;
-    return process.env.NEXT_PUBLIC_SITE_URL || "";
+    return "http://apictsfxuser";
   };
 
   const referralLink = referral ? `${getBaseUrl()}/register?ref=${encodeURIComponent(referral)}` : "";
@@ -55,7 +66,7 @@ export default function ReferralWidget({ apiEndpoint = "src/lib/db/models" }) {
   if (error) return <div className="py-4 text-sm text-red-600">{error}</div>;
 
   return (
-    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 max-w-md">
+    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 max-w-sm w-full">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm text-gray-500">Your referral code</p>

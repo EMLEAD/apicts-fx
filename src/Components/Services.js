@@ -83,7 +83,7 @@ export default function Services() {
           {services.map((service, index) => (
             <div
               key={index}
-              className="group relative bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-100"
+              className={`group relative bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-100 ${index >= 3 ? "hidden lg:block" : ""}`}
             >
               {/* Service Image */}
               <div className="relative h-48 overflow-hidden bg-gradient-to-br from-blue-50 to-green-50">
@@ -112,13 +112,13 @@ export default function Services() {
                   {service.description}
                 </p>
 
-                {/* Learn More Link */}
+                {/* Learn More Link
                 <a href="#" className={`inline-flex items-center text-sm font-semibold bg-gradient-to-r ${service.color} bg-clip-text text-transparent hover:gap-2 transition-all duration-300`}>
                   Learn More
                   <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
-                </a>
+                </a> */}
               </div>
             </div>
           ))}

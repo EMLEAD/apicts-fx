@@ -399,7 +399,7 @@ export default function Dashboard() {
 
       {/* Referral widget */}
       <div className="mb-6">
-        <ReferralLink apiEndpoint="/api/auth/referral" />
+        <ReferralLink referralCode={user?.referralCode || ""} />
       </div>
 
       <div className="bg-gradient-to-r from-red-600 to-red-700 rounded-2xl p-6 mb-8 text-white">
