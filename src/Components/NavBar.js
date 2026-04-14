@@ -146,7 +146,7 @@ export default function Navbar() {
             <Link href="/vlog" className="relative group py-2 transition-all duration-300 cursor-pointer">
               <span className={`transition-colors duration-300 ${
                 isScrolled ? 'group-hover:text-green-300' : 'group-hover:text-red-500'
-              }`}>Vlog</span>
+              }`}>Videos</span>
               <span className={`absolute bottom-0 left-0 w-0 h-0.5 group-hover:w-full transition-all duration-300 ease-out ${
                 isScrolled ? 'bg-green-300' : 'bg-red-500'
               }`}></span>

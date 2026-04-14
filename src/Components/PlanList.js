@@ -44,7 +44,7 @@ export default function PlansList({ limit = 3 }) {
 
     fetchPlans();
     return () => { mounted = false; };
-  }, [limit]);
+  }, []);
 
   if (loading) {
     return (
@@ -83,7 +83,7 @@ export default function PlansList({ limit = 3 }) {
                 const features = typeof plan.features === 'string' 
                   ? JSON.parse(plan.features) 
                   : (Array.isArray(plan.features) ? plan.features : []);
-                return features.slice(0, 4).map((f, i) => (
+                return features.slice(0, 10).map((f, i) => (
                   <div key={i} className="text-sm text-gray-600 flex items-center gap-2">
                     <span className="text-green-600">•</span>
                     <span>{f}</span>

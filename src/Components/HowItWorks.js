@@ -62,7 +62,7 @@ export default function HowItWorks() {
           <div className="hidden lg:block absolute top-24 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-green-500 to-rose-500 opacity-20"></div>
 
           {steps.map((step, index) => (
-            <div key={index} className="relative group">
+            <div key={index} className={`${index >= 2 ? "hidden md:block" : ""} relative group`}>
               {/* Step Card */}
               <div className="bg-white rounded-2xl p-8 shadow-md hover:shadow-2xl transition-all duration-300 border border-gray-100 relative z-10">
                 {/* Number Badge */}
