@@ -13,7 +13,7 @@
 
 2. **Add to `.env.local`:**
    ```env
-   TELEGRAM_BOT_TOKEN=your_bot_token_here
+   TELEGRAM_BOT_TOKEN=8685708662:AAFFOCywBgFbFoVVIFELRbk1m2gNb7pw9qM
    CRON_SECRET=any_random_secret_key
    ```
 

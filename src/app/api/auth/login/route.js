@@ -44,6 +44,30 @@ export async function POST(request) {
     // Update last login
     await user.update({ lastLogin: new Date() });
 
+    // Generate referral code if user doesn't have one
+    if (!user.referralCode) {
+      const { randomBytes } = require('crypto');
+      let codeGenerated = false;
+      let attempts = 0;
+      
+      while (!codeGenerated && attempts < 5) {
+        const code = randomBytes(4).toString('hex').toUpperCase();
+        const existing = await User.findOne({ where: { referralCode: code } });
+        if (!existing) {
+          await user.update({ referralCode: code });
+          user.referralCode = code;
+          codeGenerated = true;
+        }
+        attempts++;
+      }
+      
+      if (!codeGenerated) {
+        const fallbackCode = `${user.username}-${Date.now()}`.toUpperCase().slice(0, 16);
+        await user.update({ referralCode: fallbackCode });
+        user.referralCode = fallbackCode;
+      }
+    }
+
     // Generate JWT token
     const token = jwt.sign(
       { 

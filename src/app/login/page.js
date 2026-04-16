@@ -81,8 +81,8 @@ export default function LoginPage() {
           // Set cookie for server-side authentication
           document.cookie = `token=${apiResult.data.token}; path=/; max-age=${7 * 24 * 60 * 60}; secure; samesite=strict`;
           
-          // Redirect to dashboard
-          router.push('/dashboard');
+          // Force redirect to dashboard using window.location for reliable navigation
+          window.location.href = '/dashboard';
         } else {
           setErrors({ general: apiResult.message });
         }
@@ -126,8 +126,8 @@ export default function LoginPage() {
         // Set cookie for server-side authentication
         document.cookie = `token=${result.data.token}; path=/; max-age=${7 * 24 * 60 * 60}; secure; samesite=strict`;
         
-        // Redirect to dashboard
-        router.push('/dashboard');
+        // Force redirect to dashboard using window.location for reliable navigation
+        window.location.href = '/dashboard';
       } else {
         setErrors({ general: result.message });
       }

@@ -38,8 +38,8 @@ export default function AdminLoginPage() {
           localStorage.setItem('user', JSON.stringify(data.data.user));
           localStorage.setItem('token', data.data.token);
           
-          // Redirect to admin dashboard
-          router.push('/admin');
+          // Force redirect to admin dashboard using window.location for reliable navigation
+          window.location.href = '/admin';
         } else {
           setError('Access denied. Admin privileges required.');
           // Clear any existing auth data
