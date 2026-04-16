@@ -156,10 +156,31 @@ export default function AdminPlansPage() {
       features: (() => {
         if (!plan.features) return '';
         try {
-          const parsed = typeof plan.features === 'string' 
-            ? JSON.parse(plan.features) 
-            : plan.features;
-          return Array.isArray(parsed) ? parsed.join('\n') : '';
+          let features = plan.features;
+          // Handle multi-encoded JSON
+          if (typeof features === 'string') {
+            let maxAttempts = 5;
+            while (typeof features === 'string' && maxAttempts > 0) {
+              try {
+                features = JSON.parse(features);
+                maxAttempts--;
+              } catch (e) {
+                break;
+              }
+            }
+          }
+          if (!Array.isArray(features)) return '';
+          // Clean each feature string
+          const cleanFeatures = features.map(f => {
+            if (typeof f !== 'string') return '';
+            return f
+              .replace(/^\[?"?\\?"?/g, '')
+              .replace(/"?\]?"?\\?"?$/g, '')
+              .replace(/\\"/g, '"')
+              .replace(/^"|"$/g, '')
+              .trim();
+          }).filter(Boolean);
+          return cleanFeatures.join('\n');
         } catch (e) {
           return '';
         }
@@ -507,10 +528,30 @@ export default function AdminPlansPage() {
                     let features = [];
                     if (plan.features) {
                       try {
-                        features = typeof plan.features === 'string'
-                          ? JSON.parse(plan.features)
-                          : plan.features;
+                        features = plan.features;
+                        // Handle multi-encoded JSON
+                        if (typeof features === 'string') {
+                          let maxAttempts = 5;
+                          while (typeof features === 'string' && maxAttempts > 0) {
+                            try {
+                              features = JSON.parse(features);
+                              maxAttempts--;
+                            } catch (e) {
+                              break;
+                            }
+                          }
+                        }
                         features = Array.isArray(features) ? features : [];
+                        // Clean each feature string
+                        features = features.map(f => {
+                          if (typeof f !== 'string') return '';
+                          return f
+                            .replace(/^\[?"?\\?"?/g, '')
+                            .replace(/"?\]?"?\\?"?$/g, '')
+                            .replace(/\\"/g, '"')
+                            .replace(/^"|"$/g, '')
+                            .trim();
+                        }).filter(Boolean);
                       } catch (e) {
                         features = [];
                       }

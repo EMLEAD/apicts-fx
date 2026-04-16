@@ -80,10 +80,36 @@ export default function PlansList({ limit = 3 }) {
           <div className="space-y-2 mb-4">
             {(() => {
               try {
-                const features = typeof plan.features === 'string' 
-                  ? JSON.parse(plan.features) 
-                  : (Array.isArray(plan.features) ? plan.features : []);
-                return features.slice(0, 10).map((f, i) => (
+                let features = plan.features;
+                // Handle multi-encoded JSON
+                if (typeof features === 'string') {
+                  // Keep parsing until we get an array or can't parse anymore
+                  let maxAttempts = 5;
+                  while (typeof features === 'string' && maxAttempts > 0) {
+                    try {
+                      features = JSON.parse(features);
+                      maxAttempts--;
+                    } catch (e) {
+                      break;
+                    }
+                  }
+                }
+                // Ensure it's an array
+                if (!Array.isArray(features)) {
+                  features = [];
+                }
+                // Clean each feature string - remove brackets, quotes, escape chars
+                const cleanFeatures = features.map(f => {
+                  if (typeof f !== 'string') return '';
+                  return f
+                    .replace(/^\[?"?\\?"?/g, '')  // Remove leading [, ", \"
+                    .replace(/"?\]?"?\\?"?$/g, '') // Remove trailing ], ", \"
+                    .replace(/\\"/g, '"')          // Replace \" with "
+                    .replace(/^"|"$/g, '')         // Remove surrounding quotes
+                    .trim();
+                }).filter(Boolean);
+                
+                return cleanFeatures.slice(0, 10).map((f, i) => (
                   <div key={i} className="text-sm text-gray-600 flex items-center gap-2">
                     <span className="text-green-600">•</span>
                     <span>{f}</span>

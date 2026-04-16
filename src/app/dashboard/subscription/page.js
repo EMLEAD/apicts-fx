@@ -93,10 +93,33 @@ export default function SubscriptionPage() {
         const parsedPlans = data.plans.map(plan => {
           if (plan.features) {
             try {
-              const parsedFeatures = typeof plan.features === 'string'
-                ? JSON.parse(plan.features)
-                : plan.features;
-              plan.features = Array.isArray(parsedFeatures) ? parsedFeatures : [];
+              let features = plan.features;
+              // Handle multi-encoded JSON
+              if (typeof features === 'string') {
+                let maxAttempts = 5;
+                while (typeof features === 'string' && maxAttempts > 0) {
+                  try {
+                    features = JSON.parse(features);
+                    maxAttempts--;
+                  } catch (e) {
+                    break;
+                  }
+                }
+              }
+              // Ensure it's an array
+              if (!Array.isArray(features)) {
+                features = [];
+              }
+              // Clean each feature string - remove brackets, quotes, escape chars
+              plan.features = features.map(f => {
+                if (typeof f !== 'string') return '';
+                return f
+                  .replace(/^\[?"?\\?"?/g, '')
+                  .replace(/"?\]?"?\\?"?$/g, '')
+                  .replace(/\\"/g, '"')
+                  .replace(/^"|"$/g, '')
+                  .trim();
+              }).filter(Boolean);
             } catch (e) {
               console.error('Failed to parse plan features:', e);
               plan.features = [];
@@ -144,10 +167,33 @@ export default function SubscriptionPage() {
       // Parse features if it's a JSON string
       if (data.subscription?.plan?.features) {
         try {
-          const parsedFeatures = typeof data.subscription.plan.features === 'string'
-            ? JSON.parse(data.subscription.plan.features)
-            : data.subscription.plan.features;
-          data.subscription.plan.features = Array.isArray(parsedFeatures) ? parsedFeatures : [];
+          let features = data.subscription.plan.features;
+          // Handle multi-encoded JSON
+          if (typeof features === 'string') {
+            let maxAttempts = 5;
+            while (typeof features === 'string' && maxAttempts > 0) {
+              try {
+                features = JSON.parse(features);
+                maxAttempts--;
+              } catch (e) {
+                break;
+              }
+            }
+          }
+          // Ensure it's an array
+          if (!Array.isArray(features)) {
+            features = [];
+          }
+          // Clean each feature string - remove brackets, quotes, escape chars
+          data.subscription.plan.features = features.map(f => {
+            if (typeof f !== 'string') return '';
+            return f
+              .replace(/^\[?"?\\?"?/g, '')
+              .replace(/"?\]?"?\\?"?$/g, '')
+              .replace(/\\"/g, '"')
+              .replace(/^"|"$/g, '')
+              .trim();
+          }).filter(Boolean);
         } catch (e) {
           console.error('Failed to parse plan features:', e);
           data.subscription.plan.features = [];

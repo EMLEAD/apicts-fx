@@ -16,6 +16,18 @@ function normalizeFeatures(features) {
   }
 
   if (typeof features === 'string') {
+    // Try to parse as JSON first
+    try {
+      const parsed = JSON.parse(features);
+      if (Array.isArray(parsed)) {
+        return parsed
+          .map((feature) => (typeof feature === 'string' ? feature.trim() : ''))
+          .filter(Boolean);
+      }
+    } catch (e) {
+      // Not valid JSON, fall back to splitting
+    }
+    
     return features
       .split(/\r?\n|,/)
       .map((item) => item.trim())
