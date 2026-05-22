@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { authenticate } from '@/lib/middleware/auth';
-import { Plan, Transaction } from '@/lib/db/models';
+import { Plan, Transaction, ExchangeRate } from '@/lib/db/models';
 import { initializeTransaction } from '@/lib/paystack/client';
 
 export async function POST(request) {
@@ -26,9 +26,22 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Plan is not available for subscription' }, { status: 400 });
     }
 
-    const numericAmount = Number(plan.price);
+    let numericAmount = Number(plan.price);
     if (!numericAmount || Number.isNaN(numericAmount) || numericAmount <= 0) {
       return NextResponse.json({ error: 'Invalid plan price' }, { status: 400 });
+    }
+
+    let finalCurrency = plan.currency || 'NGN';
+
+    if (finalCurrency === 'USD') {
+      const rateObj = await ExchangeRate.findOne({
+        where: { fromCurrency: 'USD', toCurrency: 'NGN', isActive: true },
+        order: [['createdAt', 'DESC']]
+      });
+
+      const rate = rateObj ? Number(rateObj.rate) : 1410;
+      numericAmount = numericAmount * rate;
+      finalCurrency = 'NGN';
     }
 
     if (!auth.user.email) {
@@ -56,11 +69,13 @@ export async function POST(request) {
       type: 'deposit', // Using deposit type for subscription payments
       status: 'pending',
       amount: numericAmount,
-      currency: plan.currency || 'NGN',
+      currency: finalCurrency,
       description: `Subscription payment for ${plan.name}`,
       metadata: {
         planId: plan.id,
         planName: plan.name,
+        originalPrice: Number(plan.price),
+        originalCurrency: plan.currency,
         subscriptionPayment: true,
         paystack: {
           reference,

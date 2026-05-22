@@ -12,7 +12,7 @@ const formatCurrency = (amount, currency = "NGN") => {
   }
 };
 
-export default function PlansList({ limit = 3 }) {
+export default function PlansList({ limit = 20 }) {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -29,10 +29,18 @@ export default function PlansList({ limit = 3 }) {
           const fallback = await fetch("/api/plans?includeInactive=true");
           if (!fallback.ok) throw new Error("Failed to load plans");
           const fd = await fallback.json();
-          if (mounted) setPlans(Array.isArray(fd.plans) ? fd.plans.slice(0, limit) : []);
+          if (mounted) {
+            let p = Array.isArray(fd.plans) ? fd.plans : [];
+            p.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+            setPlans(p.slice(0, limit));
+          }
         } else {
           const data = await res.json();
-          if (mounted) setPlans(Array.isArray(data.plans) ? data.plans.slice(0, limit) : []);
+          if (mounted) {
+            let p = Array.isArray(data.plans) ? data.plans : [];
+            p.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+            setPlans(p.slice(0, limit));
+          }
         }
       } catch (err) {
         console.error("Plans fetch error:", err);

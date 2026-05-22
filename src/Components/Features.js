@@ -100,37 +100,7 @@ export default function Features() {
           ))}
         </div>
 
-        {/* Trust Badges */}
-        <div className="mt-16 bg-gradient-to-r from-blue-600 via-green-500 to-rose-500 rounded-2xl p-1">
-          <div className="bg-white rounded-xl p-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-              <div>
-                <div className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-green-500 bg-clip-text text-transparent mb-2">
-                  10,000+
-                </div>
-                <div className="text-sm text-gray-600 font-medium">Active Users</div>
-              </div>
-              {/* <div>
-                <div className="text-4xl font-bold bg-gradient-to-r from-green-500 to-emerald-600 bg-clip-text text-transparent mb-2">
-                  
-                </div>
-                <div className="text-sm text-gray-600 font-medium">Transactions Processed</div>
-              </div> */}
-              <div>
-                <div className="text-4xl font-bold bg-gradient-to-r from-rose-500 to-red-600 bg-clip-text text-transparent mb-2">
-                  50+
-                </div>
-                <div className="text-sm text-gray-600 font-medium">Currencies Supported</div>
-              </div>
-              <div>
-                <div className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
-                  4.9★
-                </div>
-                <div className="text-sm text-gray-600 font-medium">Customer Rating</div>
-              </div>
-            </div>
-          </div>
-        </div>
+     
       </div>
     </section>
   );

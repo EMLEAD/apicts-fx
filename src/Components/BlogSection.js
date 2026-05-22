@@ -8,12 +8,14 @@ import PlansList from "@/Components/PlanList";
 
 export default function BlogSection() {
   return (
-    <div className="mt-10 text-center">
-      <div className="inline-block bg-gradient-to-r from-red-600 to-red-500 text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-green-600 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
-        <h2 className="text-white text-2xl font-semibold">Choose a Plan</h2>
-      </div>
-      <div className="bg-white/5 p-6 rounded-2xl border border-gray-200 shadow-sm">
-        <PlansList />
+    <div className="mt-10 text-center space-y-16">
+      <div>
+        <div className="inline-block bg-gradient-to-r from-red-600 to-red-500 text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-green-600 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 mb-6">
+          <h2 className="text-white text-2xl font-semibold">Choose a Plan</h2>
+        </div>
+        <div className="bg-white/5 p-6 rounded-2xl border border-gray-200 shadow-sm max-w-7xl mx-auto">
+          <PlansList />
+        </div>
       </div>
     </div>
   );

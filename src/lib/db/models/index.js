@@ -17,6 +17,8 @@ const HeroContentModel = require('./HeroContent');
 const SiteSettingsModel = require('./SiteSettings');
 const DocumentModel = require('./Document');
 const UserDocumentModel = require('./UserDocument');
+const ProductModel = require('./Product');
+const AffiliateLinkModel = require('./AffiliateLink');
 
 // Initialize models
 const User = UserModel(sequelize);
@@ -37,6 +39,8 @@ const HeroContent = HeroContentModel(sequelize);
 const SiteSettings = SiteSettingsModel(sequelize);
 const Document = DocumentModel(sequelize);
 const UserDocument = UserDocumentModel(sequelize);
+const Product = ProductModel(sequelize);
+const AffiliateLink = AffiliateLinkModel(sequelize);
 
 // Define associations
 User.hasMany(Contact, { foreignKey: 'userId', as: 'contacts' });
@@ -134,6 +138,8 @@ module.exports = {
   SiteSettings,
   Document,
   UserDocument,
+  Product,
+  AffiliateLink,
   syncDatabase
 };
 

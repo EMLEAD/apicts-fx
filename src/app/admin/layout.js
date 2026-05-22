@@ -23,7 +23,9 @@ import {
   ClipboardList,
   BadgePercent,
   ArrowUpRight,
-  Home
+  Home,
+  ShoppingBag,
+  Megaphone
 } from 'lucide-react';
 
 const ADMIN_ROLES = ['super_admin', 'admin', 'moderator'];
@@ -62,6 +64,8 @@ export default function AdminLayout({ children }) {
     { name: 'Security', href: '/admin/security', icon: Shield },
     { name: 'Plans', href: '/admin/plans', icon: ClipboardList },
     { name: 'Site Settings', href: '/admin/site-settings', icon: Settings },
+    { name: 'Products', href: '/admin/products', icon: ShoppingBag },
+    { name: 'Affiliate Adverts', href: '/admin/affiliate-links', icon: Megaphone },
     { name: 'Coupons', href: '/admin/coupons', icon: BadgePercent },
     { name: 'Transfers', href: '/admin/transfers', icon: ArrowUpRight },
   ];
