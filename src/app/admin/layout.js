@@ -25,7 +25,8 @@ import {
   ArrowUpRight,
   Home,
   ShoppingBag,
-  Megaphone
+  Megaphone,
+  Mail
 } from 'lucide-react';
 
 const ADMIN_ROLES = ['super_admin', 'admin', 'moderator'];
@@ -66,6 +67,7 @@ export default function AdminLayout({ children }) {
     { name: 'Site Settings', href: '/admin/site-settings', icon: Settings },
     { name: 'Products', href: '/admin/products', icon: ShoppingBag },
     { name: 'Affiliate Adverts', href: '/admin/affiliate-links', icon: Megaphone },
+    { name: 'Messages', href: '/admin/messages', icon: Mail },
     { name: 'Coupons', href: '/admin/coupons', icon: BadgePercent },
     { name: 'Transfers', href: '/admin/transfers', icon: ArrowUpRight },
   ];

@@ -130,7 +130,6 @@ export default function SubscriptionPage() {
         
         // Filter to only show active plans on the frontend
         const activePlans = parsedPlans.filter(plan => plan.status === 'active');
-        activePlans.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
         setPlans(activePlans);
         
         if (activePlans.length === 0) {

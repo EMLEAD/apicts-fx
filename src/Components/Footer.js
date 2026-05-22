@@ -1,6 +1,6 @@
 "use client";
 
-import { Twitter, Instagram, Linkedin, Youtube, ArrowUp } from "lucide-react";
+import { Twitter, Instagram, Linkedin, Youtube, ArrowUp, Facebook, Send as TelegramIcon } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 
@@ -18,7 +18,8 @@ export default function Footer() {
     contactInfo: {
       email: 'support@apicts.com',
       phone: '+2348139399978',
-      address: 'Km 18, Topaz Plaza, New Road, Lekki Ajah, Lagos'
+      address: 'Km 18, Topaz Plaza, New Road, Lekki Ajah, Lagos',
+      workingDays: 'Monday - Saturday: 9:00 AM - 6:00 PM'
     }
   });
 
@@ -58,7 +59,8 @@ export default function Footer() {
             : (data.settings.contactInfo || {
                 email: 'support@apicts.com',
                 phone: '+2348139399978',
-                address: 'Km 18, Topaz Plaza, New Road, Lekki Ajah, Lagos'
+                address: 'Km 18, Topaz Plaza, New Road, Lekki Ajah, Lagos',
+                workingDays: 'Monday - Saturday: 9:00 AM - 6:00 PM'
               });
 
           setSiteSettings({
@@ -178,6 +180,12 @@ export default function Footer() {
                 {siteSettings.contactInfo.address}
               </span>
             </li>
+            <li className="flex items-start gap-2 group/link mt-2">
+              <span className="font-semibold text-red-400 group-hover/link:text-green-400 transition-colors duration-300 whitespace-nowrap">Hours:</span>
+              <span className="group-hover/link:text-green-400 transition-colors duration-300 whitespace-pre-wrap">
+                {siteSettings.contactInfo.workingDays}
+              </span>
+            </li>
           </ul>
         </div>
       </div>
@@ -209,6 +217,16 @@ export default function Footer() {
           {siteSettings.socialLinks.instagram && (
             <a href={siteSettings.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="text-white hover:text-green-400 transition-all duration-300 hover:scale-110 hover:-translate-y-1">
               <Instagram size={24} />
+            </a>
+          )}
+          {siteSettings.socialLinks.facebook && (
+            <a href={siteSettings.socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="text-white hover:text-green-400 transition-all duration-300 hover:scale-110 hover:-translate-y-1">
+              <Facebook size={24} />
+            </a>
+          )}
+          {siteSettings.socialLinks.telegram && (
+            <a href={siteSettings.socialLinks.telegram} target="_blank" rel="noopener noreferrer" className="text-white hover:text-green-400 transition-all duration-300 hover:scale-110 hover:-translate-y-1">
+              <TelegramIcon size={24} />
             </a>
           )}
         </div>

@@ -31,14 +31,12 @@ export default function PlansList({ limit = 20 }) {
           const fd = await fallback.json();
           if (mounted) {
             let p = Array.isArray(fd.plans) ? fd.plans : [];
-            p.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
             setPlans(p.slice(0, limit));
           }
         } else {
           const data = await res.json();
           if (mounted) {
             let p = Array.isArray(data.plans) ? data.plans : [];
-            p.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
             setPlans(p.slice(0, limit));
           }
         }

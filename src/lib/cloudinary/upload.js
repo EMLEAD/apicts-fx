@@ -7,11 +7,23 @@ const { Readable } = require('stream');
  * @param {Object} options - Upload options
  * @returns {Promise} Cloudinary upload result
  */
-const uploadToCloudinary = (fileBuffer, options = {}) => {
+const uploadToCloudinary = async (fileBuffer, options = {}) => {
+  const folderPath = options.folder || 'apicts';
+  
+  // Attempt to create the folder first (fails silently if it already exists)
+  try {
+    await cloudinary.api.create_folder(folderPath);
+  } catch (err) {
+    // Ignore error if folder already exists
+    if (err.http_code !== 400) {
+      console.warn(`Cloudinary folder creation warning: ${err.message}`);
+    }
+  }
+
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
-        folder: options.folder || 'apicts',
+        folder: folderPath,
         resource_type: options.resource_type || 'auto',
         transformation: options.transformation || null,
         public_id: options.public_id || undefined,

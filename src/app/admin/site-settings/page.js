@@ -27,7 +27,8 @@ export default function SiteSettingsPage() {
     contactInfo: {
       email: 'support@apicts.com',
       phone: '+2348139399978',
-      address: 'Km 18, Topaz Plaza, New Road, Lekki Ajah, Lagos'
+      address: 'Km 18, Topaz Plaza, New Road, Lekki Ajah, Lagos',
+      workingDays: 'Monday - Saturday: 9:00 AM - 6:00 PM'
     }
   });
 
@@ -71,7 +72,8 @@ export default function SiteSettingsPage() {
             : (data.settings.contactInfo || {
                 email: 'support@apicts.com',
                 phone: '+2348139399978',
-                address: 'Km 18, Topaz Plaza, New Road, Lekki Ajah, Lagos'
+                address: 'Km 18, Topaz Plaza, New Road, Lekki Ajah, Lagos',
+                workingDays: 'Monday - Saturday: 9:00 AM - 6:00 PM'
               });
           
           setFormData({
@@ -368,6 +370,22 @@ export default function SiteSettingsPage() {
                 rows={3}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="Your business address"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Business Hours / Working Days
+              </label>
+              <textarea
+                value={formData.contactInfo.workingDays}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  contactInfo: { ...prev.contactInfo, workingDays: e.target.value }
+                }))}
+                rows={3}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                placeholder="Monday - Friday: 9:00 AM - 6:00 PM"
               />
             </div>
           </div>
