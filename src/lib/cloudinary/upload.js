@@ -10,18 +10,13 @@ const { Readable } = require('stream');
 const uploadToCloudinary = async (fileBuffer, options = {}) => {
   const folderPath = options.folder || 'apicts';
   
-  // Attempt to create the folder first (fails silently if it already exists)
-  try {
-    await cloudinary.api.create_folder(folderPath);
-  } catch (err) {
-    // Ignore error if folder already exists
-    if (err.http_code !== 400) {
-      console.warn(`Cloudinary folder creation warning: ${err.message}`);
-    }
-  }
+  // Create a base64 data URI from the buffer
+  // Default to png if we don't know the mime type, Cloudinary will detect the real type automatically
+  const base64Image = `data:image/png;base64,${fileBuffer.toString('base64')}`;
 
   return new Promise((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
+    cloudinary.uploader.upload(
+      base64Image,
       {
         folder: folderPath,
         resource_type: options.resource_type || 'auto',
@@ -38,10 +33,6 @@ const uploadToCloudinary = async (fileBuffer, options = {}) => {
         }
       }
     );
-
-    // Convert buffer to stream and pipe to Cloudinary
-    const bufferStream = Readable.from(fileBuffer);
-    bufferStream.pipe(uploadStream);
   });
 };
 
