@@ -1,27 +1,40 @@
 import { NextResponse } from 'next/server';
+const cloudinary = require('@/lib/cloudinary/config');
 
 export async function GET() {
   try {
-    const cloudName = process.env.CLOUDINARY_CLOUD_NAME || 'demo';
-    const apiKey = process.env.CLOUDINARY_API_KEY || '';
-    const apiSecret = process.env.CLOUDINARY_API_SECRET || '';
+    const config = cloudinary.config();
     
-    const testUrl = `https://api.cloudinary.com/v1_1/${cloudName}/ping`;
+    // Attempt to ping using the SDK directly to see what error the SDK throws
+    let pingResult = null;
+    let pingError = null;
     
-    const response = await fetch(testUrl, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Basic ${Buffer.from(`${apiKey}:${apiSecret}`).toString('base64')}`
-      }
-    });
-    
-    const text = await response.text();
+    try {
+      pingResult = await cloudinary.api.ping();
+    } catch (err) {
+      pingError = {
+        message: err.message,
+        name: err.name,
+        http_code: err.http_code,
+        stack: err.stack
+      };
+    }
     
     return NextResponse.json({
-      status: response.status,
-      statusText: response.statusText,
-      headers: Object.fromEntries(response.headers.entries()),
-      bodyPreview: text.substring(0, 1000)
+      status: 'diagnostic',
+      env_vars: {
+        CLOUD_NAME: !!process.env.CLOUDINARY_CLOUD_NAME,
+        API_KEY: !!process.env.CLOUDINARY_API_KEY,
+        API_SECRET: !!process.env.CLOUDINARY_API_SECRET,
+        CLOUDINARY_URL: process.env.CLOUDINARY_URL || null
+      },
+      sdk_config: {
+        cloud_name: config.cloud_name,
+        api_key: config.api_key,
+        secure: config.secure
+      },
+      ping_result: pingResult,
+      ping_error: pingError
     });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
