@@ -12,7 +12,8 @@ const uploadToCloudinary = async (fileBuffer, options = {}) => {
   
   // Create a base64 data URI from the buffer
   // Default to png if we don't know the mime type, Cloudinary will detect the real type automatically
-  const base64Image = `data:image/png;base64,${fileBuffer.toString('base64')}`;
+  const mime = options.mimeType || 'image/png';
+  const base64Image = `data:${mime};base64,${fileBuffer.toString('base64')}`;
 
   return new Promise((resolve, reject) => {
     cloudinary.uploader.upload(

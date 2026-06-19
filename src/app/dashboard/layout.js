@@ -17,6 +17,7 @@ import {
   CreditCard,
   Wallet,
   BarChart3,
+  ArrowLeftRight,
   ChevronRight,
   FileText,
   UserCircle
@@ -30,6 +31,7 @@ const dashboardNavigationItems = [
   { name: 'Documents', href: '/dashboard/documents', icon: FileText },
   { name: 'Subscription', href: '/dashboard/subscription', icon: CreditCard },
   { name: 'Wallet', href: '/dashboard/wallet', icon: Wallet },
+  { name: 'Exchange', href: '/dashboard/exchange', icon: ArrowLeftRight },
   { name: 'Transactions', href: '/dashboard/transactions', icon: BarChart3 },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];

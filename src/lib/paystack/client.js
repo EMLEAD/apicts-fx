@@ -41,11 +41,12 @@ const paystackFetch = async (path, options = {}) => {
   return data;
 };
 
-export const initializeTransaction = async ({ email, amount, metadata }) => {
+export const initializeTransaction = async ({ email, amount, metadata, callbackUrl }) => {
   const payload = {
     email,
     amount: Math.round(Number(amount) * 100),
-    metadata
+    metadata,
+    ...(callbackUrl && { callback_url: callbackUrl })
   };
   return paystackFetch('/transaction/initialize', {
     method: 'POST',

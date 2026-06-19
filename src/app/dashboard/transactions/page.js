@@ -17,8 +17,15 @@ import {
   AlertCircle,
   MoreVertical,
   RefreshCw,
-  Loader2
+  Loader2,
+  RotateCcw
 } from 'lucide-react';
+import {
+  getTransactionDisplayStatus,
+  getPaystackReference,
+  parseTransactionMetadata,
+  STATUS_TONE_CLASSES
+} from '@/lib/utils/transactionStatus';
 
 const formatCurrency = (amount, currency = 'NGN') => {
   const numericAmount = Number(amount) || 0;
@@ -167,35 +174,29 @@ export default function TransactionsPage() {
     }
   };
 
-  const getStatusIcon = (status) => {
-    switch (status) {
+  const getStatusIcon = (displayKey) => {
+    switch (displayKey) {
       case 'completed':
         return CheckCircle;
-      case 'pending':
-        return Clock;
       case 'failed':
         return AlertCircle;
+      case 'in_progress':
+        return TrendingUp;
+      case 'refunded':
+        return RotateCcw;
+      case 'pending_payment':
+      case 'pending':
       default:
         return Clock;
-    }
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'completed':
-        return 'text-green-600 bg-green-100';
-      case 'pending':
-        return 'text-yellow-600 bg-yellow-100';
-      case 'failed':
-        return 'text-red-600 bg-red-100';
-      default:
-        return 'text-gray-600 bg-gray-100';
     }
   };
 
   const totalStats = useMemo(() => {
-    const completed = transactions.filter(t => t.status === 'completed').length;
-    const pending = transactions.filter(t => t.status === 'pending').length;
+    const completed = transactions.filter(t => getTransactionDisplayStatus(t).key === 'completed').length;
+    const pending = transactions.filter(t => {
+      const key = getTransactionDisplayStatus(t).key;
+      return key === 'pending' || key === 'pending_payment' || key === 'in_progress';
+    }).length;
     const totalVolume = transactions.reduce((sum, t) => {
       const amount = Number(t.amount) || 0;
       return sum + amount;
@@ -210,16 +211,7 @@ export default function TransactionsPage() {
   }, [transactions, total]);
 
   const getReference = (transaction) => {
-    if (transaction.metadata?.paystack?.transfer?.reference) {
-      return transaction.metadata.paystack.transfer.reference;
-    }
-    if (transaction.metadata?.paystack?.transaction?.reference) {
-      return transaction.metadata.paystack.transaction.reference;
-    }
-    if (transaction.metadata?.reference) {
-      return transaction.metadata.reference;
-    }
-    return transaction.id?.slice(0, 12).toUpperCase() || 'N/A';
+    return getPaystackReference(transaction) || transaction.id?.slice(0, 12).toUpperCase() || 'N/A';
   };
 
   if (!user) {
@@ -320,8 +312,9 @@ export default function TransactionsPage() {
             >
               <option value="all">All Status</option>
               <option value="completed">Completed</option>
-              <option value="pending">Pending</option>
+              <option value="pending">Pending / In Progress</option>
               <option value="failed">Failed</option>
+              <option value="cancelled">Refunded</option>
             </select>
 
             <select
@@ -436,7 +429,9 @@ export default function TransactionsPage() {
               ) : (
                 transactions.map((transaction) => {
                   const TransactionIcon = getTransactionIcon(transaction.type);
-                  const StatusIcon = getStatusIcon(transaction.status);
+                  const displayStatus = getTransactionDisplayStatus(transaction);
+                  const StatusIcon = getStatusIcon(displayStatus.key);
+                  const meta = parseTransactionMetadata(transaction.metadata);
                   
                   return (
                     <tr key={transaction.id} className="hover:bg-gray-50">
@@ -453,6 +448,9 @@ export default function TransactionsPage() {
                             </div>
                             <div className="text-sm text-gray-500">
                               {transaction.id?.slice(0, 8).toUpperCase() || 'N/A'}
+                              {transaction.type === 'exchange' && meta.paymentStatus === 'paid' && transaction.status === 'pending' && (
+                                <span className="ml-2 text-blue-600 text-xs">· Paid</span>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -461,16 +459,16 @@ export default function TransactionsPage() {
                         <div className="text-sm font-semibold text-gray-900">
                           {formatCurrency(transaction.amount, transaction.currency)}
                         </div>
-                        {transaction.metadata?.fee && Number(transaction.metadata.fee) > 0 && (
+                        {meta.fee && Number(meta.fee) > 0 && (
                           <div className="text-sm text-gray-500">
-                            Fee: {formatCurrency(transaction.metadata.fee, transaction.currency)}
+                            Fee: {formatCurrency(meta.fee, transaction.currency)}
                           </div>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${getStatusColor(transaction.status)}`}>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_TONE_CLASSES[displayStatus.tone]}`}>
                           <StatusIcon className="h-3 w-3 mr-1" />
-                          {transaction.status}
+                          {displayStatus.label}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">

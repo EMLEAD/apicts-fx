@@ -8,6 +8,7 @@ import BlogSection from "@/Components/BlogSection";
 import ProductsSection from "@/Components/ProductsSection";
 import AffiliateAdverts from "@/Components/AffiliateAdverts";
 import CtaSection from "@/Components/CtaSection";
+import TestimonialsSection from "@/Components/TestimonialsSection";
 // import PlanList from "@/Components/PlanList";
 // import Login from "@/Components/Login";
 import TrustBadges from "@/Components/TrustBadges";
@@ -25,7 +26,7 @@ export default function Home() {
           
           <div className="flex-1 w-full min-w-0">
             {/* Features Section */}
-            <Features />
+            {/* <Features /> */}
             {/* Products Section */}
             <ProductsSection />
           </div>
@@ -49,8 +50,9 @@ export default function Home() {
 
       {/* Blog Section */}
       <BlogSection />
-      {/* Trust Badges */}
-      <TrustBadges />
+
+      {/* Testimonials */}
+      <TestimonialsSection />
 
       {/* CTA Section */}
       <CtaSection />

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Transaction, User } from '@/lib/db/models';
 import jwt from 'jsonwebtoken';
+import emailService from '@/lib/email/service';
 
 async function authenticateAdmin(request) {
   try {
@@ -37,10 +38,34 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ error: 'Transaction not found' }, { status: 404 });
     }
 
+    const oldStatus = transaction.status;
+    const newStatus = body.status;
+
     await transaction.update({
-      status: body.status,
-      processedAt: body.status === 'completed' ? new Date() : transaction.processedAt
+      status: newStatus,
+      processedAt: newStatus === 'completed' ? new Date() : transaction.processedAt
     });
+
+    // Send email notification on status update
+    if (newStatus && oldStatus !== newStatus) {
+      try {
+        const user = await User.findByPk(transaction.userId);
+        if (user) {
+          await emailService.sendTransactionNotification(user.email, user.username, {
+            status: newStatus,
+            transactionId: transaction.id,
+            type: transaction.type,
+            amount: `${transaction.currency || 'NGN'} ${Number(transaction.amount).toLocaleString()}`,
+            fromCurrency: transaction.currency || 'NGN',
+            toCurrency: transaction.targetCurrency || 'USD',
+            exchangeRate: transaction.exchangeRate || 1,
+            fee: transaction.fees || 0
+          });
+        }
+      } catch (emailError) {
+        console.error('Error sending transaction status email:', emailError);
+      }
+    }
 
     return NextResponse.json({ transaction }, { status: 200 });
   } catch (error) {
@@ -48,4 +73,5 @@ export async function PATCH(request, { params }) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
 

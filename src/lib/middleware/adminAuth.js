@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 
 export const ADMIN_ROLES = ['super_admin', 'admin', 'moderator'];
 export const SUPER_ADMIN_ONLY = ['super_admin'];
+export const EXCHANGE_ADMIN_ROLES = ['super_admin', 'admin'];
 
 export async function authenticateAdmin(request, options = {}) {
   const { allowRoles = ADMIN_ROLES } = options;

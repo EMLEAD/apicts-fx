@@ -26,10 +26,13 @@ import {
   Home,
   ShoppingBag,
   Megaphone,
-  Mail
+  Mail,
+  ArrowLeftRight,
+  MessageSquareQuote
 } from 'lucide-react';
 
 const ADMIN_ROLES = ['super_admin', 'admin', 'moderator'];
+const EXCHANGE_ADMIN_ROLES = ['super_admin', 'admin'];
 
 export default function AdminLayout({ children }) {
   const router = useRouter();
@@ -57,6 +60,7 @@ export default function AdminLayout({ children }) {
     { name: 'Hero Section', href: '/admin/hero', icon: Home },
     { name: 'User Management', href: '/admin/users', icon: Users },
     { name: 'Transactions', href: '/admin/transactions', icon: TrendingUp },
+    { name: 'Exchanges', href: '/admin/exchanges', icon: ArrowLeftRight, roles: EXCHANGE_ADMIN_ROLES },
     { name: 'Exchange Rates', href: '/admin/rates', icon: DollarSign },
     { name: 'Blog Posts', href: '/admin/blog', icon: FileText },
     { name: 'Vlog Posts', href: '/admin/vlog', icon: Video },
@@ -66,6 +70,7 @@ export default function AdminLayout({ children }) {
     { name: 'Plans', href: '/admin/plans', icon: ClipboardList },
     { name: 'Site Settings', href: '/admin/site-settings', icon: Settings },
     { name: 'Products', href: '/admin/products', icon: ShoppingBag },
+    { name: 'Testimonials', href: '/admin/testimonials', icon: MessageSquareQuote },
     { name: 'Affiliate Adverts', href: '/admin/affiliate-links', icon: Megaphone },
     { name: 'Messages', href: '/admin/messages', icon: Mail },
     { name: 'Coupons', href: '/admin/coupons', icon: BadgePercent },
@@ -109,7 +114,7 @@ export default function AdminLayout({ children }) {
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto p-4">
           <ul className="space-y-2">
-            {navigation.map((item) => {
+            {navigation.filter((item) => !item.roles || item.roles.includes(user.role)).map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
               return (
