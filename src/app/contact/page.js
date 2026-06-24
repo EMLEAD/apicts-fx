@@ -4,7 +4,7 @@ import Navbar from "@/Components/NavBar";
 import Footer from "@/Components/Footer";
 import { Mail, Phone, MapPin, Send, Loader2, Youtube, Twitter, Linkedin, Instagram, Facebook, Send as TelegramIcon } from "lucide-react";
 import { useState, useEffect } from "react";
-import { toast } from "react-hot-toast";
+// import { toast } from "react-hot-toast";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
