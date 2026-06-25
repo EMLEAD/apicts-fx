@@ -41,6 +41,27 @@ export async function PATCH(request, { params }) {
     const oldStatus = transaction.status;
     const newStatus = body.status;
 
+    // If this is a sell transaction (check both type and metadata) being marked as completed, credit the user
+    const txMetadata = typeof transaction.metadata === 'string' ? JSON.parse(transaction.metadata) : transaction.metadata;
+    const isSellTransaction = 
+      transaction.type === 'sell' || 
+      (txMetadata && (txMetadata.sellStatus || txMetadata.transactionType === 'product_sell' || txMetadata.images));
+      
+    if (isSellTransaction && newStatus === 'completed' && oldStatus !== 'completed') {
+      const user = await User.findByPk(transaction.userId);
+      if (user) {
+        // Credit user's wallet
+        const currentBalance = parseFloat(user.walletBalance || 0);
+        const transactionAmount = parseFloat(transaction.amount || 0);
+        
+        await user.update({
+          walletBalance: currentBalance + transactionAmount
+        });
+        
+        console.log(`💰 Credited user ${user.id} with NGN ${transactionAmount} for sell transaction ${transaction.id}`);
+      }
+    }
+
     await transaction.update({
       status: newStatus,
       processedAt: newStatus === 'completed' ? new Date() : transaction.processedAt
@@ -51,23 +72,50 @@ export async function PATCH(request, { params }) {
       try {
         const user = await User.findByPk(transaction.userId);
         if (user) {
-          await emailService.sendTransactionNotification(user.email, user.username, {
+          let emailSubject = `Transaction ${newStatus} - ${transaction.type || 'sell'}`;
+          let emailData = {
             status: newStatus,
             transactionId: transaction.id,
-            type: transaction.type,
+            type: transaction.type || 'sell',
             amount: `${transaction.currency || 'NGN'} ${Number(transaction.amount).toLocaleString()}`,
             fromCurrency: transaction.currency || 'NGN',
             toCurrency: transaction.targetCurrency || 'USD',
             exchangeRate: transaction.exchangeRate || 1,
             fee: transaction.fees || 0
-          });
+          };
+
+          // Customize email for sell transactions
+          if (isSellTransaction) {
+            if (newStatus === 'completed') {
+              emailSubject = 'Your Sell Order Has Been Completed!';
+              emailData = {
+                ...emailData,
+                productName: txMetadata?.productName || transaction.targetCurrency,
+                quantity: txMetadata?.quantity,
+                credited: true,
+                newBalance: `${transaction.currency || 'NGN'} ${(parseFloat(user.walletBalance) + parseFloat(transaction.amount)).toLocaleString()}`
+              };
+            }
+          }
+
+          await emailService.sendTransactionNotification(user.email, user.username, emailData);
         }
       } catch (emailError) {
         console.error('Error sending transaction status email:', emailError);
       }
     }
 
-    return NextResponse.json({ transaction }, { status: 200 });
+    // Ensure metadata is an object
+    const txJSON = transaction.toJSON();
+    if (typeof txJSON.metadata === 'string') {
+      try {
+        txJSON.metadata = JSON.parse(txJSON.metadata);
+      } catch (e) {
+        txJSON.metadata = {};
+      }
+    }
+
+    return NextResponse.json({ transaction: txJSON }, { status: 200 });
   } catch (error) {
     console.error('Error updating transaction:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });

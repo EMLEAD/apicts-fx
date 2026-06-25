@@ -77,6 +77,8 @@ export async function POST(request) {
             walletId,
             quantity,
             productName: product.name,
+            productId: product.id,
+            transactionType: 'product_buy',
             paymentMethod: 'wallet',
             paymentStatus: 'paid'
           }
@@ -129,6 +131,8 @@ export async function POST(request) {
           walletId,
           quantity,
           productName: product.name,
+          productId: product.id,
+          transactionType: 'product_buy',
           paymentMethod: 'card',
           paymentStatus: 'unpaid',
           paystack: {

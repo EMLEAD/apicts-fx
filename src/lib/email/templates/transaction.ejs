@@ -97,13 +97,13 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Transaction <%= status.charAt(0).toUpperCase() + status.slice(1) %></h1>
+            <h1><%= type === 'sell' && status === 'completed' ? 'Sell Order Completed!' : `Transaction ${status.charAt(0).toUpperCase() + status.slice(1)}` %></h1>
         </div>
         
         <div class="content">
             <p>Hello <%= userName %>,</p>
             
-            <p>Your transaction has been <span class="status-<%= status %>"><%= status %></span>.</p>
+            <p>Your <%= type %> transaction has been <span class="status-<%= status %>"><%= status %></span>.</p>
             
             <div class="transaction-details">
                 <div class="transaction-field">
@@ -114,26 +114,40 @@
                     <span class="field-label">Type:</span>
                     <span class="field-value"><%= type %></span>
                 </div>
+                <% if (type === 'sell' && productName) { %>
+                    <div class="transaction-field">
+                        <span class="field-label">Product:</span>
+                        <span class="field-value"><%= productName %></span>
+                    </div>
+                    <% if (quantity) { %>
+                        <div class="transaction-field">
+                            <span class="field-label">Quantity:</span>
+                            <span class="field-value">$<%= quantity %> USD</span>
+                        </div>
+                    <% } %>
+                <% } %>
                 <div class="transaction-field">
                     <span class="field-label">Amount:</span>
                     <span class="amount"><%= amount %></span>
                 </div>
-                <div class="transaction-field">
-                    <span class="field-label">From:</span>
-                    <span class="field-value"><%= fromCurrency %></span>
-                </div>
-                <div class="transaction-field">
-                    <span class="field-label">To:</span>
-                    <span class="field-value"><%= toCurrency %></span>
-                </div>
-                <div class="transaction-field">
-                    <span class="field-label">Exchange Rate:</span>
-                    <span class="field-value"><%= exchangeRate %></span>
-                </div>
-                <div class="transaction-field">
-                    <span class="field-label">Fee:</span>
-                    <span class="field-value"><%= fee %></span>
-                </div>
+                <% if (type !== 'sell') { %>
+                    <div class="transaction-field">
+                        <span class="field-label">From:</span>
+                        <span class="field-value"><%= fromCurrency %></span>
+                    </div>
+                    <div class="transaction-field">
+                        <span class="field-label">To:</span>
+                        <span class="field-value"><%= toCurrency %></span>
+                    </div>
+                    <div class="transaction-field">
+                        <span class="field-label">Exchange Rate:</span>
+                        <span class="field-value"><%= exchangeRate %></span>
+                    </div>
+                    <div class="transaction-field">
+                        <span class="field-label">Fee:</span>
+                        <span class="field-value"><%= fee %></span>
+                    </div>
+                <% } %>
                 <div class="transaction-field">
                     <span class="field-label">Status:</span>
                     <span class="status-<%= status %>"><%= status.charAt(0).toUpperCase() + status.slice(1) %></span>
@@ -144,7 +158,10 @@
                 </div>
             </div>
             
-            <% if (status === 'completed') { %>
+            <% if (type === 'sell' && status === 'completed' && credited) { %>
+                <p>✅ Your sell order has been completed successfully! The amount has been credited to your wallet.</p>
+                <p class="amount">Your new wallet balance: <strong><%= newBalance %></strong></p>
+            <% } else if (status === 'completed') { %>
                 <p>✅ Your transaction has been completed successfully! The funds have been processed and should be available in your account.</p>
             <% } else if (status === 'pending') { %>
                 <p>⏳ Your transaction is being processed. You will receive another notification once it&apos;s completed.</p>
