@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, ArrowRight } from "lucide-react";
+import { Loader2, ArrowRight, ShoppingCart, DollarSign } from "lucide-react";
 import ExchangeTradeModal from "@/Components/ExchangeTradeModal";
 
 export default function ProductTradeGrid({
@@ -16,6 +16,7 @@ export default function ProductTradeGrid({
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [tradeType, setTradeType] = useState("buy");
   const [showTradeModal, setShowTradeModal] = useState(false);
 
   useEffect(() => {
@@ -36,7 +37,7 @@ export default function ProductTradeGrid({
     }
   };
 
-  const handleTrade = (product) => {
+  const handleTrade = (product, type) => {
     if (requireAuth) {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -45,6 +46,7 @@ export default function ProductTradeGrid({
       }
     }
 
+    setTradeType(type);
     setSelectedProduct(product);
     setShowTradeModal(true);
   };
@@ -52,6 +54,7 @@ export default function ProductTradeGrid({
   const handleCloseModal = () => {
     setShowTradeModal(false);
     setSelectedProduct(null);
+    setTradeType("buy");
   };
 
   const handleSuccess = () => {
@@ -118,14 +121,24 @@ export default function ProductTradeGrid({
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => handleTrade(product)}
-                  className="w-full flex items-center justify-center space-x-2 bg-gray-900 hover:bg-red-600 text-white font-medium py-3 px-4 rounded-lg transition-colors text-sm"
-                >
-                  <span>Trade Now</span>
-                  <ArrowRight size={16} />
-                </button>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => handleTrade(product, "sell")}
+                    className="flex-1 flex items-center justify-center space-x-2 bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-colors text-sm"
+                  >
+                    <DollarSign size={16} />
+                    <span>Sell</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleTrade(product, "buy")}
+                    className="flex-1 flex items-center justify-center space-x-2 bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-4 rounded-lg transition-colors text-sm"
+                  >
+                    <ShoppingCart size={16} />
+                    <span>Buy</span>
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -134,6 +147,7 @@ export default function ProductTradeGrid({
 
       <ExchangeTradeModal
         product={selectedProduct}
+        tradeType={tradeType}
         isOpen={showTradeModal}
         onClose={handleCloseModal}
         onSuccess={handleSuccess}

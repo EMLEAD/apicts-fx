@@ -70,6 +70,7 @@ export default function AdminLayout({ children }) {
     { name: 'Plans', href: '/admin/plans', icon: ClipboardList },
     { name: 'Site Settings', href: '/admin/site-settings', icon: Settings },
     { name: 'Products', href: '/admin/products', icon: ShoppingBag },
+    { name: 'Product Orders', href: '/admin/product-orders', icon: ShoppingBag },
     { name: 'Testimonials', href: '/admin/testimonials', icon: MessageSquareQuote },
     { name: 'Affiliate Adverts', href: '/admin/affiliate-links', icon: Megaphone },
     { name: 'Messages', href: '/admin/messages', icon: Mail },

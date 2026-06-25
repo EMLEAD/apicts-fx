@@ -1,14 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Filter, TrendingUp, TrendingDown, DollarSign, CheckCircle, Clock, XCircle, X, ExternalLink, Calendar, User as UserIcon } from 'lucide-react';
+import { Search, Filter, TrendingUp, TrendingDown, DollarSign, CheckCircle, Clock, XCircle, X, ExternalLink, Calendar, User as UserIcon, Image as ImageIcon } from 'lucide-react';
 
-export default function TransactionManagement() {
+export default function ProductOrderManagement() {
   const [transactions, setTransactions] = useState([]);
   const [filteredTransactions, setFilteredTransactions] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [updatingTransactionId, setUpdatingTransactionId] = useState(null);
   
   const [stats, setStats] = useState({
@@ -30,14 +32,41 @@ export default function TransactionManagement() {
 
   const fetchTransactions = async () => {
     try {
+      setLoading(true);
+      setError(null);
+      
       const token = localStorage.getItem('token');
       const res = await fetch('/api/admin/transactions', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
+      
+      if (!res.ok) {
+        throw new Error('Failed to fetch transactions');
+      }
+      
       const data = await res.json();
-      setTransactions(data.transactions || []);
+      console.log('Fetched all transactions:', data.transactions);
+      
+      // Process transactions: parse metadata if it's a string
+      const processedTransactions = (data.transactions || []).map(t => ({
+        ...t,
+        metadata: typeof t.metadata === 'string' ? JSON.parse(t.metadata) : t.metadata
+      }));
+      
+      // Filter to only sell transactions (check both type and metadata)
+      const sellTransactions = processedTransactions.filter(t => {
+        const isTypeSell = t.type === 'sell';
+        const hasSellMetadata = t.metadata && (t.metadata.sellStatus || t.metadata.transactionType === 'product_sell' || t.metadata.images);
+        return isTypeSell || hasSellMetadata;
+      });
+      console.log('Filtered sell transactions:', sellTransactions);
+      
+      setTransactions(sellTransactions);
     } catch (error) {
       console.error('Error fetching transactions:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -51,7 +80,8 @@ export default function TransactionManagement() {
     if (searchTerm) {
       filtered = filtered.filter(t => 
         t.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        t.user?.username?.toLowerCase().includes(searchTerm.toLowerCase())
+        t.user?.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.metadata?.productName?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -111,9 +141,26 @@ export default function TransactionManagement() {
     <div className="pb-10">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Transaction Management</h1>
-        <p className="text-gray-600 mt-2">Monitor and manage all transactions</p>
+        <h1 className="text-3xl font-bold text-gray-900">Product Sell Orders</h1>
+        <p className="text-gray-600 mt-2">Manage and fulfill product sell requests</p>
       </div>
+
+      {/* Loading State */}
+      {loading && (
+        <div className="flex items-center justify-center py-12">
+          <div className="flex flex-col items-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mb-4"></div>
+            <p className="text-gray-600">Loading orders...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
@@ -171,7 +218,7 @@ export default function TransactionManagement() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
             <input
               type="text"
-              placeholder="Search transactions by ID or username..."
+              placeholder="Search orders by ID, username or product name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
@@ -190,7 +237,7 @@ export default function TransactionManagement() {
         </div>
       </div>
 
-      {/* Transactions Table */}
+      {/* Orders Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -203,10 +250,13 @@ export default function TransactionManagement() {
                   User
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Type
+                  Product
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Amount
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Cards/Sort
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
@@ -230,12 +280,13 @@ export default function TransactionManagement() {
                     <div className="text-sm text-gray-500">{transaction.user?.email || '—'}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700 capitalize">
-                      {transaction.type}
-                    </span>
+                    <span className="text-sm font-medium text-gray-900">{transaction.metadata?.productName || '—'}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     ₦{parseFloat(transaction.amount).toLocaleString()} {transaction.currency}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {transaction.metadata?.cardCount || '—'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -272,19 +323,19 @@ export default function TransactionManagement() {
 
       {filteredTransactions.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-gray-500">No transactions found</p>
+          <p className="text-gray-500">No product sell orders found</p>
         </div>
       )}
 
-      {/* Transaction Details Modal */}
+      {/* Order Details Modal */}
       {selectedTransaction && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-lg w-full border border-gray-100 shadow-2xl overflow-hidden transform transition-all duration-300 animate-in fade-in-50 zoom-in-95 flex flex-col">
+          <div className="bg-white rounded-2xl max-w-2xl w-full border border-gray-100 shadow-2xl overflow-hidden transform transition-all duration-300 animate-in fade-in-50 zoom-in-95 flex flex-col">
             
             {/* Header */}
             <div className="flex items-center justify-between p-5 border-b border-gray-100 bg-gray-50">
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Transaction Details</h3>
+                <h3 className="text-lg font-bold text-gray-900">Product Sell Order Details</h3>
                 <p className="text-xs font-mono text-gray-500">{selectedTransaction.id}</p>
               </div>
               <button 
@@ -296,7 +347,7 @@ export default function TransactionManagement() {
             </div>
 
             {/* Content */}
-            <div className="p-6 space-y-6 overflow-y-auto max-h-[70vh]">
+            <div className="p-6 space-y-6 overflow-y-auto max-h-[80vh]">
               
               {/* User Block */}
               <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
@@ -312,8 +363,8 @@ export default function TransactionManagement() {
               {/* Status and core metrics */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-gray-50 border border-gray-100 p-3.5 rounded-xl text-center">
-                  <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">Amount Paid</span>
-                  <span className="text-lg font-extrabold text-gray-900 mt-1 block">
+                  <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">Amount to Pay</span>
+                  <span className="text-lg font-extrabold text-green-600 mt-1 block">
                     ₦{parseFloat(selectedTransaction.amount).toLocaleString()} {selectedTransaction.currency}
                   </span>
                 </div>
@@ -333,10 +384,18 @@ export default function TransactionManagement() {
               {/* Info Rows */}
               <div className="space-y-3">
                 <div className="flex justify-between items-center py-2 border-b border-gray-100 text-sm">
-                  <span className="text-gray-500 font-medium">Transaction Type</span>
-                  <span className="font-bold text-gray-900 uppercase text-xs bg-blue-50 text-blue-700 px-2.5 py-0.5 rounded-full">
-                    {selectedTransaction.type}
-                  </span>
+                  <span className="text-gray-500 font-medium">Product</span>
+                  <span className="font-bold text-gray-900">{selectedTransaction.metadata?.productName || '—'}</span>
+                </div>
+                
+                <div className="flex justify-between items-center py-2 border-b border-gray-100 text-sm">
+                  <span className="text-gray-500 font-medium">Quantity (USD)</span>
+                  <span className="font-bold text-gray-900">${selectedTransaction.metadata?.quantity || '—'}</span>
+                </div>
+                
+                <div className="flex justify-between items-center py-2 border-b border-gray-100 text-sm">
+                  <span className="text-gray-500 font-medium">Cards/Sort</span>
+                  <span className="font-bold text-gray-900">{selectedTransaction.metadata?.cardCount || '—'}</span>
                 </div>
                 
                 <div className="flex justify-between items-center py-2 border-b border-gray-100 text-sm">
@@ -348,7 +407,7 @@ export default function TransactionManagement() {
                 </div>
 
                 <div className="flex justify-between items-center py-2 border-b border-gray-100 text-sm">
-                  <span className="text-gray-500 font-medium">Rate / Exchange Details</span>
+                  <span className="text-gray-500 font-medium">Exchange Rate</span>
                   <span className="font-semibold text-gray-800">
                     {selectedTransaction.exchangeRate ? `NGN ${selectedTransaction.exchangeRate}/USD` : '—'}
                   </span>
@@ -364,91 +423,22 @@ export default function TransactionManagement() {
                 )}
               </div>
 
-              {/* Metadata Display */}
-              {selectedTransaction.metadata && (
-                <div className={`border rounded-xl p-4 space-y-3 ${
-                  selectedTransaction.type === 'sell' ? 'bg-green-50/30 border-green-100/80' : 'bg-red-50/30 border-red-100/80'
-                }`}>
-                  <h4 className={`text-xs font-bold uppercase tracking-wider mb-2 ${
-                    selectedTransaction.type === 'sell' ? 'text-green-800' : 'text-red-800'
-                  }`}>
-                    {selectedTransaction.type === 'sell' ? 'Sell Order Details' : 'Trade Details'}
+              {/* Product Images */}
+              {selectedTransaction.metadata?.images && selectedTransaction.metadata.images.length > 0 && (
+                <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-3">
+                  <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
+                    <ImageIcon size={14} />
+                    Product Images
                   </h4>
-                  
-                  {selectedTransaction.metadata.productName && (
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-gray-600 font-medium">Product Name</span>
-                      <span className="font-bold text-gray-900">{selectedTransaction.metadata.productName}</span>
-                    </div>
-                  )}
-
-                  {selectedTransaction.metadata.quantity && (
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-gray-600 font-medium">
-                        {selectedTransaction.type === 'sell' ? 'Quantity Selling' : 'Quantity Purchased'}
-                      </span>
-                      <span className="font-bold text-gray-900">${selectedTransaction.metadata.quantity} USD</span>
-                    </div>
-                  )}
-
-                  {selectedTransaction.metadata.cardCount && (
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-gray-600 font-medium">Cards/Sort</span>
-                      <span className="font-bold text-gray-900">{selectedTransaction.metadata.cardCount}</span>
-                    </div>
-                  )}
-
-                  {selectedTransaction.metadata.paymentMethod && (
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-gray-600 font-medium">Payment Method</span>
-                      <span className="font-bold text-gray-900 capitalize">{selectedTransaction.metadata.paymentMethod}</span>
-                    </div>
-                  )}
-
-                  {selectedTransaction.metadata.paymentStatus && (
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-gray-600 font-medium">Payment Status</span>
-                      <span className={`font-bold uppercase ${
-                        selectedTransaction.metadata.paymentStatus === 'paid' ? 'text-green-600' : 'text-yellow-600'
-                      }`}>
-                        {selectedTransaction.metadata.paymentStatus}
-                      </span>
-                    </div>
-                  )}
-
-                  {selectedTransaction.metadata.walletId && (
-                    <div className="pt-2 border-t border-red-100/50">
-                      <span className="text-[10px] font-bold text-red-800 uppercase tracking-wider block mb-1.5">Destination Wallet Address</span>
-                      <div className="bg-white border border-red-100 rounded-lg p-2.5 font-mono text-xs text-gray-800 select-all break-all shadow-inner">
-                        {selectedTransaction.metadata.walletId}
-                      </div>
-                      <p className="text-[10px] text-gray-500 mt-1 italic">
-                        Send the assets/product directly to this address.
-                      </p>
-                    </div>
-                  )}
-
-                  {selectedTransaction.type === 'sell' && selectedTransaction.metadata.images && selectedTransaction.metadata.images.length > 0 && (
-                    <div className="pt-2 border-t border-green-100/50">
-                      <span className="text-[10px] font-bold text-green-800 uppercase tracking-wider block mb-1.5">Product Images</span>
-                      <div className="grid grid-cols-3 gap-2">
-                        {selectedTransaction.metadata.images.map((img, idx) => (
-                          <a key={idx} href={img} target="_blank" rel="noopener noreferrer" className="group">
-                            <div className="aspect-square rounded-lg overflow-hidden border border-gray-200 hover:border-green-300 transition-all">
-                              <img src={img} alt={`Product image ${idx + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                            </div>
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {selectedTransaction.metadata.paystack?.reference && (
-                    <div className="flex justify-between items-center text-[10px] pt-1.5 text-gray-500">
-                      <span>Paystack Ref:</span>
-                      <span className="font-mono font-semibold select-all">{selectedTransaction.metadata.paystack.reference}</span>
-                    </div>
-                  )}
+                  <div className="grid grid-cols-3 gap-3">
+                    {selectedTransaction.metadata.images.map((image, index) => (
+                      <a key={index} href={image} target="_blank" rel="noopener noreferrer" className="group">
+                        <div className="aspect-square rounded-lg overflow-hidden border border-gray-200 hover:border-red-300 transition-all">
+                          <img src={image} alt={`Product image ${index + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                        </div>
+                      </a>
+                    ))}
+                  </div>
                 </div>
               )}
 
@@ -468,7 +458,7 @@ export default function TransactionManagement() {
                           Processing...
                         </>
                       ) : (
-                        'Complete & Notify'
+                        'Complete & Pay User'
                       )}
                     </button>
                   )}
@@ -484,7 +474,7 @@ export default function TransactionManagement() {
                           Processing...
                         </>
                       ) : (
-                        'Mark Failed'
+                        'Mark Rejected'
                       )}
                     </button>
                   )}

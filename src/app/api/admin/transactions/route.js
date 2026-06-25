@@ -19,7 +19,20 @@ export async function GET(request) {
       limit: 100
     });
 
-    return NextResponse.json({ transactions }, { status: 200 });
+    // Ensure metadata is an object (parse if string)
+    const processedTransactions = transactions.map(t => {
+      const tx = t.toJSON();
+      if (typeof tx.metadata === 'string') {
+        try {
+          tx.metadata = JSON.parse(tx.metadata);
+        } catch (e) {
+          tx.metadata = {};
+        }
+      }
+      return tx;
+    });
+
+    return NextResponse.json({ transactions: processedTransactions }, { status: 200 });
   } catch (error) {
     console.error('Error fetching transactions:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
