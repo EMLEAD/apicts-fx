@@ -80,12 +80,12 @@ export default function AboutPage() {
               </div>
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 pt-6">
-                <Link href="/signUp">
+                <Link href="/login">
                   <button className="group bg-red-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-green-600 transition-all duration-300 shadow-xl hover:shadow-2xl hover:-translate-y-1 flex items-center justify-center gap-2">
                     Join Apicts-FX
                   </button>
                 </Link>
-                <Link href="/vlog">
+                <Link href="/dashboard">
                   <button className="border-2 border-red-600 text-red-600 px-8 py-4 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-all duration-300 shadow-xl">
                     Explore Academy
                   </button>
