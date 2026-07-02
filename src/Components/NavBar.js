@@ -204,7 +204,7 @@ export default function Navbar() {
           ) : (
             // User is not authenticated - show login/register buttons
             <>
-              <Link href="/register">
+              {/* <Link href="/register">
                 <button className={`cursor-pointer px-6 py-2.5 rounded-md font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 ease-in-out shadow-md ${
                   isScrolled 
                     ? 'bg-red-600 text-white hover:bg-green-600' 
@@ -212,7 +212,7 @@ export default function Navbar() {
                 }`}>
                   Get Started
                 </button>
-              </Link>
+              </Link> */}
               <Link href="/login">
                 <button className={`border-2 cursor-pointer px-6 py-2.5 rounded-md font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 ease-in-out shadow-md ${
                   isScrolled 

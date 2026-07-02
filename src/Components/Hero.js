@@ -193,14 +193,14 @@ export default function Hero() {
                   <>
                     <div className="flex items-center gap-2">
                       <span className="text-yellow-400 text-2xl">★★★★★</span>
-                      <span className="text-blue-200">{heroData.rating}</span>
+                      <span className="text-red-600">{heroData.rating}</span>
                     </div>
                     {heroData.customerCount && <div className="h-6 w-px bg-white/30"></div>}
                   </>
                 )}
                 {heroData.customerCount && (
-                  <div className="text-blue-200">
-                    <span className="font-bold text-white">{heroData.customerCount}</span> {heroData.customerLabel || 'Happy Customers'}
+                  <div className="text-red-600">
+                    <span className="font-bold text-yellow-400">{heroData.customerCount}</span> {heroData.customerLabel || 'Happy Customers'}
                   </div>
                 )}
               </div>

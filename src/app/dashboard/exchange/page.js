@@ -100,7 +100,7 @@ export default function ExchangePage() {
 
   return (
     <div>
-      <div className="mb-8 mt-4">
+      <div className="mb-8 mt-10">
         <h1 className="text-3xl font-bold text-gray-900">Exchange</h1>
         <p className="text-gray-600 mt-2">Buy crypto and e-currencies, track your orders, and manage exchanges.</p>
       </div>
