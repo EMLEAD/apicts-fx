@@ -226,7 +226,7 @@ export default function LoginPage() {
                       Email Address
                     </label>
                     <div className="relative">
-                      <Mail size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                      <Mail size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black" />
                       <input
                         id="email"
                         name="email"
@@ -252,7 +252,7 @@ export default function LoginPage() {
                       Password
                     </label>
                     <div className="relative">
-                      <Lock size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                      <Lock size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black" />
                       <input
                         id="password"
                         name="password"
@@ -269,7 +269,7 @@ export default function LoginPage() {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-black hover:text-black"
                       >
                         {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>

@@ -179,11 +179,11 @@ export default function Hero() {
                 </button>
               </Link>
               
-              <Link href={heroData.ctaSecondaryLink || '/rates'}>
+              {/* <Link href={heroData.ctaSecondaryLink || '/rates'}>
                 <button className="border-2 border-red-300 text-red-600 px-8 py-4 rounded-lg font-semibold hover:bg-red-50 hover:border-red-400 transition-all duration-300 shadow-lg">
                   {heroData.ctaSecondaryText || 'View Live Rates'}
                 </button>
-              </Link>
+              </Link> */}
             </div>
 
             {/* Trust indicators */}
