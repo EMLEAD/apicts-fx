@@ -9,8 +9,11 @@ import {
   getTestimonialThumbnail
 } from "@/lib/utils/video";
 
-function TestimonialMedia({ testimonial, isActive }) {
-  if (!testimonial || !isActive) {
+function TestimonialMedia({ testimonial }) {
+  const isYouTube = testimonial && (testimonial.mediaType === "youtube" || isYouTubeUrl(testimonial.mediaUrl));
+  const isUpload = testimonial && (testimonial.mediaType === "upload" || isDirectVideoUrl(testimonial.mediaUrl));
+
+  if (!testimonial) {
     return (
       <div className="w-full aspect-video bg-gray-800 rounded-2xl flex items-center justify-center">
         <Play className="w-16 h-16 text-gray-600" />
@@ -18,11 +21,13 @@ function TestimonialMedia({ testimonial, isActive }) {
     );
   }
 
-  if (testimonial.mediaType === "youtube" || isYouTubeUrl(testimonial.mediaUrl)) {
+  if (isYouTube) {
     const embedUrl = getYouTubeEmbedUrl(testimonial.mediaUrl);
     if (!embedUrl) return null;
     return (
-      <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10 bg-black">
+      <div
+        className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10 bg-black"
+      >
         <iframe
           src={embedUrl}
           title={`${testimonial.authorName} testimonial`}
@@ -34,7 +39,7 @@ function TestimonialMedia({ testimonial, isActive }) {
     );
   }
 
-  if (testimonial.mediaType === "upload" || isDirectVideoUrl(testimonial.mediaUrl)) {
+  if (isUpload) {
     return (
       <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10 bg-black">
         <video
@@ -88,12 +93,6 @@ export default function TestimonialsSection() {
   const goNext = useCallback(() => goTo(activeIndex + 1), [activeIndex, goTo]);
   const goPrev = useCallback(() => goTo(activeIndex - 1), [activeIndex, goTo]);
 
-  useEffect(() => {
-    if (testimonials.length <= 1) return;
-    const timer = setInterval(goNext, 9000);
-    return () => clearInterval(timer);
-  }, [testimonials.length, goNext]);
-
   if (loading) {
     return (
       <section className="py-20 bg-gray-950 flex justify-center">
@@ -119,8 +118,7 @@ export default function TestimonialsSection() {
             Testimonials
           </span>
           <h2 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight">
-            What Our Clients Say
-          </h2>
+                   </h2>
           <p className="text-gray-400 mt-4 max-w-xl mx-auto">
             Real stories from traders and customers who trust APICTS for their exchange needs.
           </p>
@@ -128,7 +126,7 @@ export default function TestimonialsSection() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-center">
           <div className={`transition-all duration-400 ${isAnimating ? "opacity-0 scale-[0.98]" : "opacity-100 scale-100"}`}>
-            <TestimonialMedia testimonial={current} isActive={!isAnimating} />
+            <TestimonialMedia testimonial={current} />
           </div>
 
           <div className={`space-y-6 transition-all duration-400 delay-75 ${isAnimating ? "opacity-0 translate-x-4" : "opacity-100 translate-x-0"}`}>

@@ -12,7 +12,7 @@ export function getYouTubeId(url) {
 
 export function getYouTubeEmbedUrl(url) {
   const id = getYouTubeId(url);
-  return id ? `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1` : null;
+  return id ? `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1&enablejsapi=1` : null;
 }
 
 export function getYouTubeThumbnail(url) {

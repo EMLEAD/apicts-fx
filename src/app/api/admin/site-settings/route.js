@@ -39,6 +39,7 @@ export async function POST(request) {
       logoHeight,
       socialLinks,
       contactInfo,
+      bankAccount,
       isActive = true
     } = body;
 
@@ -68,6 +69,12 @@ export async function POST(request) {
         phone: '+2348139399978',
         address: 'Km 18, Topaz Plaza, New Road, Lekki Ajah, Lagos'
       },
+      bankAccount: bankAccount || {
+        bankName: '',
+        accountNumber: '',
+        accountName: '',
+        bankLogo: ''
+      },
       isActive
     });
 
@@ -96,6 +103,7 @@ export async function PUT(request) {
       logoHeight,
       socialLinks,
       contactInfo,
+      bankAccount,
       isActive
     } = body;
 
@@ -123,6 +131,7 @@ export async function PUT(request) {
       logoHeight: logoHeight !== undefined ? logoHeight : settings.logoHeight,
       socialLinks: socialLinks !== undefined ? socialLinks : settings.socialLinks,
       contactInfo: contactInfo !== undefined ? contactInfo : settings.contactInfo,
+      bankAccount: bankAccount !== undefined ? bankAccount : settings.bankAccount,
       isActive: isActive !== undefined ? isActive : settings.isActive
     });
 

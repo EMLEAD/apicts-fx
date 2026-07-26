@@ -28,7 +28,8 @@ import {
   Megaphone,
   Mail,
   ArrowLeftRight,
-  MessageSquareQuote
+  MessageSquareQuote,
+  Landmark
 } from 'lucide-react';
 
 const ADMIN_ROLES = ['super_admin', 'admin', 'moderator'];
@@ -76,6 +77,7 @@ export default function AdminLayout({ children }) {
     { name: 'Messages', href: '/admin/messages', icon: Mail },
     { name: 'Coupons', href: '/admin/coupons', icon: BadgePercent },
     { name: 'Transfers', href: '/admin/transfers', icon: ArrowUpRight },
+    { name: 'Direct Transfers', href: '/admin/direct-transfers', icon: Landmark },
   ];
 
   const handleLogout = () => {

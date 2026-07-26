@@ -43,6 +43,17 @@ module.exports = (sequelize) => {
       },
       comment: 'Contact information'
     },
+    bankAccount: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: {
+        bankName: '',
+        accountNumber: '',
+        accountName: '',
+        bankLogo: ''
+      },
+      comment: 'Bank account details for direct transfers'
+    },
     isActive: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,

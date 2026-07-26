@@ -10,7 +10,9 @@ import {
   CreditCard,
   ExternalLink,
   Upload,
-  Image as ImageIcon
+  Image as ImageIcon,
+  ShieldAlert,
+  Landmark,
 } from "lucide-react";
 import { subscribeToPaymentComplete, PENDING_PURCHASE_KEY } from "@/lib/utils/paymentChannel";
 
@@ -32,6 +34,13 @@ export default function ExchangeTradeModal({
   const [sellImages, setSellImages] = useState([]);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [cardCount, setCardCount] = useState("");
+  const [transactionWallet, setTransactionWallet] = useState("");
+  const [ninStatus, setNinStatus] = useState(null); // null = loading, { verified, status, hasSubmitted }
+  const [bankAccountInfo, setBankAccountInfo] = useState(null);
+  const [bankProofFile, setBankProofFile] = useState(null);
+  const [bankProofUrl, setBankProofUrl] = useState("");
+  const [bankProofLoading, setBankProofLoading] = useState(false);
+  const [bankProofError, setBankProofError] = useState("");
 
   const pollIntervalRef = useRef(null);
   const pendingReferenceRef = useRef(null);
@@ -50,6 +59,22 @@ export default function ExchangeTradeModal({
       }
     } catch (err) {
       console.error("Error fetching user profile:", err);
+    }
+  }, []);
+
+  const fetchNinStatus = useCallback(async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    try {
+      const res = await fetch("/api/user/verification-status", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setNinStatus(data);
+      }
+    } catch (err) {
+      console.error("Error checking NIN status:", err);
     }
   }, []);
 
@@ -143,9 +168,27 @@ export default function ExchangeTradeModal({
       setPollAttempt(0);
       setSellImages([]);
       setCardCount("");
+      setTransactionWallet("");
+      setNinStatus(null);
+      setBankProofFile(null);
+      setBankProofUrl("");
+      setBankProofError("");
       fetchUserProfile();
+      fetchNinStatus();
+      // Fetch bank account info for direct transfers
+      fetch("/api/site-settings")
+        .then(res => res.json())
+        .then(data => {
+          if (data.settings?.bankAccount) {
+            const ba = typeof data.settings.bankAccount === "string"
+              ? JSON.parse(data.settings.bankAccount)
+              : data.settings.bankAccount;
+            setBankAccountInfo(ba);
+          }
+        })
+        .catch(() => {});
     }
-  }, [isOpen, product, tradeType, fetchUserProfile]);
+  }, [isOpen, product, tradeType, fetchUserProfile, fetchNinStatus]);
 
   useEffect(() => {
     return subscribeToPaymentComplete((payload) => {
@@ -210,11 +253,41 @@ export default function ExchangeTradeModal({
     setSellImages(sellImages.filter((_, i) => i !== index));
   };
 
+  const handleBankProofUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBankProofLoading(true);
+    setBankProofError("");
+    try {
+      const token = localStorage.getItem("token");
+      const fd = new FormData();
+      fd.append("image", file);
+      const res = await fetch("/api/upload/proof-of-payment", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd
+      });
+      if (!res.ok) throw new Error("Upload failed");
+      const data = await res.json();
+      setBankProofUrl(data.url);
+      setBankProofFile(file);
+    } catch (err) {
+      setBankProofError("Failed to upload image. Please try again.");
+    } finally {
+      setBankProofLoading(false);
+    }
+  };
+
   const handlePurchaseSubmit = async (e) => {
     e.preventDefault();
 
     if (!product || !quantity) {
       setErrorMessage("All fields are required");
+      return;
+    }
+
+    if (ninStatus && !ninStatus.verified) {
+      setErrorMessage("NIN verification is required. Please upload your NIN document first.");
       return;
     }
 
@@ -238,6 +311,10 @@ export default function ExchangeTradeModal({
         setErrorMessage("Please enter the number of cards/sort");
         return;
       }
+      if (!transactionWallet.trim()) {
+        setErrorMessage("Transaction wallet address is required");
+        return;
+      }
     }
 
     setErrorMessage("");
@@ -245,13 +322,32 @@ export default function ExchangeTradeModal({
 
     const token = localStorage.getItem("token");
     try {
-      const endpoint = tradeType === "buy" 
-        ? "/api/payments/purchase/initialize" 
-        : "/api/payments/sell/initialize";
+      let endpoint, body;
 
-      const body = tradeType === "buy" 
-        ? { productId: product.id, amount: qty, walletId, paymentMethod }
-        : { productId: product.id, amount: qty, images: sellImages, cardCount: Number(cardCount) };
+      if (tradeType === "buy" && paymentMethod === "bank_transfer") {
+        // Bank transfer goes to direct-transfer API
+        if (!bankProofUrl) {
+          setErrorMessage("Please upload proof of payment");
+          setModalState("input");
+          return;
+        }
+        endpoint = "/api/payments/direct-transfer/initialize";
+        body = {
+          amount: calculatedNgn,
+          purpose: "product_purchase",
+          productId: product.id,
+          walletId: walletId.trim(),
+          quantity: qty,
+          proofOfPayment: bankProofUrl
+        };
+      } else {
+        endpoint = tradeType === "buy"
+          ? "/api/payments/purchase/initialize"
+          : "/api/payments/sell/initialize";
+        body = tradeType === "buy"
+          ? { productId: product.id, amount: qty, walletId, paymentMethod }
+          : { productId: product.id, amount: qty, images: sellImages, cardCount: Number(cardCount), transactionWallet };
+      }
 
       const res = await fetch(endpoint, {
         method: "POST",
@@ -276,6 +372,7 @@ export default function ExchangeTradeModal({
         window.open(data.authorizationUrl, "_blank");
         startPolling(data.reference);
       } else {
+        // Wallet pay, sell request, or bank transfer — all are synchronous
         setModalState("success");
         fetchUserProfile();
         onSuccess?.();
@@ -318,6 +415,44 @@ export default function ExchangeTradeModal({
         </div>
 
         <div className="p-6">
+          {ninStatus && !ninStatus.verified && (
+            <div className="mb-5 p-5 bg-red-950/40 border border-red-800/50 rounded-xl">
+              <div className="flex items-center gap-3 mb-3">
+                <ShieldAlert className="text-red-500 shrink-0" size={24} />
+                <h4 className="font-bold text-red-400 text-sm">NIN Verification Required</h4>
+              </div>
+              {ninStatus.status === "no_document" && (
+                <p className="text-red-300/80 text-xs leading-relaxed mb-4">
+                  You need to upload and verify your National Identification Number (NIN) before you can buy or sell on this platform.
+                </p>
+              )}
+              {ninStatus.status === "pending_review" && (
+                <p className="text-yellow-300/80 text-xs leading-relaxed mb-4">
+                  Your NIN document is currently under review. You&apos;ll be able to trade once it&apos;s verified by our team.
+                </p>
+              )}
+              {ninStatus.status === "rejected" && (
+                <p className="text-red-300/80 text-xs leading-relaxed mb-4">
+                  Your NIN verification was rejected. Please upload a valid NIN document to continue trading.
+                </p>
+              )}
+              {ninStatus.status === "expired" && (
+                <p className="text-red-300/80 text-xs leading-relaxed mb-4">
+                  Your NIN verification has expired. Please upload a fresh document to continue trading.
+                </p>
+              )}
+              <a
+                href="/dashboard/profile"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition-colors"
+              >
+                {ninStatus.hasSubmitted ? "Re-upload NIN" : "Upload NIN Now"}
+                <ExternalLink size={14} />
+              </a>
+            </div>
+          )}
+
           {modalState === "input" && (
             <form onSubmit={handlePurchaseSubmit} className="space-y-5">
               <div>
@@ -391,6 +526,22 @@ export default function ExchangeTradeModal({
                   </div>
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">
+                      Transaction Wallet
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={transactionWallet}
+                      onChange={(e) => setTransactionWallet(e.target.value)}
+                      placeholder={`Enter your ${product.name} wallet address`}
+                      className="block w-full px-3.5 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 text-sm focus:outline-none"
+                    />
+                    <p className="mt-1 text-[11px] text-gray-500 font-medium">
+                      Wallet address where your payment will be sent.
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">
                       Upload Product Images
                     </label>
                     <div className="grid grid-cols-3 gap-3 mb-3">
@@ -441,21 +592,52 @@ export default function ExchangeTradeModal({
                   <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
                     Payment Method
                   </label>
-                  <div className="grid grid-cols-2 gap-4">
-                    <label className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === "wallet" ? "border-red-600 bg-red-50/40 text-red-700" : "border-gray-200 hover:border-gray-300 text-gray-600"}`}>
+                  <div className="grid grid-cols-3 gap-3">
+                    <label className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === "wallet" ? "border-red-600 bg-red-50/40 text-red-700" : "border-gray-200 hover:border-gray-300 text-gray-600"}`}>
                       <input type="radio" name="paymentMethod" value="wallet" checked={paymentMethod === "wallet"} onChange={() => setPaymentMethod("wallet")} className="sr-only" />
-                      <WalletIcon size={22} className="mb-2" />
-                      <span className="text-xs font-bold">Wallet Balance</span>
-                      <span className="text-[10px] opacity-80 mt-1 truncate max-w-full">
-                        NGN {userBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      <WalletIcon size={20} className="mb-1.5" />
+                      <span className="text-[11px] font-bold">Wallet</span>
+                      <span className="text-[9px] opacity-80 mt-0.5 truncate max-w-full">
+                        NGN {userBalance.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                       </span>
                     </label>
-                    <label className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === "card" ? "border-red-600 bg-red-50/40 text-red-700" : "border-gray-200 hover:border-gray-300 text-gray-600"}`}>
+                    <label className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === "card" ? "border-red-600 bg-red-50/40 text-red-700" : "border-gray-200 hover:border-gray-300 text-gray-600"}`}>
                       <input type="radio" name="paymentMethod" value="card" checked={paymentMethod === "card"} onChange={() => setPaymentMethod("card")} className="sr-only" />
-                      <CreditCard size={22} className="mb-2" />
-                      <span className="text-xs font-bold">Debit / Card</span>
-                      <span className="text-[10px] opacity-80 mt-1">Via Paystack</span>
+                      <CreditCard size={20} className="mb-1.5" />
+                      <span className="text-[11px] font-bold">Card</span>
+                      <span className="text-[9px] opacity-80 mt-0.5">Paystack</span>
                     </label>
+                    <label className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === "bank_transfer" ? "border-red-600 bg-red-50/40 text-red-700" : "border-gray-200 hover:border-gray-300 text-gray-600"}`}>
+                      <input type="radio" name="paymentMethod" value="bank_transfer" checked={paymentMethod === "bank_transfer"} onChange={() => setPaymentMethod("bank_transfer")} className="sr-only" />
+                      <Landmark size={20} className="mb-1.5" />
+                      <span className="text-[11px] font-bold">Bank Transfer</span>
+                      <span className="text-[9px] opacity-80 mt-0.5">Manual verify</span>
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              {tradeType === "buy" && paymentMethod === "bank_transfer" && (
+                <div className="space-y-4 p-4 bg-gray-50 border border-gray-200 rounded-xl">
+                  {bankAccountInfo && bankAccountInfo.accountNumber ? (
+                    <div className="bg-white border border-gray-200 rounded-lg p-3 space-y-2">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1">Transfer to this account</p>
+                      <div className="flex justify-between"><span className="text-xs text-gray-600">Bank</span><span className="text-xs font-semibold text-gray-900">{bankAccountInfo.bankName}</span></div>
+                      <div className="flex justify-between"><span className="text-xs text-gray-600">Account Number</span><span className="text-xs font-semibold text-gray-900 font-mono">{bankAccountInfo.accountNumber}</span></div>
+                      <div className="flex justify-between"><span className="text-xs text-gray-600">Account Name</span><span className="text-xs font-semibold text-gray-900">{bankAccountInfo.accountName}</span></div>
+                    </div>
+                  ) : (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-2 text-xs text-yellow-700">Bank account not configured. Please contact support.</div>
+                  )}
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Proof of Payment</label>
+                    <label className="flex items-center justify-center gap-2 w-full p-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-gray-400 transition-colors bg-white">
+                      <input type="file" accept="image/*" onChange={handleBankProofUpload} className="hidden" />
+                      {bankProofLoading ? <Loader2 size={16} className="animate-spin text-gray-400" /> : <Upload size={16} className="text-gray-400" />}
+                      <span className="text-xs text-gray-600">{bankProofFile ? bankProofFile.name : "Upload screenshot"}</span>
+                    </label>
+                    {bankProofUrl && <p className="text-[10px] text-green-600 mt-1">Image uploaded</p>}
+                    {bankProofError && <p className="text-[10px] text-red-600 mt-1">{bankProofError}</p>}
                   </div>
                 </div>
               )}
@@ -471,13 +653,19 @@ export default function ExchangeTradeModal({
                 <button type="button" onClick={handleClose} className="flex-1 border border-gray-200 text-gray-700 font-medium py-3 rounded-lg text-sm hover:bg-gray-50">
                   Cancel
                 </button>
-                <button type="submit" className={`flex-1 ${
-                  tradeType === "buy" 
-                    ? "bg-red-600 hover:bg-red-700" 
-                    : "bg-green-600 hover:bg-green-700"
-                } text-white font-bold py-3 rounded-lg text-sm transition-colors`}>
-                  {tradeType === "buy" 
-                    ? `Pay NGN ${calculatedNgn.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` 
+                <button
+                  type="submit"
+                  disabled={(ninStatus && !ninStatus.verified) || (tradeType === "buy" && paymentMethod === "bank_transfer" && !bankProofUrl)}
+                  className={`flex-1 ${
+                    tradeType === "buy"
+                      ? "bg-red-600 hover:bg-red-700"
+                      : "bg-green-600 hover:bg-green-700"
+                  } text-white font-bold py-3 rounded-lg text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-current`}
+                >
+                  {tradeType === "buy"
+                    ? paymentMethod === "bank_transfer"
+                      ? "Submit Proof of Payment"
+                      : `Pay NGN ${calculatedNgn.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                     : "Submit Sell Request"}
                 </button>
               </div>
@@ -504,8 +692,10 @@ export default function ExchangeTradeModal({
                   </div>
                 ) : (
                   <p className="text-xs text-gray-500">
-                    {tradeType === "buy" 
-                      ? "Deducting wallet balance and recording trade..." 
+                    {tradeType === "buy"
+                      ? paymentMethod === "bank_transfer"
+                        ? "Submitting your proof of payment..."
+                        : "Deducting wallet balance and recording trade..."
                       : "Submitting your sell request..."}
                   </p>
                 )}
@@ -518,30 +708,45 @@ export default function ExchangeTradeModal({
               <CheckCircle2 className="w-14 h-14 text-green-500" />
               <div>
                 <h4 className="font-bold text-gray-900 text-base">
-                  {tradeType === "buy" ? "Trade Request Submitted!" : "Sell Request Submitted!"}
+                  {tradeType === "buy"
+                    ? paymentMethod === "bank_transfer"
+                      ? "Proof of Payment Submitted!"
+                      : "Trade Request Submitted!"
+                    : "Sell Request Submitted!"}
                 </h4>
                 {tradeType === "buy" ? (
-                  <>
-                    <p className="text-xs text-gray-500 max-w-sm mx-auto mt-2">
-                      Payment of <span className="font-semibold text-gray-800">NGN {calculatedNgn.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> received.
-                    </p>
-                    <p className="text-xs text-gray-500 max-w-sm mx-auto mt-2">
-                      Your trade of <span className="font-semibold">${quantity} USD of {product.name}</span> is in progress and will be sent to:
-                    </p>
-                    <div className="bg-gray-50 border border-gray-100 p-2.5 rounded-lg text-xs font-mono text-gray-700 select-all max-w-xs mx-auto mt-2">
-                      {walletId}
-                    </div>
-                  </>
+                  paymentMethod === "bank_transfer" ? (
+                    <>
+                      <p className="text-xs text-gray-500 max-w-sm mx-auto mt-2">
+                        Your bank transfer of <span className="font-semibold text-gray-800">NGN {calculatedNgn.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> has been submitted.
+                      </p>
+                      <p className="text-xs text-gray-500 max-w-sm mx-auto mt-2">
+                        Your trade of <span className="font-semibold">${quantity} USD of {product.name}</span> will be processed once an admin verifies your payment.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-xs text-gray-500 max-w-sm mx-auto mt-2">
+                        Payment of <span className="font-semibold text-gray-800">NGN {calculatedNgn.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> received.
+                      </p>
+                      <p className="text-xs text-gray-500 max-w-sm mx-auto mt-2">
+                        Your trade of <span className="font-semibold">${quantity} USD of {product.name}</span> is in progress and will be sent to:
+                      </p>
+                      <div className="bg-gray-50 border border-gray-100 p-2.5 rounded-lg text-xs font-mono text-gray-700 select-all max-w-xs mx-auto mt-2">
+                        {walletId}
+                      </div>
+                    </>
+                  )
                 ) : (
-                  <>
-                    <p className="text-xs text-gray-500 max-w-sm mx-auto mt-2">
-                      Your sell request for <span className="font-semibold">${quantity} USD of {product.name}</span> has been received.
-                    </p>
-                    <p className="text-xs text-gray-500 max-w-sm mx-auto mt-2">
-                      You&apos;ll receive <span className="font-semibold text-green-600">NGN {calculatedNgn.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> once your request is verified.
-                    </p>
-                  </>
-                )}
+                    <>
+                      <p className="text-xs text-gray-500 max-w-sm mx-auto mt-2">
+                        Your sell request for <span className="font-semibold">${quantity} USD of {product.name}</span> has been received.
+                      </p>
+                      <p className="text-xs text-gray-500 max-w-sm mx-auto mt-2">
+                        You&apos;ll receive <span className="font-semibold text-green-600">NGN {calculatedNgn.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> once your request is verified.
+                      </p>
+                    </>
+                  )}
               </div>
               <button type="button" onClick={handleClose} className="w-full bg-gray-900 hover:bg-gray-800 text-white font-bold py-3 rounded-lg text-sm mt-4">
                 Done

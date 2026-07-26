@@ -11,7 +11,9 @@ import {
   Download,
   Loader2,
   AlertCircle,
-  CheckCircle
+  CheckCircle,
+  Landmark,
+  Upload
 } from 'lucide-react';
 
 const formatCurrency = (amount, currency = 'NGN') => {
@@ -58,6 +60,9 @@ export default function SubscriptionPage() {
     error: null
   });
   const paymentPollTimeout = useRef(null);
+  const [bankAccountInfo, setBankAccountInfo] = useState(null);
+  const [bankTransferPlan, setBankTransferPlan] = useState(null);
+  const [bankTransferState, setBankTransferState] = useState({ proofFile: null, proofUrl: '', loading: false, error: null, success: false });
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
@@ -68,6 +73,18 @@ export default function SubscriptionPage() {
         console.error('Failed to parse user data', err);
       }
     }
+    // Fetch bank account for direct transfers
+    fetch('/api/site-settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data.settings?.bankAccount) {
+          const ba = typeof data.settings.bankAccount === 'string'
+            ? JSON.parse(data.settings.bankAccount)
+            : data.settings.bankAccount;
+          setBankAccountInfo(ba);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const fetchPlans = useCallback(async () => {
@@ -419,6 +436,62 @@ export default function SubscriptionPage() {
     }
   };
 
+  const handleBankTransferProofUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBankTransferState(prev => ({ ...prev, loading: true, error: null }));
+    try {
+      const token = localStorage.getItem('token');
+      const fd = new FormData();
+      fd.append('image', file);
+      const res = await fetch('/api/upload/proof-of-payment', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd
+      });
+      if (!res.ok) throw new Error('Upload failed');
+      const data = await res.json();
+      setBankTransferState(prev => ({ ...prev, proofUrl: data.url, proofFile: file, loading: false }));
+    } catch (err) {
+      setBankTransferState(prev => ({ ...prev, error: 'Failed to upload image', loading: false }));
+    }
+  };
+
+  const handleBankTransferSubscribe = async () => {
+    if (!bankTransferPlan || bankTransferState.loading) return;
+    try {
+      setBankTransferState(prev => ({ ...prev, loading: true, error: null, success: false }));
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Not authenticated');
+      if (!bankTransferState.proofUrl) throw new Error('Upload proof of payment');
+
+      let amount = Number(bankTransferPlan.price);
+      if (bankTransferPlan.currency === 'USD') {
+        const rateRes = await fetch('/api/exchange-rates/latest?from=USD&to=NGN');
+        if (rateRes.ok) {
+          const rateData = await rateRes.json();
+          if (rateData.rate) amount = Math.round(amount * rateData.rate * 100) / 100;
+        }
+      }
+
+      const res = await fetch('/api/payments/direct-transfer/initialize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ amount, purpose: 'plan_payment', planId: bankTransferPlan.id, proofOfPayment: bankTransferState.proofUrl })
+      });
+      if (!res.ok) {
+        const result = await res.json().catch(() => ({}));
+        throw new Error(result.error || 'Failed to submit');
+      }
+      setBankTransferState({ proofFile: null, proofUrl: '', loading: false, error: null, success: true });
+      setSuccess('Proof submitted! Your subscription will be activated once payment is verified.');
+      setBankTransferPlan(null);
+      fetchBillingHistory();
+    } catch (err) {
+      setBankTransferState(prev => ({ ...prev, error: err.message, loading: false }));
+    }
+  };
+
   const isSubscribedToPlan = (planId) => {
     return currentSubscription?.planId === planId && currentSubscription?.status === 'active';
   };
@@ -634,7 +707,7 @@ export default function SubscriptionPage() {
                         isSubscribed
                           ? 'bg-green-600 text-white cursor-not-allowed'
                           : isPopular
-                          ? 'bg-red-600 text-white hover:bg-green-600'
+                          ? 'bg-red-600 text-white hover:bg-red-700'
                           : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
                       }`}
                     >
@@ -646,9 +719,18 @@ export default function SubscriptionPage() {
                       ) : isSubscribed ? (
                         'Current Plan'
                       ) : (
-                        'Subscribe Now'
+                        'Pay with Card'
                       )}
                     </button>
+                    {!isSubscribed && (
+                      <button
+                        onClick={() => { setBankTransferPlan(plan); setBankTransferState({ proofFile: null, proofUrl: '', loading: false, error: null, success: false }); }}
+                        className="w-full mt-2 py-2.5 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <Landmark size={16} />
+                        Pay via Bank Transfer
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -726,6 +808,48 @@ export default function SubscriptionPage() {
           )}
         </div>
       </div>
+      {/* Bank Transfer Modal */}
+      {bankTransferPlan && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl p-6 space-y-5">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold text-gray-900">Bank Transfer — {bankTransferPlan.name}</h3>
+              <button onClick={() => setBankTransferPlan(null)} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+            </div>
+            <p className="text-sm text-gray-600">Transfer <span className="font-bold text-gray-900">{formatCurrency(bankTransferPlan.price, bankTransferPlan.currency)}</span> to the account below, then upload your proof of payment.</p>
+
+            {bankAccountInfo && bankAccountInfo.accountNumber ? (
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-2">
+                <div className="flex justify-between"><span className="text-sm text-gray-600">Bank</span><span className="text-sm font-semibold text-gray-900">{bankAccountInfo.bankName}</span></div>
+                <div className="flex justify-between"><span className="text-sm text-gray-600">Account Number</span><span className="text-sm font-semibold text-gray-900 font-mono">{bankAccountInfo.accountNumber}</span></div>
+                <div className="flex justify-between"><span className="text-sm text-gray-600">Account Name</span><span className="text-sm font-semibold text-gray-900">{bankAccountInfo.accountName}</span></div>
+              </div>
+            ) : (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-xs text-yellow-700">Bank account details not configured. Please contact support.</div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Proof of Payment</label>
+              <label className="flex items-center justify-center gap-2 w-full p-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-gray-400 transition-colors">
+                <input type="file" accept="image/*" onChange={handleBankTransferProofUpload} className="hidden" />
+                {bankTransferState.loading ? <Loader2 size={18} className="animate-spin text-gray-400" /> : <Upload size={18} className="text-gray-400" />}
+                <span className="text-sm text-gray-600">{bankTransferState.proofFile ? bankTransferState.proofFile.name : 'Upload screenshot'}</span>
+              </label>
+              {bankTransferState.proofUrl && <p className="text-xs text-green-600 mt-1">Image uploaded</p>}
+            </div>
+
+            {bankTransferState.error && <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{bankTransferState.error}</div>}
+            {bankTransferState.success && <div className="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-700">Proof submitted! Awaiting admin verification.</div>}
+
+            <div className="flex gap-3">
+              <button onClick={() => setBankTransferPlan(null)} className="flex-1 border border-gray-200 text-gray-700 font-medium py-3 rounded-lg text-sm hover:bg-gray-50">Cancel</button>
+              <button onClick={handleBankTransferSubscribe} disabled={bankTransferState.loading || !bankTransferState.proofUrl} className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                {bankTransferState.loading ? 'Submitting...' : 'Submit Proof'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -392,6 +392,50 @@ export default function AdminExchangesPage() {
                   </div>
                 )}
 
+                {meta.transactionWallet && (
+                  <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
+                    <p className="text-xs font-bold text-blue-800 uppercase mb-2">Transaction Wallet</p>
+                    <p className="font-mono text-sm break-all select-all bg-white border border-blue-100 rounded-lg p-3">
+                      {meta.transactionWallet}
+                    </p>
+                  </div>
+                )}
+
+                {meta.proofOfPayment && (
+                  <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
+                    <p className="text-xs font-bold text-amber-800 uppercase mb-2">Proof of Payment</p>
+                    <a href={meta.proofOfPayment} target="_blank" rel="noopener noreferrer" className="block">
+                      <img
+                        src={meta.proofOfPayment}
+                        alt="Proof of payment"
+                        className="w-full max-h-64 object-contain rounded-lg border border-amber-200 hover:border-amber-400 transition-colors"
+                      />
+                    </a>
+                    <a href={meta.proofOfPayment} target="_blank" rel="noopener noreferrer" className="text-xs text-amber-700 font-medium hover:underline mt-2 inline-block">
+                      Open full image
+                    </a>
+                  </div>
+                )}
+
+                {meta.images && meta.images.length > 0 && (
+                  <div className="bg-green-50 border border-green-100 rounded-xl p-4">
+                    <p className="text-xs font-bold text-green-800 uppercase mb-2">Product Images</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {meta.images.map((img, idx) => (
+                        <a key={idx} href={img} target="_blank" rel="noopener noreferrer" className="group">
+                          <div className="aspect-square rounded-lg overflow-hidden border border-green-200 hover:border-green-400 transition-all">
+                            <img
+                              src={img}
+                              alt={`Product image ${idx + 1}`}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                            />
+                          </div>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Admin follow-up note</label>
                   <textarea
@@ -409,14 +453,14 @@ export default function AdminExchangesPage() {
                     {selectedExchange.status !== 'completed' && (
                       <button
                         type="button"
-                        disabled={updating || meta.paymentStatus !== 'paid'}
+                        disabled={updating || (meta.paymentStatus !== 'paid' && meta.paymentStatus !== 'awaiting_verification' && meta.paymentMethod !== 'direct_transfer')}
                         onClick={() => updateExchangeStatus(selectedExchange.id, 'completed')}
                         className="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-bold py-2.5 rounded-lg text-xs"
                       >
                         {updating ? 'Updating...' : 'Complete & Notify User'}
                       </button>
                     )}
-                    {selectedExchange.status !== 'pending' && meta.paymentStatus === 'paid' && (
+                    {selectedExchange.status !== 'pending' && (meta.paymentStatus === 'paid' || meta.paymentMethod === 'direct_transfer') && (
                       <button
                         type="button"
                         disabled={updating}
@@ -449,7 +493,9 @@ export default function AdminExchangesPage() {
                   </div>
                   {meta.paymentStatus !== 'paid' && selectedExchange.status !== 'completed' && (
                     <p className="text-[11px] text-amber-600 mt-3 text-center">
-                      Payment not confirmed yet — complete fulfillment only after payment is verified.
+                      {meta.paymentStatus === 'awaiting_verification'
+                        ? 'Bank transfer — verify proof of payment before completing.'
+                        : 'Payment not confirmed yet — complete fulfillment only after payment is verified.'}
                     </p>
                   )}
                 </div>

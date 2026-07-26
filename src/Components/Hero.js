@@ -208,11 +208,11 @@ export default function Hero() {
           </div>
 
           {/* Right Content - Image/Illustration */}
-          <div className="relative">
+          <div className="relative mx-auto w-full max-w-md lg:max-w-none">
             {/* Animated carousel (replaces single Image div) */}
             {images.length > 0 && (
               <div className="relative mb-8 mt-8">
-                <div className="relative h-64 rounded-2xl overflow-hidden shadow-2xl">
+                <div className="relative aspect-[4/3] h-auto rounded-2xl overflow-hidden shadow-2xl">
                   {images.map((src, idx) => (
                     <div
                       key={`${src}-${idx}`}
@@ -220,7 +220,7 @@ export default function Hero() {
                         idx === current ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
                       }`}
                     >
-                      <Image src={src} alt={`hero-${idx}`} fill className="object-cover" />
+                      <Image src={src} alt={`hero-${idx}`} fill className="object-contain p-2" sizes="(max-width: 768px) 100vw, 50vw" />
                     </div>
                   ))}
 

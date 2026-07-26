@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Settings, Upload, Save, Loader2, Image as ImageIcon, Link as LinkIcon, Mail, Phone, MapPin } from 'lucide-react';
+import { Settings, Upload, Save, Loader2, Image as ImageIcon, Link as LinkIcon, Mail, Phone, MapPin, Landmark } from 'lucide-react';
 import Image from 'next/image';
 
 export default function SiteSettingsPage() {
@@ -29,6 +29,12 @@ export default function SiteSettingsPage() {
       phone: '+2348139399978',
       address: 'Km 18, Topaz Plaza, New Road, Lekki Ajah, Lagos',
       workingDays: 'Monday - Saturday: 9:00 AM - 6:00 PM'
+    },
+    bankAccount: {
+      bankName: '',
+      accountNumber: '',
+      accountName: '',
+      bankLogo: ''
     }
   });
 
@@ -81,7 +87,15 @@ export default function SiteSettingsPage() {
             logoWidth: data.settings.logoWidth || 42,
             logoHeight: data.settings.logoHeight || 42,
             socialLinks,
-            contactInfo
+            contactInfo,
+            bankAccount: typeof data.settings.bankAccount === 'string'
+              ? JSON.parse(data.settings.bankAccount)
+              : (data.settings.bankAccount || {
+                  bankName: '',
+                  accountNumber: '',
+                  accountName: '',
+                  bankLogo: ''
+                })
           });
         }
       }
@@ -386,6 +400,73 @@ export default function SiteSettingsPage() {
                 rows={3}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="Monday - Friday: 9:00 AM - 6:00 PM"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Bank Account Section */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <Landmark className="h-6 w-6 text-blue-600" />
+            <h2 className="text-xl font-semibold text-gray-900">Bank Account (Direct Transfers)</h2>
+          </div>
+          <p className="text-sm text-gray-600 mb-4">This account will be displayed to users when they choose to pay via bank transfer.</p>
+
+          <div className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Bank Name</label>
+                <input
+                  type="text"
+                  value={formData.bankAccount.bankName}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    bankAccount: { ...prev.bankAccount, bankName: e.target.value }
+                  }))}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  placeholder="e.g. GTBank, Access Bank, Wema Bank"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Account Number</label>
+                <input
+                  type="text"
+                  maxLength={10}
+                  value={formData.bankAccount.accountNumber}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    bankAccount: { ...prev.bankAccount, accountNumber: e.target.value.replace(/\D/g, '').slice(0, 10) }
+                  }))}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  placeholder="0123456789"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Account Name</label>
+              <input
+                type="text"
+                value={formData.bankAccount.accountName}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  bankAccount: { ...prev.bankAccount, accountName: e.target.value }
+                }))}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                placeholder="e.g. APICTS Limited"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Bank Logo URL (optional)</label>
+              <input
+                type="text"
+                value={formData.bankAccount.bankLogo}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  bankAccount: { ...prev.bankAccount, bankLogo: e.target.value }
+                }))}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                placeholder="https://..."
               />
             </div>
           </div>

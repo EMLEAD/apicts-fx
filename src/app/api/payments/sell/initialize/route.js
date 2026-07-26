@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { authenticate } from '@/lib/middleware/auth';
 import { Transaction, User, Product } from '@/lib/db/models';
+import { requireNinVerification } from '@/lib/utils/ninVerification';
 
 export async function POST(request) {
   try {
@@ -10,9 +11,14 @@ export async function POST(request) {
       return NextResponse.json({ error: auth.error || 'Unauthorized' }, { status: 401 });
     }
 
+    const ninCheck = await requireNinVerification(auth.user.id);
+    if (ninCheck) {
+      return NextResponse.json(ninCheck, { status: 403 });
+    }
+
     const body = await request.json();
     console.log('Request body:', body);
-    const { productId, amount, images, cardCount } = body;
+    const { productId, amount, images, cardCount, transactionWallet } = body;
 
     // Validation
     if (!productId) {
@@ -30,6 +36,10 @@ export async function POST(request) {
 
     if (!cardCount || Number(cardCount) <= 0) {
       return NextResponse.json({ error: 'Card count is required' }, { status: 400 });
+    }
+
+    if (!transactionWallet || !transactionWallet.trim()) {
+      return NextResponse.json({ error: 'Transaction wallet address is required' }, { status: 400 });
     }
 
     // Fetch Product
@@ -68,6 +78,7 @@ export async function POST(request) {
         productId: product.id,
         images,
         cardCount,
+        transactionWallet: transactionWallet.trim(),
         transactionType: 'product_sell',
         sellStatus: 'pending_verification'
       }

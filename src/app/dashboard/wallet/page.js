@@ -13,7 +13,10 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
-  Loader2
+  Loader2,
+  Landmark,
+  CreditCard,
+  Upload
 } from 'lucide-react';
 
 const QUICK_ACTIONS = [
@@ -69,6 +72,9 @@ export default function WalletPage() {
   const [globalMessage, setGlobalMessage] = useState(null);
 
   const [depositState, setDepositState] = useState({ amount: '', loading: false, error: null, reference: null, authorizationUrl: null });
+  const [depositMethod, setDepositMethod] = useState('card');
+  const [bankAccountInfo, setBankAccountInfo] = useState(null);
+  const [bankTransferState, setBankTransferState] = useState({ amount: '', proofFile: null, proofUrl: '', loading: false, error: null, success: false });
   const depositPollTimeout = useRef(null);
   const [depositTracking, setDepositTracking] = useState({
     status: 'idle',
@@ -196,6 +202,18 @@ export default function WalletPage() {
 
   useEffect(() => {
     loadBanks();
+    // Fetch bank account for direct transfers
+    fetch('/api/site-settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data.settings?.bankAccount) {
+          const ba = typeof data.settings.bankAccount === 'string'
+            ? JSON.parse(data.settings.bankAccount)
+            : data.settings.bankAccount;
+          setBankAccountInfo(ba);
+        }
+      })
+      .catch(() => {});
   }, [loadBanks]);
 
   useEffect(() => {
@@ -453,6 +471,55 @@ export default function WalletPage() {
     }
   };
 
+  const handleBankTransferProofUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBankTransferState(prev => ({ ...prev, loading: true, error: null }));
+    try {
+      const token = localStorage.getItem('token');
+      const fd = new FormData();
+      fd.append('image', file);
+      const res = await fetch('/api/upload/proof-of-payment', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd
+      });
+      if (!res.ok) throw new Error('Upload failed');
+      const data = await res.json();
+      setBankTransferState(prev => ({ ...prev, proofUrl: data.url, proofFile: file, loading: false }));
+    } catch (err) {
+      setBankTransferState(prev => ({ ...prev, error: 'Failed to upload image', loading: false }));
+    }
+  };
+
+  const handleBankTransferSubmit = async (e) => {
+    e.preventDefault();
+    if (bankTransferState.loading) return;
+    try {
+      setBankTransferState(prev => ({ ...prev, loading: true, error: null, success: false }));
+      setGlobalMessage(null);
+      const headers = getAuthHeaders();
+      if (!headers) throw new Error('Not authenticated');
+      const numericAmount = Number(bankTransferState.amount);
+      if (!numericAmount || numericAmount <= 0) throw new Error('Enter a valid amount');
+      if (!bankTransferState.proofUrl) throw new Error('Upload proof of payment');
+      const res = await fetch('/api/payments/direct-transfer/initialize', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ amount: numericAmount, purpose: 'wallet_funding', proofOfPayment: bankTransferState.proofUrl })
+      });
+      if (!res.ok) {
+        const result = await res.json().catch(() => ({}));
+        throw new Error(result.error || 'Failed to submit');
+      }
+      setBankTransferState({ amount: '', proofFile: null, proofUrl: '', loading: false, error: null, success: true });
+      setGlobalMessage({ type: 'success', message: 'Proof of payment submitted. Your wallet will be credited once verified by admin.' });
+      fetchTransactions();
+    } catch (err) {
+      setBankTransferState(prev => ({ ...prev, error: err.message, loading: false }));
+    }
+  };
+
   const handleWithdraw = async (event) => {
     event.preventDefault();
     if (withdrawState.loading) return;
@@ -685,50 +752,99 @@ export default function WalletPage() {
           {activeAction === 'deposit' && (
             <div className="space-y-4">
               <h2 className="text-lg font-semibold text-gray-900">Deposit funds</h2>
-              <p className="text-sm text-gray-600">Enter an amount to generate a Paystack payment link. Complete the payment and we&apos;ll confirm it automatically.</p>
-              <form onSubmit={handleDepositInitialize} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Amount</label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={depositState.amount}
-                    onChange={(event) => setDepositState((prev) => ({ ...prev, amount: event.target.value }))}
-                    className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-                    placeholder="0.00"
-                    required
-                  />
-                </div>
-                {depositState.error && (
-                  <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
-                    {depositState.error}
-                  </div>
-                )}
+
+              {/* Payment method toggle */}
+              <div className="grid grid-cols-2 gap-3">
                 <button
-                  type="submit"
-                  disabled={depositState.loading}
-                  className="inline-flex items-center rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-600 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                  type="button"
+                  onClick={() => setDepositMethod('card')}
+                  className={`flex items-center justify-center gap-2 p-3 rounded-lg border-2 text-sm font-medium transition-all ${depositMethod === 'card' ? 'border-red-600 bg-red-50 text-red-700' : 'border-gray-200 text-gray-600 hover:border-gray-300'}`}
                 >
-                  {depositState.loading ? 'Initializing...' : 'Initialize deposit'}
+                  <CreditCard size={18} />
+                  Pay with Card
                 </button>
-              </form>
-              {depositTracking.status === 'waiting' && depositTracking.reference && (
-                <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-700">
-                  Awaiting confirmation from Paystack... (Attempt {depositTracking.attempts + 1})
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setDepositMethod('transfer')}
+                  className={`flex items-center justify-center gap-2 p-3 rounded-lg border-2 text-sm font-medium transition-all ${depositMethod === 'transfer' ? 'border-red-600 bg-red-50 text-red-700' : 'border-gray-200 text-gray-600 hover:border-gray-300'}`}
+                >
+                  <Landmark size={18} />
+                  Bank Transfer
+                </button>
+              </div>
+
+              {depositMethod === 'card' && (
+                <>
+                  <p className="text-sm text-gray-600">Enter an amount to generate a Paystack payment link.</p>
+                  <form onSubmit={handleDepositInitialize} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Amount</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={depositState.amount}
+                        onChange={(event) => setDepositState((prev) => ({ ...prev, amount: event.target.value }))}
+                        className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                        placeholder="0.00"
+                        required
+                      />
+                    </div>
+                    {depositState.error && (
+                      <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{depositState.error}</div>
+                    )}
+                    <button type="submit" disabled={depositState.loading} className="inline-flex items-center rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700 transition-colors disabled:cursor-not-allowed disabled:opacity-60">
+                      {depositState.loading ? 'Initializing...' : 'Initialize deposit'}
+                    </button>
+                  </form>
+                  {depositTracking.status === 'waiting' && depositTracking.reference && (
+                    <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-700">
+                      Awaiting confirmation from Paystack... (Attempt {depositTracking.attempts + 1})
+                    </div>
+                  )}
+                  {depositTracking.status === 'success' && (
+                    <div className="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-700">Deposit confirmed successfully.</div>
+                  )}
+                  {depositTracking.status === 'error' && depositTracking.error && (
+                    <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{depositTracking.error}</div>
+                  )}
+                </>
               )}
 
-              {depositTracking.status === 'success' && (
-                <div className="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-700">
-                  Deposit confirmed successfully.
-                </div>
-              )}
+              {depositMethod === 'transfer' && (
+                <>
+                  {bankAccountInfo && bankAccountInfo.accountNumber ? (
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-2">
+                      <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Transfer to this account</p>
+                      <div className="flex justify-between"><span className="text-sm text-gray-600">Bank</span><span className="text-sm font-semibold text-gray-900">{bankAccountInfo.bankName}</span></div>
+                      <div className="flex justify-between"><span className="text-sm text-gray-600">Account Number</span><span className="text-sm font-semibold text-gray-900 font-mono">{bankAccountInfo.accountNumber}</span></div>
+                      <div className="flex justify-between"><span className="text-sm text-gray-600">Account Name</span><span className="text-sm font-semibold text-gray-900">{bankAccountInfo.accountName}</span></div>
+                    </div>
+                  ) : (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-xs text-yellow-700">Bank account details not configured yet. Please contact support.</div>
+                  )}
 
-              {depositTracking.status === 'error' && depositTracking.error && (
-                <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
-                  {depositTracking.error}
-                </div>
+                  <form onSubmit={handleBankTransferSubmit} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Amount Sent</label>
+                      <input type="number" min="0" step="0.01" required value={bankTransferState.amount} onChange={e => setBankTransferState(prev => ({ ...prev, amount: e.target.value }))} className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500" placeholder="0.00" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Proof of Payment</label>
+                      <label className="flex items-center justify-center gap-2 w-full p-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-gray-400 transition-colors">
+                        <input type="file" accept="image/*" onChange={handleBankTransferProofUpload} className="hidden" />
+                        {bankTransferState.loading ? <Loader2 size={18} className="animate-spin text-gray-400" /> : <Upload size={18} className="text-gray-400" />}
+                        <span className="text-sm text-gray-600">{bankTransferState.proofFile ? bankTransferState.proofFile.name : 'Upload screenshot'}</span>
+                      </label>
+                      {bankTransferState.proofUrl && <p className="text-xs text-green-600 mt-1">Image uploaded successfully</p>}
+                    </div>
+                    {bankTransferState.error && <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{bankTransferState.error}</div>}
+                    {bankTransferState.success && <div className="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-700">Proof submitted! Awaiting admin verification.</div>}
+                    <button type="submit" disabled={bankTransferState.loading || !bankTransferState.proofUrl} className="inline-flex items-center rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700 transition-colors disabled:cursor-not-allowed disabled:opacity-60">
+                      {bankTransferState.loading ? 'Submitting...' : 'Submit Proof of Payment'}
+                    </button>
+                  </form>
+                </>
               )}
             </div>
           )}

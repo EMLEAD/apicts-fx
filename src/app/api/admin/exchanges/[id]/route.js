@@ -71,16 +71,40 @@ export async function PATCH(request, { params }) {
     const updatedMeta = {
       ...currentMeta,
       ...(adminNote !== undefined && { adminNote }),
+      ...(status === 'completed' && { paymentStatus: 'paid' }),
       ...(status === 'cancelled' && { refunded: true }),
       lastUpdatedBy: auth.user.id,
       lastUpdatedAt: new Date().toISOString()
     };
 
-    await exchange.update({
-      status,
-      metadata: updatedMeta,
-      processedAt: status === 'completed' ? new Date() : exchange.processedAt
-    });
+    // If completing a direct_transfer exchange, credit the user's wallet
+    if (status === 'completed' && currentMeta.paymentMethod === 'direct_transfer' && oldStatus !== 'completed') {
+      const dbUser = await User.findByPk(exchange.userId);
+      if (dbUser) {
+        await Transaction.sequelize.transaction(async (t) => {
+          dbUser.walletBalance = Number(dbUser.walletBalance || 0) + Number(exchange.amount);
+          await dbUser.save({ transaction: t });
+
+          await exchange.update({
+            status,
+            metadata: updatedMeta,
+            processedAt: new Date()
+          }, { transaction: t });
+        });
+      } else {
+        await exchange.update({
+          status,
+          metadata: updatedMeta,
+          processedAt: new Date()
+        });
+      }
+    } else {
+      await exchange.update({
+        status,
+        metadata: updatedMeta,
+        processedAt: status === 'completed' ? new Date() : exchange.processedAt
+      });
+    }
 
     if (status !== oldStatus) {
       try {
