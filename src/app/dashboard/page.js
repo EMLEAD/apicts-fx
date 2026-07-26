@@ -506,7 +506,7 @@ export default function Dashboard() {
         <MarketOverviewWidget />
       </div>
 
-      <div className="mb-8">
+      {/* <div className="mb-8">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200">
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-center justify-between">
@@ -526,9 +526,9 @@ export default function Dashboard() {
             <CryptoMarketOverview />
           </div>
         </div>
-      </div>
+      </div> */}
 
-      <div className="mb-8">
+      {/* <div className="mb-8">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200">
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-center justify-between">
@@ -572,11 +572,11 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
-      <div className="mb-8">
+      {/* <div className="mb-8">
         <TradingTest />
-      </div>
+      </div> */}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200">

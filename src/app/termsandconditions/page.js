@@ -15,14 +15,14 @@ export default function TermsAndConditionsPage() {
 
         <section className="space-y-6 text-base leading-relaxed text-gray-900">
           <p>
-            Welcome to Apicts‑FX and Apicts Academy. These Terms & Conditions (&quot;Terms&quot;) govern your use of our exchange services,
+            Welcome to APICTS‑FOREX and APICTS Academy. These Terms & Conditions (&quot;Terms&quot;) govern your use of our exchange services,
             academy content, website and any related services (together, the &quot;Services&quot;). By accessing or using our Services you
             agree to be bound by these Terms.
           </p>
 
           <h2 className="text-xl font-semibold pt-4">1. About Our Services</h2>
           <p>
-            Apicts‑FX provides currency exchange services (fiat, e‑currency and cryptocurrency) and Apicts Academy provides
+            APICTS‑FOREX provides currency exchange services (fiat, e‑currency and cryptocurrency) and APICTS Academy provides
             educational content, courses and mentorship.Our Services require registration, identity verification and
             acceptance of additional rules for specific products.
           </p>
@@ -48,7 +48,7 @@ export default function TermsAndConditionsPage() {
 
           <h2 className="text-xl font-semibold pt-4">5. Content & Intellectual Property</h2>
           <p>
-            All content provided by Apicts‑FX and Apicts Academy (text, images, video, courses, trademarks) is owned or licensed
+            All content provided by APICTS‑FOREX and APICTS Academy (text, images, video, courses, trademarks) is owned or licensed
             and protected by intellectual property laws. You may not reproduce or redistribute our content without prior written
             consent.
           </p>
@@ -61,7 +61,7 @@ export default function TermsAndConditionsPage() {
 
           <h2 className="text-xl font-semibold pt-4">7. Limitation of Liability</h2>
           <p>
-            To the fullest extent permitted by law, Apicts‑FX and its affiliates are not liable for indirect, incidental,
+            To the fullest extent permitted by law, APICTS‑FOREX and its affiliates are not liable for indirect, incidental,
             consequential or punitive damages arising from your use of the Services. Our total liability for direct damages is
             limited as further described in our full legal policy.
           </p>
@@ -80,7 +80,7 @@ export default function TermsAndConditionsPage() {
 
           <h2 className="text-xl font-semibold pt-4">10. Governing Law & Dispute Resolution</h2>
           <p>
-            These Terms are governed by the laws of the jurisdiction in which Apicts‑FX is registered. Disputes will be handled
+            These Terms are governed by the laws of the jurisdiction in which APICTS‑FOREX is registered. Disputes will be handled
             as set out in our legal notices and may require arbitration or local court proceedings where applicable.
           </p>
 

@@ -179,11 +179,11 @@ export default function Hero() {
                 </button>
               </Link>
               
-              <Link href={heroData.ctaSecondaryLink || '/rates'}>
+              {/* <Link href={heroData.ctaSecondaryLink || '/rates'}>
                 <button className="border-2 border-red-300 text-red-600 px-8 py-4 rounded-lg font-semibold hover:bg-red-50 hover:border-red-400 transition-all duration-300 shadow-lg">
                   {heroData.ctaSecondaryText || 'View Live Rates'}
                 </button>
-              </Link>
+              </Link> */}
             </div>
 
             {/* Trust indicators */}
@@ -193,14 +193,14 @@ export default function Hero() {
                   <>
                     <div className="flex items-center gap-2">
                       <span className="text-yellow-400 text-2xl">★★★★★</span>
-                      <span className="text-blue-200">{heroData.rating}</span>
+                      <span className="text-red-600">{heroData.rating}</span>
                     </div>
                     {heroData.customerCount && <div className="h-6 w-px bg-white/30"></div>}
                   </>
                 )}
                 {heroData.customerCount && (
-                  <div className="text-blue-200">
-                    <span className="font-bold text-white">{heroData.customerCount}</span> {heroData.customerLabel || 'Happy Customers'}
+                  <div className="text-red-600">
+                    <span className="font-bold text-yellow-400">{heroData.customerCount}</span> {heroData.customerLabel || 'Happy Customers'}
                   </div>
                 )}
               </div>

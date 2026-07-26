@@ -242,7 +242,7 @@ function SignupPageContent() {
               <div className="bg-white rounded-2xl shadow-2xl p-8">
                 <div className="text-center mb-8">
                   <h2 className="text-3xl font-bold text-gray-800 mb-2">Create Your Account</h2>
-                  <p className="text-gray-600">Join APICTS-FX with just a few details</p>
+                  <p className="text-gray-600">Join APICTS-FOREX with just a few details</p>
                 </div>
 
                 {/* Google Sign In */}
@@ -310,7 +310,7 @@ function SignupPageContent() {
                       Email Address
                     </label>
                     <div className="relative">
-                      <Mail size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                      <Mail size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black" />
                       <input
                         id="email"
                         name="email"
@@ -337,7 +337,7 @@ function SignupPageContent() {
                       Password
                     </label>
                     <div className="relative">
-                      <Lock size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                      <Lock size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black" />
                       <input
                         id="password"
                         name="password"
@@ -354,7 +354,7 @@ function SignupPageContent() {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-black hover:text-black"
                       >
                         {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>
@@ -370,7 +370,7 @@ function SignupPageContent() {
                       Confirm Password
                     </label>
                     <div className="relative">
-                      <Lock size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                      <Lock size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black" />
                       <input
                         id="confirmPassword"
                         name="confirmPassword"
@@ -387,7 +387,7 @@ function SignupPageContent() {
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-black hover:text-black"
                       >
                         {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>
@@ -400,7 +400,7 @@ function SignupPageContent() {
                   {/* Referral Code */}
                   <div>
                     <label className="block text-black mb-2 font-medium" htmlFor="referralCode">
-                      Referral Code <span className="text-xs text-gray-400">(optional)</span>
+                      Referral Code <span className="text-xs text-black">(optional)</span>
                     </label>
                     <input
                       id="referralCode"
@@ -422,8 +422,7 @@ function SignupPageContent() {
                       className="mt-1 accent-red-600" 
                     />
                     <label htmlFor="terms" className="text-gray-600 text-sm">
-                      I agree to the <Link href="/termsandconditions" className="text-red-600 hover:underline font-medium">Terms & Conditions</Link> and <Link href="/privacy" className="text-red-600 hover:underline font-medium">Privacy Policy</Link>
-                    </label>
+                      I agree to the <Link href="/termsandconditions" className="text-red-600 hover:underline font-medium">Terms & Conditions</Link></label>
                   </div>
 
                   {/* Submit Button */}
