@@ -419,7 +419,7 @@ export default function Dashboard() {
             ) : (
               <p className="text-4xl font-bold">••••••</p>
             )}
-            <p className="text-red-100 mt-2">{netChangeLabel}</p>
+            {/* <p className="text-red-100 mt-2">{netChangeLabel}</p> */}
           </div>
           <div className="text-right">
             <div className={`flex items-center ${isNetPositive ? 'text-green-300' : 'text-red-200'}`}>
