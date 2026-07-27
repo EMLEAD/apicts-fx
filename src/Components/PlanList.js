@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import { Loader2, AlertCircle, CheckCircle } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle, Landmark, Upload } from "lucide-react";
 
 const formatCurrency = (amount, currency = "NGN") => {
   const numeric = Number(amount) || 0;
@@ -31,6 +31,9 @@ export default function PlansList({ limit = 20 }) {
   });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const paymentPollTimeout = useRef(null);
+  const [bankAccountInfo, setBankAccountInfo] = useState(null);
+  const [bankTransferPlan, setBankTransferPlan] = useState(null);
+  const [bankTransferState, setBankTransferState] = useState({ proofFile: null, proofUrl: '', loading: false, error: null, success: false });
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
@@ -43,6 +46,17 @@ export default function PlansList({ limit = 20 }) {
     }
     const token = localStorage.getItem('token');
     setIsLoggedIn(!!token);
+    fetch('/api/site-settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data.settings?.bankAccount) {
+          const ba = typeof data.settings.bankAccount === 'string'
+            ? JSON.parse(data.settings.bankAccount)
+            : data.settings.bankAccount;
+          setBankAccountInfo(ba);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -236,6 +250,61 @@ export default function PlansList({ limit = 20 }) {
     }
   };
 
+  const handleBankTransferProofUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBankTransferState(prev => ({ ...prev, loading: true, error: null }));
+    try {
+      const token = localStorage.getItem('token');
+      const fd = new FormData();
+      fd.append('image', file);
+      const res = await fetch('/api/upload/proof-of-payment', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd
+      });
+      if (!res.ok) throw new Error('Upload failed');
+      const data = await res.json();
+      setBankTransferState(prev => ({ ...prev, proofUrl: data.url, proofFile: file, loading: false }));
+    } catch (err) {
+      setBankTransferState(prev => ({ ...prev, error: 'Failed to upload image', loading: false }));
+    }
+  };
+
+  const handleBankTransferSubscribe = async () => {
+    if (!bankTransferPlan || bankTransferState.loading) return;
+    try {
+      setBankTransferState(prev => ({ ...prev, loading: true, error: null, success: false }));
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Not authenticated');
+      if (!bankTransferState.proofUrl) throw new Error('Upload proof of payment');
+
+      let amount = Number(bankTransferPlan.price);
+      if (bankTransferPlan.currency === 'USD') {
+        const rateRes = await fetch('/api/exchange-rates/latest?from=USD&to=NGN');
+        if (rateRes.ok) {
+          const rateData = await rateRes.json();
+          if (rateData.rate) amount = Math.round(amount * rateData.rate * 100) / 100;
+        }
+      }
+
+      const res = await fetch('/api/payments/direct-transfer/initialize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ amount, purpose: 'plan_payment', planId: bankTransferPlan.id, proofOfPayment: bankTransferState.proofUrl })
+      });
+      if (!res.ok) {
+        const result = await res.json().catch(() => ({}));
+        throw new Error(result.error || 'Failed to submit');
+      }
+      setBankTransferState({ proofFile: null, proofUrl: '', loading: false, error: null, success: true });
+      setSubscriptionSuccess('Proof submitted! Your subscription will be activated once payment is verified.');
+      setBankTransferPlan(null);
+    } catch (err) {
+      setBankTransferState(prev => ({ ...prev, error: err.message, loading: false }));
+    }
+  };
+
 
 
   if (loading) {
@@ -334,18 +403,29 @@ export default function PlansList({ limit = 20 }) {
 
             <div>
               {isLoggedIn ? (
-                <button
-                  onClick={() => handleSubscribe(plan.id)}
-                  disabled={subscribing === plan.id}
-                  className="block w-full text-center bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {subscribing === plan.id ? (
+                <>
+                  <button
+                    onClick={() => handleSubscribe(plan.id)}
+                    disabled={subscribing === plan.id}
+                    className="block w-full text-center bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {subscribing === plan.id ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Subscribing...
+                      </span>
+                    ) : 'Pay with Card'}
+                  </button>
+                  <button
+                    onClick={() => { setBankTransferPlan(plan); setBankTransferState({ proofFile: null, proofUrl: '', loading: false, error: null, success: false }); }}
+                    className="block w-full text-center mt-2 border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                  >
                     <span className="flex items-center justify-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Subscribing...
+                      <Landmark size={16} />
+                      Pay via Bank Transfer
                     </span>
-                  ) : 'Subscribe Now'}
-                </button>
+                  </button>
+                </>
               ) : (
                 <a
                   href={`/dashboard/subscription?plan=${encodeURIComponent(plan.id)}`}
@@ -358,6 +438,48 @@ export default function PlansList({ limit = 20 }) {
           </div>
         ))}
       </div>
+
+      {bankTransferPlan && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl p-6 space-y-5">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold text-gray-900">Bank Transfer — {bankTransferPlan.name}</h3>
+              <button onClick={() => setBankTransferPlan(null)} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+            </div>
+            <p className="text-sm text-gray-600">Transfer <span className="font-bold text-gray-900">{formatCurrency(bankTransferPlan.price, bankTransferPlan.currency)}</span> to the account below, then upload your proof of payment.</p>
+
+            {bankAccountInfo && bankAccountInfo.accountNumber ? (
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-2">
+                <div className="flex justify-between"><span className="text-sm text-gray-600">Bank</span><span className="text-sm font-semibold text-gray-900">{bankAccountInfo.bankName}</span></div>
+                <div className="flex justify-between"><span className="text-sm text-gray-600">Account Number</span><span className="text-sm font-semibold text-gray-900 font-mono">{bankAccountInfo.accountNumber}</span></div>
+                <div className="flex justify-between"><span className="text-sm text-gray-600">Account Name</span><span className="text-sm font-semibold text-gray-900">{bankAccountInfo.accountName}</span></div>
+              </div>
+            ) : (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-xs text-yellow-700">Bank account details not configured. Please contact support.</div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Proof of Payment</label>
+              <label className="flex items-center justify-center gap-2 w-full p-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-gray-400 transition-colors">
+                <input type="file" accept="image/*" onChange={handleBankTransferProofUpload} className="hidden" />
+                {bankTransferState.loading ? <Loader2 size={18} className="animate-spin text-gray-400" /> : <Upload size={18} className="text-gray-400" />}
+                <span className="text-sm text-gray-600">{bankTransferState.proofFile ? bankTransferState.proofFile.name : 'Upload screenshot'}</span>
+              </label>
+              {bankTransferState.proofUrl && <p className="text-xs text-green-600 mt-1">Image uploaded</p>}
+            </div>
+
+            {bankTransferState.error && <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{bankTransferState.error}</div>}
+            {bankTransferState.success && <div className="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-700">Proof submitted! Awaiting admin verification.</div>}
+
+            <div className="flex gap-3">
+              <button onClick={() => setBankTransferPlan(null)} className="flex-1 border border-gray-200 text-gray-700 font-medium py-3 rounded-lg text-sm hover:bg-gray-50">Cancel</button>
+              <button onClick={handleBankTransferSubscribe} disabled={bankTransferState.loading || !bankTransferState.proofUrl} className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                {bankTransferState.loading ? 'Submitting...' : 'Submit Proof'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

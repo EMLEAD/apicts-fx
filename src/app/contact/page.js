@@ -30,7 +30,7 @@ export default function ContactPage() {
     message: "",
   });
   const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState(null); // { type: "success" | "error", message: "" }
+  const [status, setStatus] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
   const [siteSettings, setSiteSettings] = useState({
     contactInfo: {
@@ -127,23 +127,23 @@ export default function ContactPage() {
   };
 
   const inputClasses =
-    "w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all";
+    "w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all";
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-950">
+    <div className="min-h-screen flex flex-col bg-white">
       <Navbar />
 
       <main className="flex-grow pt-28 pb-20 px-4 sm:px-6 md:px-20">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="text-center mb-16">
-            <span className="inline-block text-red-500 text-sm font-bold uppercase tracking-[0.2em] mb-3">
+            <span className="inline-block bg-red-50 text-red-600 text-sm font-semibold px-4 py-2 rounded-full mb-3">
               Get In Touch
             </span>
-            <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-4">
+            <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight mb-4">
               Contact Us
             </h1>
-            <p className="text-gray-400 max-w-xl mx-auto text-lg">
+            <p className="text-gray-600 max-w-xl mx-auto text-lg">
               Have a question or need assistance? Send us a message and we&apos;ll
               respond as soon as possible.
             </p>
@@ -151,12 +151,12 @@ export default function ContactPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 lg:gap-14">
             {/* Contact Form - 3 cols */}
-            <div className="lg:col-span-3 bg-gray-900 border border-gray-800 p-8 sm:p-10 rounded-2xl shadow-2xl">
+            <div className="lg:col-span-3 bg-white border border-gray-200 p-8 sm:p-10 rounded-2xl shadow-lg">
               <div className="flex items-center gap-3 mb-8">
                 <div className="bg-red-600 p-2 rounded-lg">
                   <MessageSquare className="text-white" size={22} />
                 </div>
-                <h2 className="text-2xl font-bold text-white">Send a Message</h2>
+                <h2 className="text-2xl font-bold text-gray-900">Send a Message</h2>
               </div>
 
               {/* Status Banner */}
@@ -164,20 +164,20 @@ export default function ContactPage() {
                 <div
                   className={`mb-6 p-4 rounded-lg flex items-center gap-3 ${
                     status.type === "success"
-                      ? "bg-green-900/40 border border-green-700 text-green-300"
-                      : "bg-red-900/40 border border-red-700 text-red-300"
+                      ? "bg-green-50 border border-green-200 text-green-700"
+                      : "bg-red-50 border border-red-200 text-red-700"
                   }`}
                 >
                   {status.type === "success" ? (
-                    <CheckCircle size={20} className="shrink-0 text-green-400" />
+                    <CheckCircle size={20} className="shrink-0 text-green-500" />
                   ) : (
-                    <XCircle size={20} className="shrink-0 text-red-400" />
+                    <XCircle size={20} className="shrink-0 text-red-500" />
                   )}
                   <span className="text-sm font-medium">{status.message}</span>
                   <button
                     type="button"
                     onClick={() => setStatus(null)}
-                    className="ml-auto text-gray-500 hover:text-white transition-colors"
+                    className="ml-auto text-gray-400 hover:text-gray-700 transition-colors"
                   >
                     <XCircle size={16} />
                   </button>
@@ -187,7 +187,7 @@ export default function ContactPage() {
               <form className="space-y-5" onSubmit={handleSubmit}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-400 mb-2">
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
                       Full Name *
                     </label>
                     <input
@@ -200,10 +200,10 @@ export default function ContactPage() {
                       className={`${inputClasses} ${fieldErrors.name ? "border-red-500 focus:ring-red-500" : ""}`}
                       placeholder="John Doe"
                     />
-                    {fieldErrors.name && <p className="text-red-400 text-xs mt-1">{fieldErrors.name}</p>}
+                    {fieldErrors.name && <p className="text-red-500 text-xs mt-1">{fieldErrors.name}</p>}
                   </div>
                   <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-400 mb-2">
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                       Email Address *
                     </label>
                     <input
@@ -221,7 +221,7 @@ export default function ContactPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div>
-                    <label htmlFor="phone" className="block text-sm font-medium text-gray-400 mb-2">
+                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
                       Phone Number
                     </label>
                     <input
@@ -235,7 +235,7 @@ export default function ContactPage() {
                     />
                   </div>
                   <div>
-                    <label htmlFor="subject" className="block text-sm font-medium text-gray-400 mb-2">
+                    <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
                       Subject *
                     </label>
                     <input
@@ -248,12 +248,12 @@ export default function ContactPage() {
                       className={`${inputClasses} ${fieldErrors.subject ? "border-red-500 focus:ring-red-500" : ""}`}
                       placeholder="How can we help?"
                     />
-                    {fieldErrors.subject && <p className="text-red-400 text-xs mt-1">{fieldErrors.subject}</p>}
+                    {fieldErrors.subject && <p className="text-red-500 text-xs mt-1">{fieldErrors.subject}</p>}
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-gray-400 mb-2">
+                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
                     Message *
                   </label>
                   <textarea
@@ -268,11 +268,11 @@ export default function ContactPage() {
                   />
                   <div className="flex justify-between mt-1">
                     {fieldErrors.message ? (
-                      <p className="text-red-400 text-xs">{fieldErrors.message}</p>
+                      <p className="text-red-500 text-xs">{fieldErrors.message}</p>
                     ) : (
                       <span />
                     )}
-                    <p className={`text-xs ${formData.message.length > 5000 ? "text-red-400" : "text-gray-600"}`}>
+                    <p className={`text-xs ${formData.message.length > 5000 ? "text-red-500" : "text-gray-400"}`}>
                       {formData.message.length} / 5000
                     </p>
                   </div>
@@ -281,7 +281,7 @@ export default function ContactPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-red-600 to-red-500 text-white px-6 py-3.5 rounded-lg hover:from-red-700 hover:to-red-600 hover:shadow-lg hover:shadow-red-600/25 flex items-center justify-center gap-2 font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-red-600 text-white px-6 py-3.5 rounded-lg hover:bg-red-700 hover:shadow-lg hover:shadow-red-600/25 flex items-center justify-center gap-2 font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? (
                     <Loader2 size={20} className="animate-spin" />
@@ -296,19 +296,19 @@ export default function ContactPage() {
             {/* Sidebar - 2 cols */}
             <div className="lg:col-span-2 space-y-6">
               {/* Contact Info */}
-              <div className="bg-gray-900 border border-gray-800 p-8 rounded-2xl shadow-2xl">
-                <h2 className="text-xl font-bold text-white mb-6">Contact Information</h2>
+              <div className="bg-white border border-gray-200 p-8 rounded-2xl shadow-lg">
+                <h2 className="text-xl font-bold text-gray-900 mb-6">Contact Information</h2>
                 <div className="space-y-5">
                   <a
                     href={`mailto:${siteSettings.contactInfo.email}`}
                     className="flex items-start gap-4 group"
                   >
-                    <div className="bg-red-600/10 border border-red-600/30 p-3 rounded-xl group-hover:bg-red-600 transition-all shrink-0">
+                    <div className="bg-red-50 border border-red-100 p-3 rounded-xl group-hover:bg-red-600 transition-all shrink-0">
                       <Mail className="text-red-500 group-hover:text-white transition-colors" size={20} />
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Email</p>
-                      <p className="text-gray-300 text-sm">{siteSettings.contactInfo.email}</p>
+                      <p className="text-gray-700 text-sm">{siteSettings.contactInfo.email}</p>
                     </div>
                   </a>
 
@@ -316,22 +316,22 @@ export default function ContactPage() {
                     href={`tel:${siteSettings.contactInfo.phone}`}
                     className="flex items-start gap-4 group"
                   >
-                    <div className="bg-red-600/10 border border-red-600/30 p-3 rounded-xl group-hover:bg-red-600 transition-all shrink-0">
+                    <div className="bg-red-50 border border-red-100 p-3 rounded-xl group-hover:bg-red-600 transition-all shrink-0">
                       <Phone className="text-red-500 group-hover:text-white transition-colors" size={20} />
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Phone</p>
-                      <p className="text-gray-300 text-sm">{siteSettings.contactInfo.phone}</p>
+                      <p className="text-gray-700 text-sm">{siteSettings.contactInfo.phone}</p>
                     </div>
                   </a>
 
                   <div className="flex items-start gap-4">
-                    <div className="bg-red-600/10 border border-red-600/30 p-3 rounded-xl shrink-0">
+                    <div className="bg-red-50 border border-red-100 p-3 rounded-xl shrink-0">
                       <MapPin className="text-red-500" size={20} />
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Address</p>
-                      <p className="text-gray-300 text-sm whitespace-pre-wrap">
+                      <p className="text-gray-700 text-sm whitespace-pre-wrap">
                         {siteSettings.contactInfo.address}
                       </p>
                     </div>
@@ -340,28 +340,28 @@ export default function ContactPage() {
               </div>
 
               {/* Business Hours */}
-              <div className="bg-gray-900 border border-gray-800 p-8 rounded-2xl shadow-2xl">
+              <div className="bg-white border border-gray-200 p-8 rounded-2xl shadow-lg">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="bg-red-600/10 border border-red-600/30 p-3 rounded-xl">
+                  <div className="bg-red-50 border border-red-100 p-3 rounded-xl">
                     <Clock className="text-red-500" size={20} />
                   </div>
-                  <h2 className="text-xl font-bold text-white">Business Hours</h2>
+                  <h2 className="text-xl font-bold text-gray-900">Business Hours</h2>
                 </div>
-                <p className="text-gray-400 text-sm leading-relaxed whitespace-pre-wrap">
+                <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">
                   {siteSettings.contactInfo.workingDays}
                 </p>
               </div>
 
               {/* Social Media */}
-              <div className="bg-gray-900 border border-gray-800 p-8 rounded-2xl shadow-2xl">
-                <h2 className="text-xl font-bold text-white mb-5">Follow Us</h2>
+              <div className="bg-white border border-gray-200 p-8 rounded-2xl shadow-lg">
+                <h2 className="text-xl font-bold text-gray-900 mb-5">Follow Us</h2>
                 <div className="flex flex-wrap gap-3">
                   {siteSettings.socialLinks?.twitter && (
                     <a
                       href={siteSettings.socialLinks.twitter}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-3 bg-gray-800 border border-gray-700 text-gray-400 rounded-xl hover:bg-red-600 hover:border-red-600 hover:text-white transition-all"
+                      className="p-3 bg-gray-50 border border-gray-200 text-gray-500 rounded-xl hover:bg-red-600 hover:border-red-600 hover:text-white transition-all"
                     >
                       <Twitter size={20} />
                     </a>
@@ -371,7 +371,7 @@ export default function ContactPage() {
                       href={siteSettings.socialLinks.youtube}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-3 bg-gray-800 border border-gray-700 text-gray-400 rounded-xl hover:bg-red-600 hover:border-red-600 hover:text-white transition-all"
+                      className="p-3 bg-gray-50 border border-gray-200 text-gray-500 rounded-xl hover:bg-red-600 hover:border-red-600 hover:text-white transition-all"
                     >
                       <Youtube size={20} />
                     </a>
@@ -381,7 +381,7 @@ export default function ContactPage() {
                       href={siteSettings.socialLinks.linkedin}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-3 bg-gray-800 border border-gray-700 text-gray-400 rounded-xl hover:bg-red-600 hover:border-red-600 hover:text-white transition-all"
+                      className="p-3 bg-gray-50 border border-gray-200 text-gray-500 rounded-xl hover:bg-red-600 hover:border-red-600 hover:text-white transition-all"
                     >
                       <Linkedin size={20} />
                     </a>
@@ -391,7 +391,7 @@ export default function ContactPage() {
                       href={siteSettings.socialLinks.instagram}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-3 bg-gray-800 border border-gray-700 text-gray-400 rounded-xl hover:bg-red-600 hover:border-red-600 hover:text-white transition-all"
+                      className="p-3 bg-gray-50 border border-gray-200 text-gray-500 rounded-xl hover:bg-red-600 hover:border-red-600 hover:text-white transition-all"
                     >
                       <Instagram size={20} />
                     </a>
@@ -401,7 +401,7 @@ export default function ContactPage() {
                       href={siteSettings.socialLinks.facebook}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-3 bg-gray-800 border border-gray-700 text-gray-400 rounded-xl hover:bg-red-600 hover:border-red-600 hover:text-white transition-all"
+                      className="p-3 bg-gray-50 border border-gray-200 text-gray-500 rounded-xl hover:bg-red-600 hover:border-red-600 hover:text-white transition-all"
                     >
                       <Facebook size={20} />
                     </a>
@@ -411,7 +411,7 @@ export default function ContactPage() {
                       href={siteSettings.socialLinks.telegram}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-3 bg-gray-800 border border-gray-700 text-gray-400 rounded-xl hover:bg-red-600 hover:border-red-600 hover:text-white transition-all"
+                      className="p-3 bg-gray-50 border border-gray-200 text-gray-500 rounded-xl hover:bg-red-600 hover:border-red-600 hover:text-white transition-all"
                     >
                       <TelegramIcon size={20} />
                     </a>

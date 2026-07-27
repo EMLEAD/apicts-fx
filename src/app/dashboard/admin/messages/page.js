@@ -9,20 +9,24 @@ export default function AdminMessagesPage() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedMessage, setSelectedMessage] = useState(null);
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState({ total: 0, totalPages: 1, hasNext: false, hasPrev: false });
 
   useEffect(() => {
     fetchMessages();
-  }, []);
+  }, [page]);
 
   const fetchMessages = async () => {
     try {
+      setLoading(true);
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/admin/messages', {
+      const res = await fetch(`/api/admin/messages?page=${page}&limit=15`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
       if (data.success) {
         setMessages(data.messages);
+        setPagination(data.pagination);
       }
     } catch (error) {
       console.error('Error fetching messages:', error);
@@ -70,10 +74,8 @@ export default function AdminMessagesPage() {
       const data = await res.json();
       if (data.success) {
         toast.success('Deleted successfully');
-        setMessages(messages.filter(m => m.id !== id));
-        if (selectedMessage && selectedMessage.id === id) {
-          setSelectedMessage(null);
-        }
+        setSelectedMessage(null);
+        fetchMessages();
       } else {
         toast.error(data.error);
       }
@@ -156,6 +158,31 @@ export default function AdminMessagesPage() {
         </table>
       </div>
 
+      {/* Pagination */}
+      {pagination.totalPages > 1 && (
+        <div className="mt-4 flex items-center justify-between">
+          <p className="text-sm text-gray-500">
+            Page {pagination.page} of {pagination.totalPages} ({pagination.total} messages)
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setPage(p => p - 1)}
+              disabled={!pagination.hasPrev || loading}
+              className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => setPage(p => p + 1)}
+              disabled={!pagination.hasNext || loading}
+              className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* View Message Modal */}
       {selectedMessage && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
@@ -183,12 +210,12 @@ export default function AdminMessagesPage() {
                 >
                   Close
                 </button>
-                <a
+                {/* <a
                   href={`mailto:${selectedMessage.email}?subject=Re: ${encodeURIComponent(selectedMessage.subject)}`}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   Reply via Email
-                </a>
+                </a> */}
               </div>
             </div>
           </div>

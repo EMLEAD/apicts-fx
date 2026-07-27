@@ -416,6 +416,17 @@ export default function TransactionManagement() {
                     </div>
                   )}
 
+                  {selectedTransaction.metadata.proofOfPayment && (
+                    <div className="pt-2 border-t border-red-100/50">
+                      <span className="text-[10px] font-bold text-red-800 uppercase tracking-wider block mb-1.5">Proof of Payment</span>
+                      <a href={selectedTransaction.metadata.proofOfPayment} target="_blank" rel="noopener noreferrer" className="group block">
+                        <div className="rounded-lg overflow-hidden border border-gray-200 hover:border-red-300 transition-all max-w-xs">
+                          <img src={selectedTransaction.metadata.proofOfPayment} alt="Proof of Payment" className="w-full h-auto object-contain group-hover:scale-105 transition-transform" />
+                        </div>
+                      </a>
+                    </div>
+                  )}
+
                   {selectedTransaction.metadata.walletId && (
                     <div className="pt-2 border-t border-red-100/50">
                       <span className="text-[10px] font-bold text-red-800 uppercase tracking-wider block mb-1.5">Destination Wallet Address</span>

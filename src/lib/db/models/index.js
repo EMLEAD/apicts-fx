@@ -20,6 +20,7 @@ const UserDocumentModel = require('./UserDocument');
 const ProductModel = require('./Product');
 const AffiliateLinkModel = require('./AffiliateLink');
 const TestimonialModel = require('./Testimonial');
+const NotificationModel = require('./Notification');
 
 // Initialize models
 const User = UserModel(sequelize);
@@ -43,6 +44,7 @@ const UserDocument = UserDocumentModel(sequelize);
 const Product = ProductModel(sequelize);
 const AffiliateLink = AffiliateLinkModel(sequelize);
 const Testimonial = TestimonialModel(sequelize);
+const Notification = NotificationModel(sequelize);
 
 // Define associations
 User.hasMany(Contact, { foreignKey: 'userId', as: 'contacts' });
@@ -143,6 +145,7 @@ module.exports = {
   Product,
   AffiliateLink,
   Testimonial,
+  Notification,
   syncDatabase
 };
 

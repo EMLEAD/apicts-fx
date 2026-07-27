@@ -339,7 +339,7 @@ export default function Navbar() {
                   </div>
                 </div>
                 <Link href="/dashboard" onClick={toggleMenu}>
-                  <button className={`w-full px-6 py-3 rounded-md font-semibold transition-all duration-300 shadow-md ${
+                  <button className={`w-full px-6 my-4 py-3 rounded-md font-semibold transition-all duration-300 shadow-md ${
                     isScrolled 
                       ? 'bg-red-600 text-white hover:bg-green-600' 
                       : 'bg-red-600 text-white hover:bg-green-600'
@@ -387,14 +387,14 @@ export default function Navbar() {
           </div>
 
           {/* Mobile Message Icon */}
-          <div className="flex justify-center pt-4">
+          {/* <div className="flex justify-center pt-4">
             <MessageCircle 
               size={32} 
               className={`transition-colors duration-300 ${
                 isScrolled ? 'text-green-600 hover:text-green-300' : 'text-white hover:text-rose-600'
               }`}
             />
-          </div>
+          </div> */}
         </div>
       </div>
     </nav>

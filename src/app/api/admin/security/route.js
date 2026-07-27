@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import { User, Transaction } from '@/lib/db/models';
+import { User, Transaction, UserDocument } from '@/lib/db/models';
 import jwt from 'jsonwebtoken';
+import { Op } from 'sequelize';
 
 async function authenticateAdmin(request) {
   try {
@@ -30,37 +31,120 @@ export async function GET(request) {
       return NextResponse.json({ error: auth.error }, { status: 401 });
     }
 
-    // Mock security data - in production, this would come from actual security logs
+    const { searchParams } = new URL(request.url);
+    const usersPage = Math.max(1, parseInt(searchParams.get('usersPage') || '1', 10));
+    const activityPage = Math.max(1, parseInt(searchParams.get('activityPage') || '1', 10));
+    const limit = 10;
+
     const verifiedUsers = await User.count({ where: { isActive: true } });
+    const unverifiedUsersCount = await User.count({ where: { isActive: false } });
     const unverifiedUsers = await User.findAll({
       where: { isActive: false },
-      limit: 10,
-      attributes: ['id', 'username', 'email', 'createdAt']
+      offset: (usersPage - 1) * limit,
+      limit,
+      attributes: ['id', 'username', 'email', 'createdAt'],
+      order: [['createdAt', 'DESC']]
     });
 
-    // Mock suspicious activities
-    const suspiciousActivity = [
-      {
-        type: 'Failed Login',
-        description: 'Multiple failed login attempts detected',
-        timestamp: new Date(),
-        user: { username: 'sample_user' }
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    const allActivity = [];
+
+    const failedTransactions = await Transaction.findAll({
+      where: { status: 'failed' },
+      order: [['createdAt', 'DESC']],
+      include: [{ model: User, as: 'user', attributes: ['username'] }]
+    });
+    failedTransactions.forEach(t => {
+      allActivity.push({
+        type: 'Transaction Failed',
+        description: `${t.type} of ${t.amount} ${t.currency} failed`,
+        timestamp: t.createdAt,
+        user: t.user ? { username: t.user.username } : null
+      });
+    });
+
+    const largeTransactions = await Transaction.findAll({
+      where: {
+        status: 'completed',
+        amount: { [Op.gte]: 100000 },
+        createdAt: { [Op.gte]: sevenDaysAgo }
       },
-      {
-        type: 'Unusual Transaction',
-        description: 'Large transaction amount detected',
-        timestamp: new Date(Date.now() - 3600000),
-        user: { username: 'another_user' }
-      }
-    ];
+      order: [['amount', 'DESC']],
+      include: [{ model: User, as: 'user', attributes: ['username'] }]
+    });
+    largeTransactions.forEach(t => {
+      allActivity.push({
+        type: 'Large Transaction',
+        description: `${t.type} of ${t.amount} ${t.currency} completed`,
+        timestamp: t.createdAt,
+        user: t.user ? { username: t.user.username } : null
+      });
+    });
+
+    const pendingVerifications = await UserDocument.findAll({
+      where: { verificationStatus: 'pending' },
+      order: [['createdAt', 'DESC']],
+      include: [{ model: User, as: 'user', attributes: ['username'] }]
+    });
+    pendingVerifications.forEach(d => {
+      allActivity.push({
+        type: 'Pending Verification',
+        description: `${d.documentType.replace('_', ' ')} submitted for verification`,
+        timestamp: d.createdAt,
+        user: d.user ? { username: d.user.username } : null
+      });
+    });
+
+    const rejectedDocuments = await UserDocument.findAll({
+      where: { verificationStatus: 'rejected' },
+      order: [['createdAt', 'DESC']],
+      include: [{ model: User, as: 'user', attributes: ['username'] }]
+    });
+    rejectedDocuments.forEach(d => {
+      allActivity.push({
+        type: 'Document Rejected',
+        description: `${d.documentType.replace('_', ' ')} verification rejected`,
+        timestamp: d.verifiedAt || d.createdAt,
+        user: d.user ? { username: d.user.username } : null
+      });
+    });
+
+    const recentUsers = await User.findAll({
+      order: [['createdAt', 'DESC']],
+      attributes: ['username', 'createdAt']
+    });
+    recentUsers.forEach(u => {
+      allActivity.push({
+        type: 'New User',
+        description: `${u.username} registered on the platform`,
+        timestamp: u.createdAt,
+        user: { username: u.username }
+      });
+    });
+
+    allActivity.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    const totalActivity = allActivity.length;
+    const recentActivity = allActivity.slice((activityPage - 1) * limit, activityPage * limit);
+
+    const suspiciousCount = failedTransactions.length + largeTransactions.length + rejectedDocuments.length;
+    const totalLogins = await User.count();
+    const failedLogins = failedTransactions.length;
 
     return NextResponse.json({
       verifiedUsers,
       unverifiedUsers,
-      suspiciousActivity: suspiciousActivity.length,
-      totalLogins: 0, // Mock data
-      failedLogins: 0, // Mock data
-      recentActivity: suspiciousActivity
+      unverifiedUsersCount,
+      usersPage,
+      usersTotalPages: Math.max(1, Math.ceil(unverifiedUsersCount / limit)),
+      suspiciousActivity: suspiciousCount,
+      totalLogins,
+      failedLogins,
+      recentActivity,
+      activityPage,
+      activityTotalPages: Math.max(1, Math.ceil(totalActivity / limit))
     }, { status: 200 });
   } catch (error) {
     console.error('Error fetching security data:', error);

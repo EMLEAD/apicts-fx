@@ -7,6 +7,11 @@ module.exports = (sequelize) => {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true
     },
+    userId: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      comment: 'Set if user is logged in when submitting'
+    },
     name: {
       type: DataTypes.STRING,
       allowNull: false,

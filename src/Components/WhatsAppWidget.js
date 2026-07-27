@@ -6,7 +6,7 @@ export default function WhatsAppWidget() {
       href="https://wa.me/2348139399978"
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-6 right-6 z-[9999] flex h-16 w-16 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg shadow-[#25D366]/40 transition-transform hover:scale-110 hover:shadow-[#25D366]/60 cursor-pointer"
+      className="fixed bottom-2 right-2 z-[9999] flex h-16 w-16 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg shadow-[#25D366]/40 transition-transform hover:scale-110 hover:shadow-[#25D366]/60 cursor-pointer"
       aria-label="Chat on WhatsApp"
     >
       <svg

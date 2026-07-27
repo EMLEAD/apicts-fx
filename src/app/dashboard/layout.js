@@ -23,6 +23,7 @@ import {
   UserCircle
 } from 'lucide-react';
 import Navbar from '@/Components/NavBar';
+import NotificationPopup from '@/Components/NotificationPopup';
 
 const dashboardNavigationItems = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
@@ -240,6 +241,7 @@ export default function DashboardLayout({ children }) {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {children}
       </main>
+      <NotificationPopup />
     </div>
   );
 }

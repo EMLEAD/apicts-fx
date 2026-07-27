@@ -29,7 +29,8 @@ import {
   Mail,
   ArrowLeftRight,
   MessageSquareQuote,
-  Landmark
+  Landmark,
+  Bell
 } from 'lucide-react';
 
 const ADMIN_ROLES = ['super_admin', 'admin', 'moderator'];
@@ -77,7 +78,8 @@ export default function AdminLayout({ children }) {
     { name: 'Messages', href: '/admin/messages', icon: Mail },
     { name: 'Coupons', href: '/admin/coupons', icon: BadgePercent },
     { name: 'Transfers', href: '/admin/transfers', icon: ArrowUpRight },
-    { name: 'Direct Transfers', href: '/admin/direct-transfers', icon: Landmark },
+    //     { name: 'Direct Transfers', href: '/admin/direct-transfers', icon: Landmark },
+    { name: 'Notifications', href: '/admin/notifications', icon: Bell },
   ];
 
   const handleLogout = () => {

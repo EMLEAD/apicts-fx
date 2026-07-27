@@ -86,6 +86,7 @@ export const metadata = {
 };
 
 import WhatsAppWidget from "@/Components/WhatsAppWidget";
+import NotificationPopup from "@/Components/NotificationPopup";
 
 export default function RootLayout({ children }) {
   return (
@@ -93,6 +94,7 @@ export default function RootLayout({ children }) {
       <body className="antialiased">
         {children}
         <WhatsAppWidget />
+        <NotificationPopup />
       </body>
     </html>
   );

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Shield, AlertTriangle, UserCheck, Ban, Eye, CheckCircle, XCircle } from 'lucide-react';
+import { Shield, AlertTriangle, UserCheck, Eye, CheckCircle, XCircle, UserPlus, FileX, Clock } from 'lucide-react';
 
 export default function SecurityDashboard() {
   const [securityData, setSecurityData] = useState({
@@ -13,21 +13,36 @@ export default function SecurityDashboard() {
   });
   const [suspiciousActivities, setSuspiciousActivities] = useState([]);
   const [unverifiedUsers, setUnverifiedUsers] = useState([]);
+  const [usersPage, setUsersPage] = useState(1);
+  const [usersTotalPages, setUsersTotalPages] = useState(1);
+  const [activityPage, setActivityPage] = useState(1);
+  const [activityTotalPages, setActivityTotalPages] = useState(1);
 
   useEffect(() => {
-    fetchSecurityData();
+    fetchSecurityData(1, 1);
   }, []);
 
-  const fetchSecurityData = async () => {
+  const fetchSecurityData = async (uPage, aPage) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/admin/security', {
+      const res = await fetch(`/api/admin/security?usersPage=${uPage}&activityPage=${aPage}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
-      setSecurityData(data);
+      const unverifiedList = Array.isArray(data.unverifiedUsers) ? data.unverifiedUsers : [];
+      setSecurityData({
+        verifiedUsers: data.verifiedUsers ?? 0,
+        unverifiedUsers: data.unverifiedUsersCount ?? unverifiedList.length ?? 0,
+        suspiciousActivity: data.suspiciousActivity ?? 0,
+        totalLogins: data.totalLogins ?? 0,
+        failedLogins: data.failedLogins ?? 0
+      });
       setSuspiciousActivities(data.recentActivity || []);
-      setUnverifiedUsers(data.unverifiedUsers || []);
+      setUnverifiedUsers(unverifiedList);
+      setUsersPage(data.usersPage || uPage);
+      setUsersTotalPages(data.usersTotalPages || 1);
+      setActivityPage(data.activityPage || aPage);
+      setActivityTotalPages(data.activityTotalPages || 1);
     } catch (error) {
       console.error('Error fetching security data:', error);
     }
@@ -42,7 +57,7 @@ export default function SecurityDashboard() {
           'Authorization': `Bearer ${token}`
         }
       });
-      fetchSecurityData();
+      fetchSecurityData(usersPage, activityPage);
     } catch (error) {
       console.error('Error verifying user:', error);
     }
@@ -153,6 +168,13 @@ export default function SecurityDashboard() {
               <p className="text-center text-gray-500 py-8">All users are verified</p>
             )}
           </div>
+          {usersTotalPages > 1 && (
+            <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+              <button onClick={() => { const p = usersPage - 1; setUsersPage(p); fetchSecurityData(p, activityPage); }} disabled={usersPage <= 1} className="text-sm font-medium text-red-600 hover:text-red-700 disabled:text-gray-400 disabled:cursor-not-allowed">Previous</button>
+              <span className="text-sm text-gray-500">Page {usersPage} of {usersTotalPages}</span>
+              <button onClick={() => { const p = usersPage + 1; setUsersPage(p); fetchSecurityData(p, activityPage); }} disabled={usersPage >= usersTotalPages} className="text-sm font-medium text-red-600 hover:text-red-700 disabled:text-gray-400 disabled:cursor-not-allowed">Next</button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -164,11 +186,21 @@ export default function SecurityDashboard() {
         <div className="p-6">
           <div className="space-y-4">
             {suspiciousActivities.length > 0 ? (
-              suspiciousActivities.map((activity, index) => (
+              suspiciousActivities.map((activity, index) => {
+                const iconMap = {
+                  'Transaction Failed': { icon: XCircle, bg: 'bg-red-100', text: 'text-red-600' },
+                  'Large Transaction': { icon: AlertTriangle, bg: 'bg-orange-100', text: 'text-orange-600' },
+                  'Pending Verification': { icon: Clock, bg: 'bg-yellow-100', text: 'text-yellow-600' },
+                  'Document Rejected': { icon: FileX, bg: 'bg-red-100', text: 'text-red-600' },
+                  'New User': { icon: UserPlus, bg: 'bg-blue-100', text: 'text-blue-600' },
+                };
+                const cfg = iconMap[activity.type] || { icon: AlertTriangle, bg: 'bg-gray-100', text: 'text-gray-600' };
+                const ActivityIcon = cfg.icon;
+                return (
                 <div key={index} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
                   <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-red-100 rounded-lg">
-                      <AlertTriangle className="h-5 w-5 text-red-600" />
+                    <div className={`p-2 ${cfg.bg} rounded-lg`}>
+                      <ActivityIcon className={`h-5 w-5 ${cfg.text}`} />
                     </div>
                     <div>
                       <p className="font-medium text-gray-900">{activity.type}</p>
@@ -180,11 +212,19 @@ export default function SecurityDashboard() {
                     <p className="text-sm text-gray-700">{activity.user?.username}</p>
                   </div>
                 </div>
-              ))
+                );
+              })
             ) : (
               <p className="text-center text-gray-500 py-8">No suspicious activity detected</p>
             )}
           </div>
+          {activityTotalPages > 1 && (
+            <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+              <button onClick={() => { const p = activityPage - 1; setActivityPage(p); fetchSecurityData(usersPage, p); }} disabled={activityPage <= 1} className="text-sm font-medium text-red-600 hover:text-red-700 disabled:text-gray-400 disabled:cursor-not-allowed">Previous</button>
+              <span className="text-sm text-gray-500">Page {activityPage} of {activityTotalPages}</span>
+              <button onClick={() => { const p = activityPage + 1; setActivityPage(p); fetchSecurityData(usersPage, p); }} disabled={activityPage >= activityTotalPages} className="text-sm font-medium text-red-600 hover:text-red-700 disabled:text-gray-400 disabled:cursor-not-allowed">Next</button>
+            </div>
+          )}
         </div>
       </div>
     </div>

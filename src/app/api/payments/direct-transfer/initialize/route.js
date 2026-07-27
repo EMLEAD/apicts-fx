@@ -41,6 +41,7 @@ export async function POST(request) {
     let description = '';
     let targetCurrency = null;
     let exchangeRate = null;
+    let txType = 'exchange';
 
     if (purpose === 'plan_payment') {
       if (!planId) {
@@ -74,12 +75,13 @@ export async function POST(request) {
       exchangeRate = Number(product.sellRate) || null;
       description = `Bank transfer for ${Number(quantity) || 0} USD of ${product.name}`;
     } else {
-      description = 'Bank transfer wallet funding';
+      txType = 'deposit';
+      description = 'DEPOSIT';
     }
 
     const newTransaction = await Transaction.create({
       userId: dbUser.id,
-      type: 'exchange',
+      type: txType,
       status: 'pending',
       amount: numericAmount,
       currency: 'NGN',

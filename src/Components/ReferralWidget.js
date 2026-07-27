@@ -69,15 +69,15 @@ export default function ReferralWidget({ apiEndpoint = "/api/auth/me", referralC
     <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 max-w-sm w-full">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm text-gray-500">Your referral code</p>
-          <p className="mt-2 font-mono font-semibold text-lg text-gray-900">{referral || "—"}</p>
+          <p className="text-sm text-gray-600" style={{ WebkitFontSmoothing: 'antialiased' }}>Your referral code</p>
+          <p className="mt-2 font-mono font-semibold text-lg text-black" style={{ WebkitFontSmoothing: 'antialiased' }}>{referral || "—"}</p>
         </div>
 
         <div className="text-right">
           <button
             type="button"
             onClick={() => copyText(referral, "code")}
-            className="bg-gray-100 hover:bg-gray-200 text-sm px-3 py-2 rounded-md ml-2"
+            className="bg-gray-100 hover:bg-gray-200 text-sm px-3 py-2 rounded-md ml-2 text-gray-900 font-medium"
           >
             {copied === "code" ? "Copied" : "Copy code"}
           </button>
@@ -85,22 +85,23 @@ export default function ReferralWidget({ apiEndpoint = "/api/auth/me", referralC
       </div>
 
       <div className="mt-4">
-        <p className="text-sm text-gray-500">Referral link</p>
+        <p className="text-sm text-gray-600" style={{ WebkitFontSmoothing: 'antialiased' }}>Referral link</p>
         <div className="mt-2 flex gap-2">
           <input
             readOnly
             value={referralLink}
-            className="flex-1 px-3 py-2 rounded-lg border border-gray-200 text-sm bg-gray-50"
+            className="flex-1 px-3 py-2 rounded-lg border border-gray-200 text-sm bg-gray-50 text-gray-900 font-medium"
+            style={{ WebkitFontSmoothing: 'antialiased' }}
           />
           <button
             type="button"
             onClick={() => copyText(referralLink, "link")}
-            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm"
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
           >
             {copied === "link" ? "Copied" : "Copy"}
           </button>
         </div>
-        <p className="text-xs text-gray-400 mt-2">Share this link to invite others and earn rewards.</p>
+        <p className="text-xs text-gray-500 mt-2" style={{ WebkitFontSmoothing: 'antialiased' }}>Share this link to invite others and earn rewards.</p>
       </div>
     </div>
   );

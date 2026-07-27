@@ -1,80 +1,45 @@
 import { NextResponse } from 'next/server';
-const { Contact } = require('@/lib/db/models');
+import { Contact } from '@/lib/db/models';
 
-// POST - Create new contact message
 export async function POST(request) {
   try {
     const body = await request.json();
     const { name, email, phone, subject, message } = body;
 
-    // Validate required fields
     if (!name || !email || !subject || !message) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Name, email, subject, and message are required' }, { status: 400 });
     }
 
-    // Create contact message
+    if (name.trim().length < 2) {
+      return NextResponse.json({ error: 'Name must be at least 2 characters' }, { status: 400 });
+    }
+
+    if (subject.trim().length < 3) {
+      return NextResponse.json({ error: 'Subject must be at least 3 characters' }, { status: 400 });
+    }
+
+    if (message.trim().length < 10) {
+      return NextResponse.json({ error: 'Message must be at least 10 characters' }, { status: 400 });
+    }
+
     const contact = await Contact.create({
-      name,
-      email,
-      phone,
-      subject,
-      message
+      name: name.trim(),
+      email: email.trim(),
+      phone: phone?.trim() || null,
+      subject: subject.trim(),
+      message: message.trim()
     });
 
-    return NextResponse.json(
-      {
-        message: 'Contact message sent successfully',
-        contact
-      },
-      { status: 201 }
-    );
+    return NextResponse.json({
+      success: true,
+      message: 'Message sent successfully',
+      contact
+    }, { status: 201 });
   } catch (error) {
-    console.error('Contact creation error:', error);
+    console.error('Contact form error:', error);
     return NextResponse.json(
-      { error: 'Failed to send message', details: error.message },
+      { error: error.message || 'Failed to send message' },
       { status: 500 }
     );
   }
 }
-
-// GET - Get all contact messages (Admin only - you can add auth middleware)
-export async function GET(request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const status = searchParams.get('status');
-    const limit = parseInt(searchParams.get('limit')) || 50;
-    const offset = parseInt(searchParams.get('offset')) || 0;
-
-    const where = {};
-    if (status) {
-      where.status = status;
-    }
-
-    const contacts = await Contact.findAndCountAll({
-      where,
-      limit,
-      offset,
-      order: [['createdAt', 'DESC']]
-    });
-
-    return NextResponse.json(
-      {
-        contacts: contacts.rows,
-        total: contacts.count,
-        limit,
-        offset
-      },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error('Contact fetch error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch contacts', details: error.message },
-      { status: 500 }
-    );
-  }
-}
-
