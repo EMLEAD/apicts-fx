@@ -290,7 +290,7 @@ export default function DocumentsPage() {
               Get unlimited access to all premium trading guides, market analysis reports, and exclusive educational materials
             </p>
             <a
-              href="/pricing"
+              href="/dashboard/subscription"
               className="inline-block bg-white text-red-600 px-8 py-3 rounded-xl font-semibold hover:bg-gray-100 transition-all transform hover:scale-105 shadow-lg"
             >
               View Plans

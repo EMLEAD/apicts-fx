@@ -623,7 +623,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+        {/* <div className="bg-white rounded-xl shadow-sm border border-gray-200">
           <div className="p-6 border-b border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900">Quick Exchange</h3>
           </div>
@@ -670,7 +670,7 @@ export default function Dashboard() {
               </button>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );
