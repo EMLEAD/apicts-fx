@@ -63,6 +63,7 @@ export default function SubscriptionPage() {
   const [bankAccountInfo, setBankAccountInfo] = useState(null);
   const [bankTransferPlan, setBankTransferPlan] = useState(null);
   const [bankTransferState, setBankTransferState] = useState({ proofFile: null, proofUrl: '', loading: false, error: null, success: false });
+  const [paymentModalPlan, setPaymentModalPlan] = useState(null);
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
@@ -701,8 +702,8 @@ export default function SubscriptionPage() {
                     )}
 
                     <button
-                      onClick={() => handleSubscribe(plan.id)}
-                      disabled={isSubscribed || subscribing === plan.id}
+                      onClick={() => setPaymentModalPlan(plan)}
+                      disabled={isSubscribed}
                       className={`w-full py-3 rounded-lg font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
                         isSubscribed
                           ? 'bg-green-600 text-white cursor-not-allowed'
@@ -711,26 +712,8 @@ export default function SubscriptionPage() {
                           : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
                       }`}
                     >
-                      {subscribing === plan.id ? (
-                        <span className="flex items-center justify-center space-x-2">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          <span>Subscribing...</span>
-                        </span>
-                      ) : isSubscribed ? (
-                        'Current Plan'
-                      ) : (
-                        'Pay with Card'
-                      )}
+                      {isSubscribed ? 'Current Plan' : 'Subscribe'}
                     </button>
-                    {!isSubscribed && (
-                      <button
-                        onClick={() => { setBankTransferPlan(plan); setBankTransferState({ proofFile: null, proofUrl: '', loading: false, error: null, success: false }); }}
-                        className="w-full mt-2 py-2.5 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
-                      >
-                        <Landmark size={16} />
-                        Pay via Bank Transfer
-                      </button>
-                    )}
                   </div>
                 </div>
               );
@@ -808,6 +791,71 @@ export default function SubscriptionPage() {
           )}
         </div>
       </div>
+      {/* Payment Method Modal */}
+      {paymentModalPlan && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl p-6 space-y-5">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold text-gray-900">Subscribe — {paymentModalPlan.name}</h3>
+              <button onClick={() => setPaymentModalPlan(null)} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+            </div>
+            <p className="text-sm text-gray-600">Choose your payment method for <span className="font-bold text-gray-900">{formatCurrency(paymentModalPlan.price, paymentModalPlan.currency)}</span></p>
+
+            <div className="space-y-3">
+              <button
+                onClick={() => {
+                  const plan = paymentModalPlan;
+                  setPaymentModalPlan(null);
+                  handleSubscribe(plan.id);
+                }}
+                disabled={subscribing === paymentModalPlan.id}
+                className="w-full flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:border-red-500 hover:bg-red-50 transition-all disabled:opacity-60"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                    <CreditCard className="h-5 w-5 text-red-600" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-semibold text-gray-900">Pay with Card</p>
+                    <p className="text-sm text-gray-500">Instant activation via Paystack</p>
+                  </div>
+                </div>
+                {subscribing === paymentModalPlan.id ? (
+                  <Loader2 className="h-5 w-5 animate-spin text-red-600" />
+                ) : (
+                  <span className="text-red-600 font-medium text-sm">Choose &rarr;</span>
+                )}
+              </button>
+
+              <button
+                onClick={() => {
+                  const plan = paymentModalPlan;
+                  setPaymentModalPlan(null);
+                  setBankTransferPlan(plan);
+                  setBankTransferState({ proofFile: null, proofUrl: '', loading: false, error: null, success: false });
+                }}
+                className="w-full flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:border-red-500 hover:bg-red-50 transition-all"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                    <Landmark className="h-5 w-5 text-green-600" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-semibold text-gray-900">Bank Transfer</p>
+                    <p className="text-sm text-gray-500">Pay via direct bank transfer</p>
+                  </div>
+                </div>
+                <span className="text-red-600 font-medium text-sm">Choose &rarr;</span>
+              </button>
+            </div>
+
+            <p className="text-xs text-gray-400 text-center">
+              Your subscription will be activated immediately after payment confirmation.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Bank Transfer Modal */}
       {bankTransferPlan && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
