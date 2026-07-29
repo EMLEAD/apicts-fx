@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import { Loader2, AlertCircle, CheckCircle, Landmark, Upload, CreditCard } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle, Landmark, Upload, CreditCard, Wallet } from "lucide-react";
 
 const formatCurrency = (amount, currency = "NGN") => {
   const numeric = Number(amount) || 0;
@@ -35,6 +35,8 @@ export default function PlansList({ limit = 20 }) {
   const [bankTransferPlan, setBankTransferPlan] = useState(null);
   const [bankTransferState, setBankTransferState] = useState({ proofFile: null, proofUrl: '', loading: false, error: null, success: false });
   const [paymentModalPlan, setPaymentModalPlan] = useState(null);
+  const [walletBalance, setWalletBalance] = useState(null);
+  const [walletSubscribing, setWalletSubscribing] = useState(false);
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
@@ -47,6 +49,15 @@ export default function PlansList({ limit = 20 }) {
     }
     const token = localStorage.getItem('token');
     setIsLoggedIn(!!token);
+    if (token) {
+      fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
+        .then(res => res.json())
+        .then(data => {
+          if (data.user) setWalletBalance(Number(data.user.walletBalance) || 0);
+          if (data.walletBalance) setWalletBalance(Number(data.walletBalance) || 0);
+        })
+        .catch(() => {});
+    }
     fetch('/api/site-settings')
       .then(res => res.json())
       .then(data => {
@@ -272,6 +283,40 @@ export default function PlansList({ limit = 20 }) {
     }
   };
 
+  const handleWalletSubscribe = async (planId) => {
+    try {
+      setWalletSubscribing(true);
+      setSubscriptionError(null);
+      setSubscriptionSuccess(null);
+
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = '/login';
+        return;
+      }
+
+      const res = await fetch('/api/plans/subscribe/payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ planId, paymentMethod: 'wallet' })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Wallet payment failed');
+
+      setWalletBalance(data.walletBalance);
+      setSubscriptionSuccess(`Subscribed to plan using wallet! Balance: ${formatCurrency(data.walletBalance)}`);
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('subscriptionUpdated'));
+      }
+    } catch (err) {
+      setSubscriptionError(err.message);
+    } finally {
+      setWalletSubscribing(false);
+    }
+  };
+
   const handleBankTransferSubscribe = async () => {
     if (!bankTransferPlan || bankTransferState.loading) return;
     try {
@@ -418,7 +463,7 @@ export default function PlansList({ limit = 20 }) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl p-6 space-y-5">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold text-gray-900">Subscribe — {paymentModalPlan.name}</h3>
+              <h3 className="text-lg font-bold text-gray-900">Subscribe for {paymentModalPlan.name}</h3>
               <button onClick={() => setPaymentModalPlan(null)} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
             </div>
             <p className="text-sm text-gray-600">Choose your payment method for <span className="font-bold text-gray-900">{formatCurrency(paymentModalPlan.price, paymentModalPlan.currency)}</span></p>
@@ -453,6 +498,58 @@ export default function PlansList({ limit = 20 }) {
                 )}
               </button>
 
+              {isLoggedIn && walletBalance !== null && (
+                <button
+                  onClick={() => {
+                    const plan = paymentModalPlan;
+                    setPaymentModalPlan(null);
+                    handleWalletSubscribe(plan.id);
+                  }}
+                  disabled={walletSubscribing || Number(paymentModalPlan?.price || 0) > walletBalance}
+                  className={`w-full flex items-center justify-between p-4 border rounded-xl transition-all disabled:opacity-60 ${
+                    Number(paymentModalPlan?.price || 0) > walletBalance
+                      ? 'border-gray-200 opacity-50 cursor-not-allowed'
+                      : 'border-gray-200 hover:border-blue-500 hover:bg-blue-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                      <Wallet className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-semibold text-gray-900">Wallet Balance</p>
+                      <p className="text-sm text-gray-500">
+                        {formatCurrency(walletBalance)} available
+                        {Number(paymentModalPlan?.price || 0) > walletBalance && ' — Insufficient'}
+                      </p>
+                    </div>
+                  </div>
+                  {walletSubscribing ? (
+                    <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+                  ) : (
+                    <span className="text-blue-600 font-medium text-sm">Pay &rarr;</span>
+                  )}
+                </button>
+              )}
+
+              {!isLoggedIn && (
+                <button
+                  onClick={() => { setPaymentModalPlan(null); window.location.href = '/login'; }}
+                  className="w-full flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                      <Wallet className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-semibold text-gray-900">Wallet Balance</p>
+                      <p className="text-sm text-gray-500">Log in to pay with your wallet</p>
+                    </div>
+                  </div>
+                  <span className="text-blue-600 font-medium text-sm">Login &rarr;</span>
+                </button>
+              )}
+
               <button
                 onClick={() => {
                   const plan = paymentModalPlan;
@@ -464,7 +561,7 @@ export default function PlansList({ limit = 20 }) {
                   setBankTransferPlan(plan);
                   setBankTransferState({ proofFile: null, proofUrl: '', loading: false, error: null, success: false });
                 }}
-                className="w-full flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:border-red-500 hover:bg-red-50 transition-all"
+                className="w-full flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:border-green-500 hover:bg-green-50 transition-all"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
@@ -475,7 +572,7 @@ export default function PlansList({ limit = 20 }) {
                     <p className="text-sm text-gray-500">Pay via direct bank transfer</p>
                   </div>
                 </div>
-                <span className="text-red-600 font-medium text-sm">Choose &rarr;</span>
+                <span className="text-green-600 font-medium text-sm">Choose &rarr;</span>
               </button>
             </div>
 

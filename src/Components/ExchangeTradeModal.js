@@ -10,7 +10,8 @@ import {
   CreditCard,
   ExternalLink,
   Upload,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Landmark
 } from "lucide-react";
 import { subscribeToPaymentComplete, PENDING_PURCHASE_KEY } from "@/lib/utils/paymentChannel";
 
@@ -32,6 +33,12 @@ export default function ExchangeTradeModal({
   const [sellImages, setSellImages] = useState([]);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [cardCount, setCardCount] = useState("");
+  const [bankTransferData, setBankTransferData] = useState(null);
+  const [bankTransferProof, setBankTransferProof] = useState(null);
+  const [bankTransferProofUrl, setBankTransferProofUrl] = useState("");
+  const [bankTransferLoading, setBankTransferLoading] = useState(false);
+  const [bankTransferSuccess, setBankTransferSuccess] = useState(false);
+  const [bankAccountInfo, setBankAccountInfo] = useState(null);
 
   const pollIntervalRef = useRef(null);
   const pendingReferenceRef = useRef(null);
@@ -143,7 +150,23 @@ export default function ExchangeTradeModal({
       setPollAttempt(0);
       setSellImages([]);
       setCardCount("");
+      setBankTransferData(null);
+      setBankTransferProof(null);
+      setBankTransferProofUrl("");
+      setBankTransferLoading(false);
+      setBankTransferSuccess(false);
       fetchUserProfile();
+      fetch('/api/site-settings')
+        .then(res => res.json())
+        .then(data => {
+          if (data.settings?.bankAccount) {
+            const ba = typeof data.settings.bankAccount === 'string'
+              ? JSON.parse(data.settings.bankAccount)
+              : data.settings.bankAccount;
+            setBankAccountInfo(ba);
+          }
+        })
+        .catch(() => {});
     }
   }, [isOpen, product, tradeType, fetchUserProfile]);
 
@@ -206,6 +229,62 @@ export default function ExchangeTradeModal({
     }
   };
 
+  const handleBankTransferProofUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBankTransferLoading(true);
+    setErrorMessage("");
+    try {
+      const token = localStorage.getItem("token");
+      const fd = new FormData();
+      fd.append("image", file);
+      const res = await fetch("/api/upload/proof-of-payment", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd
+      });
+      if (!res.ok) throw new Error("Upload failed");
+      const data = await res.json();
+      setBankTransferProof(file);
+      setBankTransferProofUrl(data.url);
+    } catch (err) {
+      setErrorMessage("Failed to upload proof image");
+    } finally {
+      setBankTransferLoading(false);
+    }
+  };
+
+  const handleBankTransferSubmit = async () => {
+    if (!bankTransferData || !bankTransferProofUrl) return;
+    setBankTransferLoading(true);
+    setErrorMessage("");
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("/api/payments/direct-transfer/initialize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          amount: bankTransferData.amount,
+          purpose: "product_purchase",
+          productId: bankTransferData.productId,
+          walletId: bankTransferData.walletId,
+          quantity: bankTransferData.quantity,
+          proofOfPayment: bankTransferProofUrl
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to submit");
+      setBankTransferSuccess(true);
+      setModalState("success");
+      fetchUserProfile();
+      onSuccess?.();
+    } catch (err) {
+      setErrorMessage(err.message);
+    } finally {
+      setBankTransferLoading(false);
+    }
+  };
+
   const removeImage = (index) => {
     setSellImages(sellImages.filter((_, i) => i !== index));
   };
@@ -241,7 +320,8 @@ export default function ExchangeTradeModal({
     }
 
     setErrorMessage("");
-    setModalState("processing");
+    const shouldProcess = tradeType !== "buy" || paymentMethod !== "bank_transfer";
+    if (shouldProcess) setModalState("processing");
 
     const token = localStorage.getItem("token");
     try {
@@ -266,6 +346,12 @@ export default function ExchangeTradeModal({
       if (!res.ok) {
         setErrorMessage(data.error || "Transaction failed to initialize");
         setModalState("failed");
+        return;
+      }
+
+      if (tradeType === "buy" && data.paymentMethod === "bank_transfer") {
+        setBankTransferData(data);
+        setModalState("bank_transfer");
         return;
       }
 
@@ -441,20 +527,26 @@ export default function ExchangeTradeModal({
                   <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
                     Payment Method
                   </label>
-                  <div className="grid grid-cols-2 gap-4">
-                    <label className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === "wallet" ? "border-red-600 bg-red-50/40 text-red-700" : "border-gray-200 hover:border-gray-300 text-gray-600"}`}>
+                  <div className="grid grid-cols-3 gap-3">
+                    <label className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === "wallet" ? "border-red-600 bg-red-50/40 text-red-700" : "border-gray-200 hover:border-gray-300 text-gray-600"}`}>
                       <input type="radio" name="paymentMethod" value="wallet" checked={paymentMethod === "wallet"} onChange={() => setPaymentMethod("wallet")} className="sr-only" />
-                      <WalletIcon size={22} className="mb-2" />
-                      <span className="text-xs font-bold">Wallet Balance</span>
+                      <WalletIcon size={20} className="mb-1.5" />
+                      <span className="text-xs font-bold">Wallet</span>
                       <span className="text-[10px] opacity-80 mt-1 truncate max-w-full">
                         NGN {userBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                     </label>
-                    <label className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === "card" ? "border-red-600 bg-red-50/40 text-red-700" : "border-gray-200 hover:border-gray-300 text-gray-600"}`}>
+                    <label className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === "card" ? "border-red-600 bg-red-50/40 text-red-700" : "border-gray-200 hover:border-gray-300 text-gray-600"}`}>
                       <input type="radio" name="paymentMethod" value="card" checked={paymentMethod === "card"} onChange={() => setPaymentMethod("card")} className="sr-only" />
-                      <CreditCard size={22} className="mb-2" />
-                      <span className="text-xs font-bold">Debit / Card</span>
+                      <CreditCard size={20} className="mb-1.5" />
+                      <span className="text-xs font-bold">Card</span>
                       <span className="text-[10px] opacity-80 mt-1">Via Paystack</span>
+                    </label>
+                    <label className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === "bank_transfer" ? "border-red-600 bg-red-50/40 text-red-700" : "border-gray-200 hover:border-gray-300 text-gray-600"}`}>
+                      <input type="radio" name="paymentMethod" value="bank_transfer" checked={paymentMethod === "bank_transfer"} onChange={() => setPaymentMethod("bank_transfer")} className="sr-only" />
+                      <Landmark size={20} className="mb-1.5" />
+                      <span className="text-xs font-bold">Transfer</span>
+                      <span className="text-[10px] opacity-80 mt-1">Bank transfer</span>
                     </label>
                   </div>
                 </div>
@@ -484,12 +576,101 @@ export default function ExchangeTradeModal({
             </form>
           )}
 
+          {modalState === "bank_transfer" && bankTransferData && (
+            <div className="space-y-5">
+              <div className="text-center">
+                <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-3">
+                  <Landmark className="h-6 w-6 text-green-600" />
+                </div>
+                <h4 className="font-bold text-gray-900 text-sm">Bank Transfer Payment</h4>
+                <p className="text-xs text-gray-500 mt-1">
+                  Transfer <span className="font-bold text-gray-900">NGN {bankTransferData.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> for {bankTransferData.quantity} USD of {bankTransferData.productName}
+                </p>
+              </div>
+
+              {bankAccountInfo && bankAccountInfo.accountNumber ? (
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Bank</span>
+                    <span className="text-sm font-semibold text-gray-900">{bankAccountInfo.bankName}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Account Number</span>
+                    <span className="text-sm font-semibold text-gray-900 font-mono">{bankAccountInfo.accountNumber}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Account Name</span>
+                    <span className="text-sm font-semibold text-gray-900">{bankAccountInfo.accountName}</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-xs text-yellow-700">
+                  Bank account details not configured. Please contact support.
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
+                  Proof of Payment
+                </label>
+                <label className="flex items-center justify-center gap-2 w-full p-4 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-gray-400 transition-colors">
+                  <input type="file" accept="image/*" onChange={handleBankTransferProofUpload} className="hidden" />
+                  {bankTransferLoading ? (
+                    <Loader2 size={18} className="animate-spin text-gray-400" />
+                  ) : bankTransferProof ? (
+                    <CheckCircle2 size={18} className="text-green-500" />
+                  ) : (
+                    <Upload size={18} className="text-gray-400" />
+                  )}
+                  <span className="text-sm text-gray-600">
+                    {bankTransferProof ? bankTransferProof.name : "Upload screenshot"}
+                  </span>
+                </label>
+                {bankTransferProofUrl && (
+                  <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                    <CheckCircle2 size={12} /> Image uploaded
+                  </p>
+                )}
+              </div>
+
+              {errorMessage && (
+                <div className="p-3 bg-red-50 border border-red-100 rounded-lg flex items-start space-x-2 text-xs text-red-700">
+                  <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                  <span>{errorMessage}</span>
+                </div>
+              )}
+
+              <div className="flex space-x-3">
+                <button type="button" onClick={() => setModalState("input")} className="flex-1 border border-gray-200 text-gray-700 font-medium py-3 rounded-lg text-sm hover:bg-gray-50">
+                  Back
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBankTransferSubmit}
+                  disabled={bankTransferLoading || !bankTransferProofUrl}
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {bankTransferLoading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Loader2 size={14} className="animate-spin" />
+                      Submitting...
+                    </span>
+                  ) : "Submit Proof"}
+                </button>
+              </div>
+            </div>
+          )}
+
           {modalState === "processing" && (
             <div className="flex flex-col items-center justify-center py-10 space-y-4">
               <Loader2 className="w-12 h-12 animate-spin text-red-600" />
               <div className="text-center">
                 <h4 className="font-bold text-gray-900 text-sm">Processing Transaction</h4>
-                {tradeType === "buy" && paymentMethod === "card" ? (
+                {tradeType === "buy" && paymentMethod === "bank_transfer" ? (
+                  <p className="text-xs text-gray-500">
+                    Submitting your bank transfer proof...
+                  </p>
+                ) : tradeType === "buy" && paymentMethod === "card" ? (
                   <div className="space-y-3 mt-1.5">
                     <p className="text-xs text-gray-500">Complete payment in the Paystack tab. This page will update automatically.</p>
                     {paystackAuthUrl && (
