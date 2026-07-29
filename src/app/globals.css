@@ -21,11 +21,10 @@ body {
 input,
 textarea,
 select {
-  color: #171717;
-  background-color: #ffffff;
+  color: #000000 !important;
 }
 
 input::placeholder,
 textarea::placeholder {
-  color: #9ca3af;
+  color: #6b7280;
 }
