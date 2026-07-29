@@ -41,16 +41,16 @@ export async function PATCH(request, { params }) {
     const oldStatus = transaction.status;
     const newStatus = body.status;
 
-    // If this is a deposit or sell transaction being marked as completed, credit the user
+    // If this is a sell transaction (check both type and metadata) being marked as completed, credit the user
     const txMetadata = typeof transaction.metadata === 'string' ? JSON.parse(transaction.metadata) : transaction.metadata;
-    const isDeposit = transaction.type === 'deposit' || (txMetadata && txMetadata.purpose === 'wallet_funding');
-    const isSell = transaction.type === 'sell' || 
+    const isSellTransaction = 
+      transaction.type === 'sell' || 
       (txMetadata && (txMetadata.sellStatus || txMetadata.transactionType === 'product_sell' || txMetadata.images));
-    const shouldCreditWallet = isDeposit || isSell;
       
-    if (shouldCreditWallet && newStatus === 'completed' && oldStatus !== 'completed') {
+    if (isSellTransaction && newStatus === 'completed' && oldStatus !== 'completed') {
       const user = await User.findByPk(transaction.userId);
       if (user) {
+        // Credit user's wallet
         const currentBalance = parseFloat(user.walletBalance || 0);
         const transactionAmount = parseFloat(transaction.amount || 0);
         
@@ -58,7 +58,7 @@ export async function PATCH(request, { params }) {
           walletBalance: currentBalance + transactionAmount
         });
         
-        console.log(`💰 Credited user ${user.id} with NGN ${transactionAmount} for ${transaction.type} transaction ${transaction.id}`);
+        console.log(`💰 Credited user ${user.id} with NGN ${transactionAmount} for sell transaction ${transaction.id}`);
       }
     }
 
@@ -84,17 +84,8 @@ export async function PATCH(request, { params }) {
             fee: transaction.fees || 0
           };
 
-          // Customize email for deposit and sell transactions
-          if (isDeposit) {
-            if (newStatus === 'completed') {
-              emailSubject = 'Your Deposit Has Been Completed!';
-              emailData = {
-                ...emailData,
-                credited: true,
-                newBalance: `${transaction.currency || 'NGN'} ${parseFloat(user.walletBalance).toLocaleString()}`
-              };
-            }
-          } else if (isSell) {
+          // Customize email for sell transactions
+          if (isSellTransaction) {
             if (newStatus === 'completed') {
               emailSubject = 'Your Sell Order Has Been Completed!';
               emailData = {

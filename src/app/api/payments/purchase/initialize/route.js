@@ -3,7 +3,6 @@ import { authenticate } from '@/lib/middleware/auth';
 import { Transaction, User, Product } from '@/lib/db/models';
 import { initializeTransaction } from '@/lib/paystack/client';
 import { getRequestOrigin } from '@/lib/utils/url';
-import { requireNinVerification } from '@/lib/utils/ninVerification';
 
 export async function POST(request) {
   try {
@@ -12,13 +11,8 @@ export async function POST(request) {
       return NextResponse.json({ error: auth.error || 'Unauthorized' }, { status: 401 });
     }
 
-    const ninCheck = await requireNinVerification(auth.user.id);
-    if (ninCheck) {
-      return NextResponse.json(ninCheck, { status: 403 });
-    }
-
     const body = await request.json();
-    const { productId, amount, walletId, paymentMethod, proofOfPayment } = body;
+    const { productId, amount, walletId, paymentMethod } = body;
 
     // Validation
     if (!productId) {
@@ -34,13 +28,8 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Wallet ID is required' }, { status: 400 });
     }
 
-    if (!['wallet', 'card', 'bank_transfer'].includes(paymentMethod)) {
+    if (!['wallet', 'card'].includes(paymentMethod)) {
       return NextResponse.json({ error: 'Invalid payment method' }, { status: 400 });
-    }
-
-    // Bank transfer requires proof of payment
-    if (paymentMethod === 'bank_transfer' && !proofOfPayment) {
-      return NextResponse.json({ error: 'Proof of payment is required for bank transfers' }, { status: 400 });
     }
 
     // Fetch Product
@@ -104,41 +93,7 @@ export async function POST(request) {
       }, { status: 201 });
     }
 
-    // 2. Bank Transfer
-    if (paymentMethod === 'bank_transfer') {
-      const description = `Bank transfer purchase of ${quantity} USD of ${product.name}`;
-
-      const newTransaction = await Transaction.create({
-        userId: dbUser.id,
-        type: 'exchange',
-        status: 'pending',
-        amount: costInNgn,
-        currency: 'NGN',
-        targetCurrency: product.name,
-        exchangeRate: sellRate,
-        description,
-        metadata: {
-          walletId,
-          quantity,
-          productName: product.name,
-          productId: product.id,
-          transactionType: 'product_buy',
-          paymentMethod: 'direct_transfer',
-          proofOfPayment,
-          purpose: 'product_purchase',
-          paymentStatus: 'awaiting_verification'
-        }
-      });
-
-      return NextResponse.json({
-        success: true,
-        paymentRequired: false,
-        transaction: newTransaction,
-        message: 'Proof of payment submitted. Awaiting admin verification.'
-      }, { status: 201 });
-    }
-
-    // 3. Pay via Card (Paystack)
+    // 2. Pay via Card (Paystack)
     if (paymentMethod === 'card') {
       if (!dbUser.email) {
         return NextResponse.json({ error: 'User email is required to initialize Card payment' }, { status: 400 });
