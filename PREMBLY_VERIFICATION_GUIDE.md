@@ -67,13 +67,23 @@ verification.status = "VERIFIED"
 ## Setup
 
 1. Create an account at https://app.prembly.com
-2. Go to the API Keys section to get your **API Key**
-3. Add to `.env.local`:
+2. Go to **API Library → API Keys** to get your keys
+3. Prembly provides **two** keys:
+   - **Secret (private) key** — used server-side, sent as the `x-api-key` header. This is the only key the server needs.
+   - **Public key** — used only by client-side Prembly SDK widgets (e.g. `prembly-react-kyc`), never for server API calls.
+4. Add to `.env.local`:
 
 ```env
-PREMBLY_API_KEY=your_prembly_api_key
+PREMBLY_API_KEY=your_prembly_secret_key
+PREMBLY_PUBLIC_KEY=your_prembly_public_key   # optional, only if using the client-side SDK
 PREMBLY_BASE_URL=https://api.prembly.com
 ```
+
+### Test vs. Live
+
+- **Sandbox (test)**: toggle the Sandbox/Live switch in API Keys and copy the **sandbox secret key** (`test_sk_...`). Sandbox calls are free and only work with Prembly's test data (e.g. NIN `56182742701`).
+- **Live**: copy the **live secret key** (`sk_...`). Live calls require a funded wallet (each NIN basic check costs ₦50).
+- Wallet funding is only required for live calls, not sandbox.
 
 ## Auto-Verification Flow
 

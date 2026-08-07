@@ -13,6 +13,23 @@ function splitName(fullName) {
   };
 }
 
+function toIsoDate(value) {
+  if (!value) return null;
+  const str = String(value).trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+  const m = str.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+  if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+  return null;
+}
+
+function toDbGender(value) {
+  if (!value) return null;
+  const g = value.toLowerCase();
+  if (g === 'm' || g === 'male') return 'male';
+  if (g === 'f' || g === 'female') return 'female';
+  return null;
+}
+
 export async function verifyWithPrembly(documentType, documentNumber, fullName) {
   let result;
 
@@ -56,8 +73,8 @@ export async function verifyWithPrembly(documentType, documentNumber, fullName) 
 
   const extractedData = {
     fullName: apiFullName,
-    dateOfBirth: entity.birthdate || entity.date_of_birth || entity.birthDate || null,
-    gender: entity.gender ? entity.gender.toLowerCase() : null,
+    dateOfBirth: toIsoDate(entity.birthdate || entity.date_of_birth || entity.birthDate) || null,
+    gender: toDbGender(entity.gender) || null,
     documentNumber,
   };
 

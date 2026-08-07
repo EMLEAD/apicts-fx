@@ -166,6 +166,12 @@ export default function ProfilePage() {
       return;
     }
 
+    if (documentForm.documentType === 'nin' && !/^\d{11}$/.test(documentForm.documentNumber)) {
+      setMessage({ type: 'error', text: 'Invalid NIN. A NIN must be exactly 11 digits (e.g. 56182742701).' });
+      setSaving(false);
+      return;
+    }
+
     try {
       const token = localStorage.getItem('token');
       const res = await fetch('/api/user/documents', {

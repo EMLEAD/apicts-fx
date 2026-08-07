@@ -75,6 +75,12 @@ export async function POST(request) {
       }, { status: 400 });
     }
 
+    if (documentType === 'nin' && !/^\d{11}$/.test(documentNumber)) {
+      return NextResponse.json({
+        error: 'Invalid NIN. A NIN must be exactly 11 digits (e.g. 56182742701).'
+      }, { status: 400 });
+    }
+
     const document = await UserDocument.create({
       userId: auth.user.id,
       documentType,
