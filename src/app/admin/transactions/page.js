@@ -391,12 +391,30 @@ export default function TransactionManagement() {
                     </div>
                   )}
 
-                  {selectedTransaction.metadata.cardCount && (
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-gray-600 font-medium">Cards/Sort</span>
-                      <span className="font-bold text-gray-900">{selectedTransaction.metadata.cardCount}</span>
-                    </div>
-                  )}
+                  {(() => {
+                    const fields = Array.isArray(selectedTransaction.metadata.sellFields)
+                      ? selectedTransaction.metadata.sellFields.filter((f) => f.type !== 'image')
+                      : [];
+                    if (fields.length > 0) {
+                      return fields.map((f) => (
+                        <div key={f.key || f.label} className="flex justify-between items-start text-xs">
+                          <span className="text-gray-600 font-medium">{f.label || 'Field'}</span>
+                          <span className="font-bold text-gray-900 text-right break-words max-w-[60%]">
+                            {f.type === 'number' ? String(Number(f.value) || '') : String(f.value || '—')}
+                          </span>
+                        </div>
+                      ));
+                    }
+                    if (selectedTransaction.metadata.cardCount) {
+                      return (
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="text-gray-600 font-medium">Cards/Sort</span>
+                          <span className="font-bold text-gray-900">{selectedTransaction.metadata.cardCount}</span>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
 
                   {selectedTransaction.metadata.paymentMethod && (
                     <div className="flex justify-between items-center text-xs">

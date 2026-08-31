@@ -17,7 +17,8 @@ export default function AdminProductsPage() {
     buyRate: '',
     sellRate: '',
     isActive: true,
-    displayOrder: 0
+    displayOrder: 0,
+    sellForm: []
   });
 
   useEffect(() => {
@@ -103,6 +104,39 @@ export default function AdminProductsPage() {
     }
   };
 
+  const parseSellForm = (value) => {
+    if (Array.isArray(value)) return value.map((f) => ({ ...f }));
+    if (typeof value === 'string' && value) {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed.map((f) => ({ ...f })) : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  };
+
+  const addSellField = () => {
+    setFormData({
+      ...formData,
+      sellForm: [
+        ...formData.sellForm,
+        { key: `field_${Date.now()}`, label: '', type: 'text', required: true }
+      ]
+    });
+  };
+
+  const updateSellField = (index, updates) => {
+    const next = formData.sellForm.map((f, i) => (i === index ? { ...f, ...updates } : f));
+    setFormData({ ...formData, sellForm: next });
+  };
+
+  const removeSellField = (index) => {
+    const next = formData.sellForm.filter((_, i) => i !== index);
+    setFormData({ ...formData, sellForm: next });
+  };
+
   const openModal = (product = null) => {
     if (product) {
       setEditingProduct(product);
@@ -112,7 +146,8 @@ export default function AdminProductsPage() {
         buyRate: product.buyRate || '',
         sellRate: product.sellRate || '',
         isActive: product.isActive,
-        displayOrder: product.displayOrder || 0
+        displayOrder: product.displayOrder || 0,
+        sellForm: parseSellForm(product.sellForm)
       });
     } else {
       setEditingProduct(null);
@@ -122,7 +157,8 @@ export default function AdminProductsPage() {
         buyRate: '',
         sellRate: '',
         isActive: true,
-        displayOrder: 0
+        displayOrder: 0,
+        sellForm: []
       });
     }
     setIsModalOpen(true);
@@ -284,6 +320,73 @@ export default function AdminProductsPage() {
                       placeholder="e.g. NGN 1355 / USD"
                     />
                   </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Sell Form Fields
+                    </label>
+                    <button
+                      type="button"
+                      onClick={addSellField}
+                      className="inline-flex items-center text-xs font-medium text-blue-600 hover:text-blue-800"
+                    >
+                      <Plus size={14} className="mr-1" /> Add Field
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 mb-3">
+                    Define the fields shown to users when they sell this product. Leave empty to show only the image upload.
+                  </p>
+                  {formData.sellForm.length === 0 ? (
+                    <p className="text-xs text-gray-400 bg-gray-50 border border-dashed border-gray-200 rounded-lg p-3">
+                      No custom fields. Users will only be asked for product images.
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      {formData.sellForm.map((field, index) => (
+                        <div key={field.key} className="border border-gray-200 rounded-lg p-3 space-y-2 bg-gray-50/50">
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              value={field.label}
+                              onChange={(e) => updateSellField(index, { label: e.target.value })}
+                              placeholder="Field label e.g. Number of Cards"
+                              className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeSellField(index)}
+                              className="text-red-500 hover:text-red-700 p-1"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <select
+                              value={field.type}
+                              onChange={(e) => updateSellField(index, { type: e.target.value })}
+                              className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                            >
+                              <option value="text">Text</option>
+                              <option value="number">Number</option>
+                              <option value="textarea">Textarea</option>
+                              <option value="image">Image Upload</option>
+                            </select>
+                            <label className="flex items-center text-sm text-gray-700">
+                              <input
+                                type="checkbox"
+                                checked={field.required}
+                                onChange={(e) => updateSellField(index, { required: e.target.checked })}
+                                className="w-4 h-4 text-blue-600 rounded border-gray-300"
+                              />
+                              <span className="ml-2">Required</span>
+                            </label>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex space-x-4">

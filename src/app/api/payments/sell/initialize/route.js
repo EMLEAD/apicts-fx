@@ -12,7 +12,7 @@ export async function POST(request) {
 
     const body = await request.json();
     console.log('Request body:', body);
-    const { productId, amount, images, cardCount } = body;
+    const { productId, amount, images, cardCount, sellFields } = body;
 
     // Validation
     if (!productId) {
@@ -24,18 +24,49 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Amount to sell must be greater than zero' }, { status: 400 });
     }
 
-    if (!images || !Array.isArray(images) || images.length === 0) {
-      return NextResponse.json({ error: 'At least one product image is required' }, { status: 400 });
-    }
-
-    if (!cardCount || Number(cardCount) <= 0) {
-      return NextResponse.json({ error: 'Card count is required' }, { status: 400 });
-    }
-
     // Fetch Product
     const product = await Product.findByPk(productId);
     if (!product || !product.isActive) {
       return NextResponse.json({ error: 'Product not found or inactive' }, { status: 404 });
+    }
+
+    let configFieldsRaw = [];
+    if (Array.isArray(product.sellForm)) {
+      configFieldsRaw = product.sellForm;
+    } else if (typeof product.sellForm === 'string' && product.sellForm) {
+      try {
+        const parsed = JSON.parse(product.sellForm);
+        if (Array.isArray(parsed)) configFieldsRaw = parsed;
+      } catch {
+        configFieldsRaw = [];
+      }
+    }
+    const configFields = configFieldsRaw.length > 0
+      ? configFieldsRaw
+      : [{ key: 'images', label: 'Upload Product Images', type: 'image', required: true }];
+
+    const normalizedFields = Array.isArray(sellFields) ? sellFields : [];
+
+    if (!images || !Array.isArray(images) || images.length === 0) {
+      const imageRequired = configFields.find((f) => f.type === 'image' && f.required);
+      if (imageRequired) {
+        return NextResponse.json({ error: 'At least one product image is required' }, { status: 400 });
+      }
+    }
+
+    for (const field of configFields) {
+      if (!field.required) continue;
+      if (field.type === 'image') {
+        if (!images || !Array.isArray(images) || images.length === 0) {
+          return NextResponse.json({ error: `${field.label || 'Product image'} is required` }, { status: 400 });
+        }
+      } else {
+        const entry = normalizedFields.find((f) => f.key === field.key);
+        const value = entry ? String(entry.value || '').trim() : '';
+        if (!value) {
+          return NextResponse.json({ error: `"${field.label || 'Field'}" is required` }, { status: 400 });
+        }
+      }
     }
 
     const buyRate = Number(product.buyRate);
@@ -51,6 +82,19 @@ export async function POST(request) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
+    // Build description using configured fields
+    const descParts = [`Sold ${quantity} USD of ${product.name}`];
+    const nonImageFields = configFields.filter((f) => f.type !== 'image');
+    if (nonImageFields.length > 0) {
+      const parts = [];
+      for (const field of nonImageFields) {
+        const entry = normalizedFields.find((f) => f.key === field.key);
+        const value = entry && entry.type === 'number' ? String(Number(entry.value) || 0) : String(entry?.value || '');
+        if (value) parts.push(`${field.label || 'Field'}: ${value}`);
+      }
+      if (parts.length > 0) descParts.push(`(${parts.join(', ')})`);
+    }
+
     // Create sell transaction
     console.log('Creating sell transaction...');
     const newTransaction = await Transaction.create({
@@ -61,13 +105,15 @@ export async function POST(request) {
       currency: 'NGN',
       targetCurrency: product.name,
       exchangeRate: buyRate,
-      description: `Sold ${quantity} USD of ${product.name} (${cardCount} cards/sort)`,
+      description: descParts.join(' '),
       metadata: {
         quantity,
         productName: product.name,
         productId: product.id,
         images,
         cardCount,
+        sellFields: normalizedFields,
+        sellFormConfig: configFields,
         transactionType: 'product_sell',
         sellStatus: 'pending_verification'
       }

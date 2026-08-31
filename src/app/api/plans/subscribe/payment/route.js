@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { authenticate } from '@/lib/middleware/auth';
 import { Plan, Transaction, ExchangeRate, User, UserPlan, Referral } from '@/lib/db/models';
 import { initializeTransaction } from '@/lib/paystack/client';
+import { getRequestOrigin } from '@/lib/utils/url';
 import emailService from '@/lib/email/service';
 
 async function convertPrice(plan) {
@@ -149,6 +150,7 @@ export async function POST(request) {
     const paystackResponse = await initializeTransaction({
       email: auth.user.email,
       amount: numericAmount,
+      callbackUrl: `${getRequestOrigin(request)}/payment/callback`,
       metadata: {
         userId: auth.user.id, planId: plan.id, planName: plan.name,
         description: `Subscription payment for ${plan.name}`, type: 'subscription'

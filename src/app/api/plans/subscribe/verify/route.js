@@ -24,7 +24,17 @@ export async function POST(request) {
     const verificationData = paystackResponse.data;
 
     if (verificationData.status !== 'success') {
-      return NextResponse.json({ error: 'Transaction has not been completed yet' }, { status: 400 });
+      const isFinal = ['failed', 'abandoned', 'reversed'].includes(verificationData.status);
+      return NextResponse.json(
+        {
+          error: isFinal
+            ? 'Payment was declined or cancelled on Paystack'
+            : 'Transaction has not been completed on Paystack yet',
+          paystackStatus: verificationData.status,
+          final: isFinal
+        },
+        { status: 400 }
+      );
     }
 
     const amount = Number(verificationData.amount) / 100;

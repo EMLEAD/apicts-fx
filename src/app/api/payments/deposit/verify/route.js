@@ -3,6 +3,18 @@ import { authenticate } from '@/lib/middleware/auth';
 import { Transaction, User } from '@/lib/db/models';
 import { verifyTransaction } from '@/lib/paystack/client';
 
+function parseMetadata(metadata) {
+  if (!metadata) return {};
+  if (typeof metadata === 'string') {
+    try {
+      return JSON.parse(metadata);
+    } catch {
+      return {};
+    }
+  }
+  return metadata;
+}
+
 export async function POST(request) {
   try {
     const auth = await authenticate(request);
@@ -21,17 +33,31 @@ export async function POST(request) {
     const verificationData = paystackResponse.data;
 
     if (verificationData.status !== 'success') {
-      return NextResponse.json({ error: 'Transaction has not been completed yet' }, { status: 400 });
+      const isFinal = ['failed', 'abandoned', 'reversed'].includes(verificationData.status);
+      return NextResponse.json(
+        {
+          error: isFinal
+            ? 'Payment was declined or cancelled on Paystack'
+            : 'Transaction has not been completed on Paystack yet',
+          paystackStatus: verificationData.status,
+          final: isFinal
+        },
+        { status: 400 }
+      );
     }
 
     const amount = Number(verificationData.amount) / 100;
 
     const transactions = await Transaction.findAll({
       where: { userId: auth.user.id, type: 'deposit' },
-      order: [['createdAt', 'DESC']]
+      order: [['createdAt', 'DESC']],
+      limit: 50
     });
 
-    const transaction = transactions.find((trx) => trx.metadata?.paystack?.reference === reference);
+    const transaction = transactions.find((trx) => {
+      const meta = parseMetadata(trx.metadata);
+      return meta.paystack?.reference === reference;
+    });
 
     if (!transaction) {
       return NextResponse.json({ error: 'Matching transaction not found' }, { status: 404 });
@@ -48,15 +74,16 @@ export async function POST(request) {
     const user = await User.findByPk(auth.user.id);
 
     await Transaction.sequelize.transaction(async (sequelizeTransaction) => {
+      const currentMeta = parseMetadata(transaction.metadata);
       await transaction.update(
         {
           status: 'completed',
           processedAt: new Date(),
           amount,
           metadata: {
-            ...transaction.metadata,
+            ...currentMeta,
             paystack: {
-              ...(transaction.metadata?.paystack || {}),
+              ...(currentMeta.paystack || {}),
               verification: verificationData
             }
           }

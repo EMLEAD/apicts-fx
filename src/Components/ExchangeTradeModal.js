@@ -33,6 +33,7 @@ export default function ExchangeTradeModal({
   const [sellImages, setSellImages] = useState([]);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [cardCount, setCardCount] = useState("");
+  const [sellFields, setSellFields] = useState({});
   const [bankTransferData, setBankTransferData] = useState(null);
   const [bankTransferProof, setBankTransferProof] = useState(null);
   const [bankTransferProofUrl, setBankTransferProofUrl] = useState("");
@@ -150,6 +151,7 @@ export default function ExchangeTradeModal({
       setPollAttempt(0);
       setSellImages([]);
       setCardCount("");
+      setSellFields({});
       setBankTransferData(null);
       setBankTransferProof(null);
       setBankTransferProofUrl("");
@@ -309,13 +311,22 @@ export default function ExchangeTradeModal({
     }
 
     if (tradeType === "sell") {
-      if (sellImages.length === 0) {
-        setErrorMessage("Please upload at least one image of the product you're selling");
-        return;
-      }
-      if (!cardCount || Number(cardCount) <= 0) {
-        setErrorMessage("Please enter the number of cards/sort");
-        return;
+      for (const field of sellFormFields) {
+        if (!field.required) continue;
+        if (field.type === "image") {
+          if (sellImages.length === 0) {
+            setErrorMessage(`Please upload ${field.label || "images"} of the product you're selling`);
+            setModalState("failed");
+            return;
+          }
+        } else {
+          const value = String(sellFields[field.key] || "").trim();
+          if (!value) {
+            setErrorMessage(`Please fill in "${field.label || "this field"}"`);
+            setModalState("failed");
+            return;
+          }
+        }
       }
     }
 
@@ -331,7 +342,22 @@ export default function ExchangeTradeModal({
 
       const body = tradeType === "buy" 
         ? { productId: product.id, amount: qty, walletId, paymentMethod }
-        : { productId: product.id, amount: qty, images: sellImages, cardCount: Number(cardCount) };
+        : (() => {
+            const fields = sellFormFields.map((field) => {
+              if (field.type === "image") {
+                return { key: field.key, label: field.label, type: field.type, value: sellImages };
+              }
+              return { key: field.key, label: field.label, type: field.type, value: String(sellFields[field.key] || "") };
+            });
+            const cardField = sellFormFields.find((f) => f.type === "number");
+            return {
+              productId: product.id,
+              amount: qty,
+              images: sellImages,
+              cardCount: cardField ? Number(sellFields[cardField.key] || 0) : Number(cardCount || 0),
+              sellFields: fields
+            };
+          })();
 
       const res = await fetch(endpoint, {
         method: "POST",
@@ -378,6 +404,23 @@ export default function ExchangeTradeModal({
   const rate = tradeType === "buy" 
     ? (Number(product.sellRate) || 0) 
     : (Number(product.buyRate) || 0);
+
+  const sellFormFields = (() => {
+    let custom = [];
+    if (Array.isArray(product.sellForm)) {
+      custom = product.sellForm;
+    } else if (typeof product.sellForm === 'string' && product.sellForm) {
+      try {
+        const parsed = JSON.parse(product.sellForm);
+        if (Array.isArray(parsed)) custom = parsed;
+      } catch {
+        custom = [];
+      }
+    }
+    return custom.length > 0
+      ? custom
+      : [{ key: "images", label: "Upload Product Images", type: "image", required: true }];
+  })();
   const qtyNum = Number(quantity) || 0;
   const calculatedNgn = qtyNum * rate;
   const userBalance = userProfile ? Number(userProfile.walletBalance) || 0 : 0;
@@ -460,65 +503,87 @@ export default function ExchangeTradeModal({
 
               {tradeType === "sell" && (
                 <>
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">
-                      Number of Cards/Sort
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      step="1"
-                      required
-                      value={cardCount}
-                      onChange={(e) => setCardCount(e.target.value)}
-                      placeholder="Enter number of cards or sort"
-                      className="block w-full px-3.5 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 text-sm focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">
-                      Upload Product Images
-                    </label>
-                    <div className="grid grid-cols-3 gap-3 mb-3">
-                      {sellImages.map((image, index) => (
-                        <div key={index} className="relative">
-                          <img
-                            src={image}
-                            alt={`Uploaded ${index + 1}`}
-                            className="w-full h-24 object-cover rounded-lg border border-gray-200"
+                  {sellFormFields.map((field) => (
+                    <div key={field.key}>
+                      {field.type === "image" ? (
+                        <>
+                          <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">
+                            {field.label || "Upload Product Images"}
+                            {field.required && <span className="text-red-500"> *</span>}
+                          </label>
+                          <div className="grid grid-cols-3 gap-3 mb-3">
+                            {sellImages.map((image, index) => (
+                              <div key={index} className="relative">
+                                <img
+                                  src={image}
+                                  alt={`Uploaded ${index + 1}`}
+                                  className="w-full h-24 object-cover rounded-lg border border-gray-200"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => removeImage(index)}
+                                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600"
+                                >
+                                  <X size={12} />
+                                </button>
+                              </div>
+                            ))}
+                            <label className="flex flex-col items-center justify-center h-24 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-gray-400 transition-colors">
+                              <input
+                                type="file"
+                                ref={fileInputRef}
+                                multiple
+                                accept="image/*"
+                                onChange={handleImageUpload}
+                                className="hidden"
+                              />
+                              {uploadingImages ? (
+                                <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                              ) : (
+                                <>
+                                  <Upload size={24} className="text-gray-400 mb-1" />
+                                  <span className="text-xs text-gray-500">Add Image</span>
+                                </>
+                              )}
+                            </label>
+                          </div>
+                          <p className="text-[11px] text-gray-500">
+                            Upload clear images of the {product.name} you&apos;re selling
+                          </p>
+                        </>
+                      ) : field.type === "textarea" ? (
+                        <>
+                          <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">
+                            {field.label || "Field"}
+                            {field.required && <span className="text-red-500"> *</span>}
+                          </label>
+                          <textarea
+                            rows={3}
+                            value={String(sellFields[field.key] || "")}
+                            onChange={(e) => setSellFields({ ...sellFields, [field.key]: e.target.value })}
+                            placeholder={field.placeholder || ""}
+                            className="block w-full px-3.5 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 text-sm focus:outline-none"
                           />
-                          <button
-                            type="button"
-                            onClick={() => removeImage(index)}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600"
-                          >
-                            <X size={12} />
-                          </button>
-                        </div>
-                      ))}
-                      <label className="flex flex-col items-center justify-center h-24 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-gray-400 transition-colors">
-                        <input
-                          type="file"
-                          ref={fileInputRef}
-                          multiple
-                          accept="image/*"
-                          onChange={handleImageUpload}
-                          className="hidden"
-                        />
-                        {uploadingImages ? (
-                          <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-                        ) : (
-                          <>
-                            <Upload size={24} className="text-gray-400 mb-1" />
-                            <span className="text-xs text-gray-500">Add Image</span>
-                          </>
-                        )}
-                      </label>
+                        </>
+                      ) : (
+                        <>
+                          <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">
+                            {field.label || "Field"}
+                            {field.required && <span className="text-red-500"> *</span>}
+                          </label>
+                          <input
+                            type={field.type === "number" ? "number" : "text"}
+                            min={field.type === "number" ? "0" : undefined}
+                            step={field.type === "number" ? "any" : undefined}
+                            value={String(sellFields[field.key] || "")}
+                            onChange={(e) => setSellFields({ ...sellFields, [field.key]: e.target.value })}
+                            placeholder={field.placeholder || ""}
+                            className="block w-full px-3.5 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 text-sm focus:outline-none"
+                          />
+                        </>
+                      )}
                     </div>
-                    <p className="text-[11px] text-gray-500">
-                      Upload clear images of the {product.name} you&apos;re selling
-                    </p>
-                  </div>
+                  ))}
                 </>
               )}
 

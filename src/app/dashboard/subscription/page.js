@@ -16,6 +16,11 @@ import {
   Upload,
   Wallet
 } from 'lucide-react';
+import { subscribeToPaymentComplete } from '@/lib/utils/paymentChannel';
+
+const PENDING_SUBSCRIPTION_KEY = 'pending_subscription_reference';
+const MAX_VERIFICATION_ATTEMPTS = 12;
+const VERIFICATION_INTERVAL_MS = 5000;
 
 const formatCurrency = (amount, currency = 'NGN') => {
   const numericAmount = Number(amount) || 0;
@@ -67,6 +72,7 @@ export default function SubscriptionPage() {
   const [paymentModalPlan, setPaymentModalPlan] = useState(null);
   const [walletBalance, setWalletBalance] = useState(null);
   const [walletSubscribing, setWalletSubscribing] = useState(false);
+  const [cardPayPlanId, setCardPayPlanId] = useState(null);
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
@@ -282,11 +288,12 @@ export default function SubscriptionPage() {
     }
   }, [user, fetchPlans, fetchSubscription, fetchBillingHistory]);
 
-  const MAX_VERIFICATION_ATTEMPTS = 12;
-  const VERIFICATION_INTERVAL_MS = 5000;
-
   const pollSubscriptionVerification = useCallback(async (reference, attempt = 0) => {
     if (!reference) return;
+
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.setItem(PENDING_SUBSCRIPTION_KEY, reference);
+    }
 
     setPaymentTracking({ status: 'waiting', reference, attempts: attempt, error: null });
 
@@ -313,6 +320,12 @@ export default function SubscriptionPage() {
         const data = await response.json();
         setPaymentTracking({ status: 'success', reference, attempts: attempt, error: null });
         setSuccess(`Successfully subscribed to plan!`);
+        setCardPayPlanId(null);
+        setSubscribing(null);
+        
+        if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.removeItem(PENDING_SUBSCRIPTION_KEY);
+        }
         
         // Refresh subscription and billing history
         await Promise.all([fetchSubscription(), fetchBillingHistory()]);
@@ -341,8 +354,9 @@ export default function SubscriptionPage() {
 
       const result = await response.json().catch(() => ({}));
       const errorMessage = result.error || 'Payment verification failed';
+      const isFinal = result.final === true;
 
-      if (attempt + 1 < MAX_VERIFICATION_ATTEMPTS) {
+      if (!isFinal && attempt + 1 < MAX_VERIFICATION_ATTEMPTS) {
         if (paymentPollTimeout.current) {
           clearTimeout(paymentPollTimeout.current);
         }
@@ -355,6 +369,11 @@ export default function SubscriptionPage() {
       if (paymentPollTimeout.current) {
         clearTimeout(paymentPollTimeout.current);
       }
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.removeItem(PENDING_SUBSCRIPTION_KEY);
+      }
+      setCardPayPlanId(null);
+      setSubscribing(null);
       setPaymentTracking({ status: 'error', reference, attempts: attempt, error: errorMessage });
       setError(errorMessage);
       paymentPollTimeout.current = null;
@@ -371,12 +390,32 @@ export default function SubscriptionPage() {
         if (paymentPollTimeout.current) {
           clearTimeout(paymentPollTimeout.current);
         }
+        setCardPayPlanId(null);
+        setSubscribing(null);
         setPaymentTracking({ status: 'error', reference, attempts: attempt, error: message });
         setError(message);
         paymentPollTimeout.current = null;
       }
     }
   }, [fetchSubscription, fetchBillingHistory]);
+
+  useEffect(() => {
+    return subscribeToPaymentComplete((payload) => {
+      const activeReference = sessionStorage.getItem(PENDING_SUBSCRIPTION_KEY);
+      if (!activeReference || payload.reference !== activeReference) return;
+      setSuccess(null);
+      pollSubscriptionVerification(activeReference);
+    });
+  }, [pollSubscriptionVerification]);
+
+  useEffect(() => {
+    if (typeof sessionStorage === 'undefined') return;
+    const pendingRef = sessionStorage.getItem(PENDING_SUBSCRIPTION_KEY);
+    if (pendingRef) {
+      setPaymentTracking({ status: 'waiting', reference: pendingRef, attempts: 0, error: null });
+      pollSubscriptionVerification(pendingRef);
+    }
+  }, [pollSubscriptionVerification]);
 
   useEffect(() => {
     return () => {
@@ -389,6 +428,7 @@ export default function SubscriptionPage() {
   const handleSubscribe = async (planId) => {
     try {
       setSubscribing(planId);
+      setCardPayPlanId(planId);
       setError(null);
       setSuccess(null);
       setPaymentTracking({ status: 'idle', reference: null, attempts: 0, error: null });
@@ -440,6 +480,7 @@ export default function SubscriptionPage() {
     } catch (err) {
       console.error('Subscription error:', err);
       setError(err.message || 'Failed to initialize subscription payment');
+      setCardPayPlanId(null);
       setPaymentTracking({ status: 'idle', reference: null, attempts: 0, error: null });
       if (paymentPollTimeout.current) {
         clearTimeout(paymentPollTimeout.current);
@@ -758,16 +799,21 @@ export default function SubscriptionPage() {
 
                     <button
                       onClick={() => setPaymentModalPlan(plan)}
-                      disabled={isSubscribed}
-                      className={`w-full py-3 rounded-lg font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+                      disabled={isSubscribed || cardPayPlanId === plan.id}
+                      className={`w-full py-3 rounded-lg font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 flex items-center justify-center gap-2 ${
                         isSubscribed
                           ? 'bg-green-600 text-white cursor-not-allowed'
+                          : cardPayPlanId === plan.id
+                          ? 'bg-red-600 text-white'
                           : isPopular
                           ? 'bg-red-600 text-white hover:bg-red-700'
                           : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
                       }`}
                     >
-                      {isSubscribed ? 'Current Plan' : 'Subscribe'}
+                      {cardPayPlanId === plan.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : null}
+                      {isSubscribed ? 'Current Plan' : cardPayPlanId === plan.id ? 'Processing payment...' : 'Subscribe'}
                     </button>
                   </div>
                 </div>

@@ -41,16 +41,23 @@ export async function PATCH(request, { params }) {
     const oldStatus = transaction.status;
     const newStatus = body.status;
 
-    // If this is a sell transaction (check both type and metadata) being marked as completed, credit the user
+    // Determine if completing this transaction should credit the user's wallet.
+    // Deposits (money paid into the platform) and sell orders (gift cards sold to the platform)
+    // are wallet credits; other types (withdrawal, exchange purchase, transfer) are not.
     const txMetadata = typeof transaction.metadata === 'string' ? JSON.parse(transaction.metadata) : transaction.metadata;
     const isSellTransaction = 
       transaction.type === 'sell' || 
       (txMetadata && (txMetadata.sellStatus || txMetadata.transactionType === 'product_sell' || txMetadata.images));
+
+    const isDepositTransaction =
+      transaction.type === 'deposit' ||
+      (txMetadata && (txMetadata.purpose === 'wallet_funding' || txMetadata.paymentStatus === 'awaiting_verification'));
+
+    const isWalletCredit = isSellTransaction || isDepositTransaction;
       
-    if (isSellTransaction && newStatus === 'completed' && oldStatus !== 'completed') {
+    if (isWalletCredit && newStatus === 'completed' && oldStatus !== 'completed') {
       const user = await User.findByPk(transaction.userId);
       if (user) {
-        // Credit user's wallet
         const currentBalance = parseFloat(user.walletBalance || 0);
         const transactionAmount = parseFloat(transaction.amount || 0);
         
@@ -58,7 +65,7 @@ export async function PATCH(request, { params }) {
           walletBalance: currentBalance + transactionAmount
         });
         
-        console.log(`💰 Credited user ${user.id} with NGN ${transactionAmount} for sell transaction ${transaction.id}`);
+        console.log(`💰 Credited user ${user.id} with NGN ${transactionAmount} for ${transaction.type} transaction ${transaction.id}`);
       }
     }
 
@@ -96,6 +103,13 @@ export async function PATCH(request, { params }) {
                 newBalance: `${transaction.currency || 'NGN'} ${(parseFloat(user.walletBalance) + parseFloat(transaction.amount)).toLocaleString()}`
               };
             }
+          } else if (isDepositTransaction && newStatus === 'completed') {
+            emailSubject = 'Your Deposit Has Been Completed!';
+            emailData = {
+              ...emailData,
+              credited: true,
+              newBalance: `${transaction.currency || 'NGN'} ${(parseFloat(user.walletBalance) + parseFloat(transaction.amount)).toLocaleString()}`
+            };
           }
 
           await emailService.sendTransactionNotification(user.email, user.username, emailData);
