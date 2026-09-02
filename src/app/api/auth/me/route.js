@@ -17,6 +17,8 @@ const normalizeUser = (user) => {
     profilePicture: user.profilePicture,
     firebaseUid: user.firebaseUid,
     isActive: user.isActive,
+    telegramUserId: user.telegramUserId || null,
+    telegramUsername: user.telegramUsername || null,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt
   };

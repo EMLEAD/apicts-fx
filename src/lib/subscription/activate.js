@@ -137,19 +137,39 @@ export async function activateSubscription({ userId, planId, reference, transact
 
   await user.reload();
 
+  let telegramWarning = null;
+
   if (plan.telegramGroupId && user.telegramUserId) {
-    try {
-      await telegramService.addUserToGroup(plan.telegramGroupId, parseInt(user.telegramUserId));
+    const addResult = await telegramService.addUserToGroupSafe(plan.telegramGroupId, parseInt(user.telegramUserId));
+
+    if (addResult.ok) {
       await telegramService.sendWelcomeMessage(
         parseInt(user.telegramUserId),
         plan.name,
         plan.telegramGroupInviteLink
       );
       console.log(`✅ Added user ${user.username} to ${plan.name} Telegram group`);
-    } catch (error) {
-      console.error('❌ Error adding user to Telegram group:', error);
+    } else {
+      telegramWarning = addResult.error;
+      console.error(`❌ Error adding user ${user.username} to ${plan.name} Telegram group:`, addResult.error);
+    }
+  } else if (plan.telegramGroupId) {
+    telegramWarning = 'You don\'t have a Telegram account linked. Link one in Settings to access the premium group.';
+  }
+
+  if (telegramWarning && result.subscription) {
+    try {
+      await result.subscription.update({
+        metadata: {
+          ...(result.subscription.metadata || {}),
+          telegramWarning,
+          telegramWarningAt: new Date().toISOString()
+        }
+      });
+    } catch (e) {
+      console.error('Failed to persist telegram warning:', e.message);
     }
   }
 
-  return result;
+  return { ...result, telegramWarning, telegramOk: !telegramWarning };
 }

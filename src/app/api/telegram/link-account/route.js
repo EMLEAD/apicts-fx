@@ -10,19 +10,6 @@ export async function POST(request) {
       return NextResponse.json({ error: auth.error }, { status: 401 });
     }
 
-    // Check if current user already has a Telegram account linked
-    if (auth.user.telegramUserId) {
-      return NextResponse.json(
-        { 
-          error: 'You have already linked a Telegram account',
-          alreadyLinked: true,
-          currentTelegramUserId: auth.user.telegramUserId,
-          currentTelegramUsername: auth.user.telegramUsername
-        },
-        { status: 400 }
-      );
-    }
-
     const body = await request.json();
     const { telegramUserId, telegramUsername } = body;
 
@@ -48,6 +35,8 @@ export async function POST(request) {
       );
     }
 
+    const alreadyLinked = Boolean(auth.user.telegramUserId);
+
     await auth.user.update({
       telegramUserId: telegramUserId.toString(),
       telegramUsername: telegramUsername || null
@@ -55,7 +44,10 @@ export async function POST(request) {
 
     return NextResponse.json({
       success: true,
-      message: 'Telegram account linked successfully'
+      alreadyLinked,
+      updated: alreadyLinked,
+      user: auth.user,
+      message: alreadyLinked ? 'Telegram account updated successfully' : 'Telegram account linked successfully'
     }, { status: 200 });
   } catch (error) {
     console.error('Error linking Telegram account:', error);

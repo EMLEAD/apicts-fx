@@ -322,15 +322,18 @@ export default function WalletPage() {
     }
 
     if (withdrawState.accountNumber && withdrawState.accountNumber.length === 10) {
-      const { bank, error } = detectBankForAccount(withdrawState.accountNumber);
+      // Prefer the user-selected bank from the dropdown over auto-detection
+      const selectedBank = withdrawState.bankCode
+        ? { code: withdrawState.bankCode, name: withdrawState.bankName }
+        : detectBankForAccount(withdrawState.accountNumber).bank;
 
-      if (!bank) {
+      if (!selectedBank) {
         setAccountVerification((prev) => ({
           status: 'error',
           accountName: '',
           accountNumber: withdrawState.accountNumber,
           bankCode: '',
-          error: error || 'Could not detect the bank for this account number',
+          error: 'Please select a bank',
           payload: null
         }));
         return;
@@ -338,12 +341,12 @@ export default function WalletPage() {
 
       setWithdrawState((prev) => ({
         ...prev,
-        bankCode: bank.code,
-        bankName: bank.name
+        bankCode: selectedBank.code,
+        bankName: selectedBank.name
       }));
 
       accountVerifyTimeout.current = setTimeout(() => {
-        verifyAccountDetails(withdrawState.accountNumber, bank.code, bank.name);
+        verifyAccountDetails(withdrawState.accountNumber, selectedBank.code, selectedBank.name);
       }, 600);
     } else {
       setAccountVerification((prev) => {
@@ -366,7 +369,7 @@ export default function WalletPage() {
         clearTimeout(accountVerifyTimeout.current);
       }
     };
-  }, [withdrawState.accountNumber, detectBankForAccount, verifyAccountDetails]);
+  }, [withdrawState.accountNumber, withdrawState.bankCode, withdrawState.bankName, detectBankForAccount, verifyAccountDetails]);
 
   const pollDepositVerification = useCallback(async (reference, attempt = 0) => {
     if (!reference) {
@@ -903,7 +906,6 @@ export default function WalletPage() {
           {activeAction === 'withdraw' && (
             <div className="space-y-4">
               <h2 className="text-lg font-semibold text-gray-900">Withdraw funds</h2>
-              <p className="text-sm text-gray-600">Funds will be sent from our Paystack balance to the account below.</p>
               <form onSubmit={handleWithdraw} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Amount</label>
@@ -920,22 +922,38 @@ export default function WalletPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Bank</label>
-                  {withdrawState.bankName ? (
-                    <div className="mt-1 rounded-lg bg-gray-50 border border-gray-200 px-3 py-2 text-sm text-gray-700">
-                      {withdrawState.bankName}
-                    </div>
-                  ) : (
-                    <div className="mt-1 rounded-lg bg-gray-50 border border-gray-200 px-3 py-2 text-sm text-gray-400">
-                      Bank will be detected automatically from the account number
-                    </div>
-                  )}
+                  <select
+                    value={withdrawState.bankCode}
+                    onChange={(event) => {
+                      const selected = banks.find((b) => b.code === event.target.value);
+                      setWithdrawState((prev) => ({
+                        ...prev,
+                        bankCode: event.target.value,
+                        bankName: selected ? selected.name : '',
+                        accountName: ''
+                      }));
+                      if (event.target.value) {
+                        setAccountVerification((prev) => ({ ...prev, status: 'idle', accountName: '', error: null }));
+                      }
+                    }}
+                    className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                    required
+                  >
+                    <option value="">Select bank</option>
+                    {banksLoading && <option disabled>Loading banks...</option>}
+                    {!banksLoading && banks.map((bank) => (
+                      <option key={bank.code} value={bank.code}>
+                        {bank.name}
+                      </option>
+                    ))}
+                  </select>
+                  {banksError && <p className="mt-1 text-xs text-red-600">{banksError}</p>}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Account number</label>
                   <input
                     type="text"
                     inputMode="numeric"
-                    pattern="\\d*"
                     maxLength={10}
                     value={withdrawState.accountNumber}
                     onChange={(event) => {
@@ -943,8 +961,6 @@ export default function WalletPage() {
                       setWithdrawState((prev) => ({
                         ...prev,
                         accountNumber: digitsOnly,
-                        bankCode: '',
-                        bankName: '',
                         accountName: ''
                       }));
                       setAccountVerification({

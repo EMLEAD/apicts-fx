@@ -10,6 +10,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [telegramForm, setTelegramForm] = useState({ telegramUserId: '', telegramUsername: '' });
   const [linking, setLinking] = useState(false);
+  const [editingTelegram, setEditingTelegram] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
 
   useEffect(() => {
@@ -73,18 +74,12 @@ export default function SettingsPage() {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage({ type: 'success', text: 'Telegram account linked successfully!' });
+        setMessage({ type: 'success', text: data.updated ? 'Telegram account updated successfully!' : 'Telegram account linked successfully!' });
         setTelegramForm({ telegramUserId: '', telegramUsername: '' });
+        setEditingTelegram(false);
         await fetchUserData();
       } else {
-        if (data.alreadyLinked) {
-          setMessage({ 
-            type: 'error', 
-            text: `You have already linked a Telegram account (ID: ${data.currentTelegramUserId}). Please unlink it first if you want to link a different account.` 
-          });
-        } else {
-          setMessage({ type: 'error', text: data.error || 'Failed to link Telegram account' });
-        }
+        setMessage({ type: 'error', text: data.error || 'Failed to link Telegram account' });
       }
     } catch (error) {
       setMessage({ type: 'error', text: 'Network error. Please try again.' });
@@ -114,6 +109,7 @@ export default function SettingsPage() {
 
       if (response.ok) {
         setMessage({ type: 'success', text: 'Telegram account unlinked successfully!' });
+        setEditingTelegram(false);
         await fetchUserData();
       } else {
         setMessage({ type: 'error', text: data.error || 'Failed to unlink Telegram account' });
@@ -193,7 +189,7 @@ export default function SettingsPage() {
           )}
 
           {/* Current Status */}
-          {user?.telegramUserId ? (
+          {user?.telegramUserId && (
             <div className="mb-6 rounded-lg bg-green-50 border border-green-200 p-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -207,26 +203,43 @@ export default function SettingsPage() {
                     </p>
                   )}
                 </div>
-                <button
-                  onClick={handleUnlinkTelegram}
-                  disabled={linking}
-                  className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {linking ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Unlinking...
-                    </>
-                  ) : (
-                    <>
-                      <Unlink className="h-4 w-4 mr-2" />
-                      Unlink
-                    </>
-                  )}
-                </button>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => {
+                      setEditingTelegram((prev) => !prev);
+                      setTelegramForm({
+                        telegramUserId: user.telegramUserId || '',
+                        telegramUsername: user.telegramUsername || ''
+                      });
+                    }}
+                    disabled={linking}
+                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {editingTelegram ? 'Cancel' : 'Update'}
+                  </button>
+                  <button
+                    onClick={handleUnlinkTelegram}
+                    disabled={linking}
+                    className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {linking ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Unlinking...
+                      </>
+                    ) : (
+                      <>
+                        <Unlink className="h-4 w-4 mr-2" />
+                        Unlink
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
-          ) : (
+          )}
+
+          {(!user?.telegramUserId || editingTelegram) && (
             <form onSubmit={handleLinkTelegram} className="space-y-5">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -269,12 +282,12 @@ export default function SettingsPage() {
                 {linking ? (
                   <>
                     <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                    Linking...
+                    {user?.telegramUserId ? 'Updating...' : 'Linking...'}
                   </>
                 ) : (
                   <>
                     <LinkIcon className="h-5 w-5 mr-2" />
-                    Link Telegram Account
+                    {user?.telegramUserId ? 'Update Telegram Account' : 'Link Telegram Account'}
                   </>
                 )}
               </button>

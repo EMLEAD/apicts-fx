@@ -73,6 +73,9 @@ export default function SubscriptionPage() {
   const [walletBalance, setWalletBalance] = useState(null);
   const [walletSubscribing, setWalletSubscribing] = useState(false);
   const [cardPayPlanId, setCardPayPlanId] = useState(null);
+  const [telegramGatePlan, setTelegramGatePlan] = useState(null);
+
+  const isTelegramLinked = Boolean(user && (user.telegramUserId || user.telegramId));
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
@@ -88,7 +91,11 @@ export default function SubscriptionPage() {
       fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
         .then(res => res.json())
         .then(data => {
-          if (data.user) setWalletBalance(Number(data.user.walletBalance) || 0);
+          if (data.user) {
+            setUser((prev) => ({ ...(prev || {}), ...data.user }));
+            setWalletBalance(Number(data.user.walletBalance) || 0);
+            localStorage.setItem('user', JSON.stringify(data.user));
+          }
           if (data.walletBalance) setWalletBalance(Number(data.walletBalance) || 0);
         })
         .catch(() => {});
@@ -319,7 +326,11 @@ export default function SubscriptionPage() {
       if (response.ok) {
         const data = await response.json();
         setPaymentTracking({ status: 'success', reference, attempts: attempt, error: null });
-        setSuccess(`Successfully subscribed to plan!`);
+        if (data.telegramWarning) {
+          setSuccess(`Subscribed successfully! Note: ${data.telegramWarning}`);
+        } else {
+          setSuccess(`Successfully subscribed to plan!`);
+        }
         setCardPayPlanId(null);
         setSubscribing(null);
         
@@ -424,6 +435,19 @@ export default function SubscriptionPage() {
       }
     };
   }, []);
+
+  const openPaymentModal = (plan) => {
+    const isSubscribed = isSubscribedToPlan(plan.id);
+    const planHasTelegram = Boolean(plan.telegramGroupId || plan.telegramGroupName);
+
+    if (planHasTelegram && !isSubscribed && !isTelegramLinked) {
+      setTelegramGatePlan(plan);
+      return;
+    }
+
+    setTelegramGatePlan(null);
+    setPaymentModalPlan(plan);
+  };
 
   const handleSubscribe = async (planId) => {
     try {
@@ -798,7 +822,7 @@ export default function SubscriptionPage() {
                     )}
 
                     <button
-                      onClick={() => setPaymentModalPlan(plan)}
+                      onClick={() => openPaymentModal(plan)}
                       disabled={isSubscribed || cardPayPlanId === plan.id}
                       className={`w-full py-3 rounded-lg font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 flex items-center justify-center gap-2 ${
                         isSubscribed
@@ -892,6 +916,41 @@ export default function SubscriptionPage() {
           )}
         </div>
       </div>
+      {/* Telegram Link Required Modal */}
+      {telegramGatePlan && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl p-6 space-y-5 text-center">
+            <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center mx-auto">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+              </svg>
+            </div>
+            <h3 className="text-lg font-bold text-gray-900">Link Telegram to Continue</h3>
+            <p className="text-sm text-gray-600">
+              The <span className="font-semibold">{telegramGatePlan.name}</span> plan includes access to our exclusive Telegram group.
+              You need to link your Telegram account before subscribing.
+            </p>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-800">
+              Go to <span className="font-semibold">Settings → Telegram Integration</span> to link your account, then come back to subscribe.
+            </div>
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setTelegramGatePlan(null)}
+                className="flex-1 border border-gray-200 text-gray-700 font-medium py-3 rounded-lg text-sm hover:bg-gray-50"
+              >
+                Close
+              </button>
+              <a
+                href="/dashboard/settings"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg text-sm transition-colors inline-flex items-center justify-center"
+              >
+                Go to Settings
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Payment Method Modal */}
       {paymentModalPlan && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
