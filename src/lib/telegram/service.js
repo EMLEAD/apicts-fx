@@ -113,7 +113,28 @@ class TelegramService {
       if (error.response?.body?.description?.includes('not enough rights')) {
         throw new Error('Bot does not have permission to add members. Check bot admin status.');
       }
+      if (error.response?.body?.description?.includes('forbidden') || error.response?.body?.description?.includes('deactivated')) {
+        throw new Error('This Telegram account cannot be added to the group. It may be banned or need to rejoin via the invite link.');
+      }
+      if (error.response?.body?.description?.includes('participant') && !error.response?.body?.description?.includes('already a member')) {
+        throw new Error('This Telegram account has a pending join request. Please have them accept the invite before subscribing.');
+      }
       throw error;
+    }
+  }
+
+  /**
+   * Safe version of addUserToGroup that never throws.
+   * Returns a structured result so callers can surface failures to users
+   * without breaking the subscription flow.
+   */
+  async addUserToGroupSafe(groupId, telegramUserId) {
+    try {
+      const result = await this.addUserToGroup(groupId, telegramUserId);
+      return { ok: true, message: result.message };
+    } catch (error) {
+      const description = error.response?.body?.description || error.message || 'Failed to add user to group';
+      return { ok: false, error: description };
     }
   }
 

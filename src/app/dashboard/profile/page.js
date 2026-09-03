@@ -18,6 +18,7 @@ export default function ProfilePage() {
   });
   const [documentForm, setDocumentForm] = useState({
     documentType: 'nin',
+    documentNumber: '',
     documentImageFront: null,
     documentImageBack: null
   });
@@ -165,6 +166,12 @@ export default function ProfilePage() {
       return;
     }
 
+    if (documentForm.documentType === 'nin' && !/^\d{11}$/.test(documentForm.documentNumber)) {
+      setMessage({ type: 'error', text: 'Invalid NIN. A NIN must be exactly 11 digits (e.g. 56182742701).' });
+      setSaving(false);
+      return;
+    }
+
     try {
       const token = localStorage.getItem('token');
       const res = await fetch('/api/user/documents', {
@@ -182,6 +189,7 @@ export default function ProfilePage() {
         setShowDocumentForm(false);
         setDocumentForm({
           documentType: 'nin',
+          documentNumber: '',
           documentImageFront: null,
           documentImageBack: null
         });
@@ -433,6 +441,20 @@ export default function ProfilePage() {
                   <option value="voters_card">Voter&apos;s Card</option>
                   <option value="international_passport">International Passport</option>
                 </select>
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Document Number <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={documentForm.documentNumber}
+                  onChange={(e) => setDocumentForm({ ...documentForm, documentNumber: e.target.value })}
+                  placeholder="e.g. NIN number, Driver's License number, Voter's ID number"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  required
+                />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">

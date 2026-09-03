@@ -18,6 +18,9 @@ import {
   CreditCard,
   Upload
 } from 'lucide-react';
+import { subscribeToPaymentComplete } from '@/lib/utils/paymentChannel';
+
+const PENDING_DEPOSIT_KEY = 'pending_wallet_deposit_reference';
 
 const QUICK_ACTIONS = [
   { id: 'deposit', name: 'Deposit', description: 'Add money to your wallet', icon: Plus, color: 'green' },
@@ -86,7 +89,6 @@ export default function WalletPage() {
   const [banks, setBanks] = useState([]);
   const [banksLoading, setBanksLoading] = useState(false);
   const [banksError, setBanksError] = useState(null);
-  const [bankSearch, setBankSearch] = useState('');
 
   const [withdrawState, setWithdrawState] = useState({
     amount: '',
@@ -226,7 +228,24 @@ export default function WalletPage() {
 
   const accountVerifyTimeout = useRef(null);
 
-  const verifyAccountDetails = useCallback(async (accountNumber, bankCode) => {
+  const detectBankForAccount = useCallback((accountNumber) => {
+    if (!accountNumber || accountNumber.length !== 10 || !banks.length) {
+      return { bank: null, ambiguous: false, error: null };
+    }
+    const code = accountNumber.slice(0, 3);
+    const matches = banks.filter(
+      (bank) => bank.code && bank.code.trim() && code === bank.code.trim().slice(0, 3)
+    );
+    if (matches.length === 0) {
+      return { bank: null, ambiguous: false, error: 'Could not detect the bank for this account number. Please check the number and try again.' };
+    }
+    if (matches.length > 1) {
+      return { bank: null, ambiguous: true, error: 'Bank could not be uniquely detected for this account number.' };
+    }
+    return { bank: matches[0], ambiguous: false, error: null };
+  }, [banks]);
+
+  const verifyAccountDetails = useCallback(async (accountNumber, bankCode, bankName) => {
     const headers = getAuthHeaders();
 
     if (!headers) {
@@ -276,7 +295,8 @@ export default function WalletPage() {
 
       setWithdrawState((prev) => ({
         ...prev,
-        accountName: verifiedAccountName
+        accountName: verifiedAccountName,
+        bankName: prev.bankName || bankName || ''
       }));
     } catch (error) {
       console.error('Account verification error:', error);
@@ -301,9 +321,32 @@ export default function WalletPage() {
       clearTimeout(accountVerifyTimeout.current);
     }
 
-    if (withdrawState.accountNumber && withdrawState.accountNumber.length === 10 && withdrawState.bankCode) {
+    if (withdrawState.accountNumber && withdrawState.accountNumber.length === 10) {
+      // Prefer the user-selected bank from the dropdown over auto-detection
+      const selectedBank = withdrawState.bankCode
+        ? { code: withdrawState.bankCode, name: withdrawState.bankName }
+        : detectBankForAccount(withdrawState.accountNumber).bank;
+
+      if (!selectedBank) {
+        setAccountVerification((prev) => ({
+          status: 'error',
+          accountName: '',
+          accountNumber: withdrawState.accountNumber,
+          bankCode: '',
+          error: 'Please select a bank',
+          payload: null
+        }));
+        return;
+      }
+
+      setWithdrawState((prev) => ({
+        ...prev,
+        bankCode: selectedBank.code,
+        bankName: selectedBank.name
+      }));
+
       accountVerifyTimeout.current = setTimeout(() => {
-        verifyAccountDetails(withdrawState.accountNumber, withdrawState.bankCode);
+        verifyAccountDetails(withdrawState.accountNumber, selectedBank.code, selectedBank.name);
       }, 600);
     } else {
       setAccountVerification((prev) => {
@@ -326,11 +369,15 @@ export default function WalletPage() {
         clearTimeout(accountVerifyTimeout.current);
       }
     };
-  }, [withdrawState.accountNumber, withdrawState.bankCode, verifyAccountDetails]);
+  }, [withdrawState.accountNumber, withdrawState.bankCode, withdrawState.bankName, detectBankForAccount, verifyAccountDetails]);
 
   const pollDepositVerification = useCallback(async (reference, attempt = 0) => {
     if (!reference) {
       return;
+    }
+
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.setItem(PENDING_DEPOSIT_KEY, reference);
     }
 
     setDepositTracking({ status: 'waiting', reference, attempts: attempt, error: null });
@@ -363,6 +410,9 @@ export default function WalletPage() {
         setGlobalMessage({ type: 'success', message: 'Deposit verified and wallet balance updated.' });
         setDepositState((prev) => ({ ...prev, amount: '', reference: null, authorizationUrl: null, error: null }));
         setDepositTracking({ status: 'success', reference: null, attempts: attempt, error: null });
+        if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.removeItem(PENDING_DEPOSIT_KEY);
+        }
         if (depositPollTimeout.current) {
           clearTimeout(depositPollTimeout.current);
         }
@@ -373,7 +423,9 @@ export default function WalletPage() {
 
       const result = await response.json().catch(() => ({}));
       const errorMessage = result.error || 'Awaiting Paystack confirmation';
+      const isFinal = result.final === true;
       const shouldRetry = (response.status >= 500 || response.status === 400 || response.status === 404)
+        && !isFinal
         && attempt + 1 < MAX_DEPOSIT_VERIFICATION_ATTEMPTS;
 
       if (shouldRetry) {
@@ -388,6 +440,9 @@ export default function WalletPage() {
 
       if (depositPollTimeout.current) {
         clearTimeout(depositPollTimeout.current);
+      }
+      if (isFinal && typeof sessionStorage !== 'undefined') {
+        sessionStorage.removeItem(PENDING_DEPOSIT_KEY);
       }
       setDepositTracking({ status: 'error', reference, attempts: attempt, error: errorMessage });
       setGlobalMessage({ type: 'error', message: errorMessage });
@@ -411,6 +466,23 @@ export default function WalletPage() {
       }
     }
   }, [fetchTransactions]);
+
+  useEffect(() => {
+    return subscribeToPaymentComplete((payload) => {
+      const activeReference = depositState.reference || (typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(PENDING_DEPOSIT_KEY) : null);
+      if (!activeReference || payload.reference !== activeReference) return;
+      pollDepositVerification(activeReference);
+    });
+  }, [pollDepositVerification, depositState.reference]);
+
+  useEffect(() => {
+    if (typeof sessionStorage === 'undefined') return;
+    const pendingRef = sessionStorage.getItem(PENDING_DEPOSIT_KEY);
+    if (pendingRef) {
+      setDepositTracking({ status: 'waiting', reference: pendingRef, attempts: 0, error: null });
+      pollDepositVerification(pendingRef);
+    }
+  }, [pollDepositVerification]);
 
   const handleDepositInitialize = async (event) => {
     event.preventDefault();
@@ -537,7 +609,7 @@ export default function WalletPage() {
       }
 
       if (!withdrawState.bankCode) {
-        throw new Error('Select a bank before requesting withdrawal');
+        throw new Error('Could not detect the bank for this account number. Please check the number and try again.');
       }
 
       if (!withdrawState.accountNumber || withdrawState.accountNumber.length !== 10) {
@@ -654,24 +726,6 @@ export default function WalletPage() {
     changeType: 'positive'
   }), [walletBalance, currency]);
 
-  const filteredBanks = useMemo(() => {
-    if (!bankSearch) {
-      return banks;
-    }
-
-    const term = bankSearch.toLowerCase();
-    return banks.filter((bank) =>
-      (bank.name || '').toLowerCase().includes(term) ||
-      (bank.slug || '').toLowerCase().includes(term) ||
-      (bank.code || '').toString().includes(term)
-    );
-  }, [banks, bankSearch]);
-
-  const selectedBank = useMemo(
-    () => banks.find((bank) => bank.code === withdrawState.bankCode),
-    [banks, withdrawState.bankCode]
-  );
-
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mt-10">
@@ -775,7 +829,7 @@ export default function WalletPage() {
 
               {depositMethod === 'card' && (
                 <>
-                  <p className="text-sm text-gray-600">Enter an amount to generate a Paystack payment link.</p>
+                  <p className="text-sm text-gray-600">Enter any amount </p>
                   <form onSubmit={handleDepositInitialize} className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Amount</label>
@@ -852,7 +906,6 @@ export default function WalletPage() {
           {activeAction === 'withdraw' && (
             <div className="space-y-4">
               <h2 className="text-lg font-semibold text-gray-900">Withdraw funds</h2>
-              <p className="text-sm text-gray-600">Funds will be sent from our Paystack balance to the account below.</p>
               <form onSubmit={handleWithdraw} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Amount</label>
@@ -869,80 +922,55 @@ export default function WalletPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Bank</label>
-                  <div className="mt-1 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        value={bankSearch}
-                        onChange={(event) => setBankSearch(event.target.value)}
-                        className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-                        placeholder="Search bank name or code"
-                      />
-                      <button
-                        type="button"
-                        onClick={loadBanks}
-                        disabled={banksLoading}
-                        className="inline-flex items-center rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        {banksLoading ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Refreshing
-                          </>
-                        ) : (
-                          'Refresh'
-                        )}
-                      </button>
-                    </div>
-                    <select
-                      value={withdrawState.bankCode}
-                      onChange={(event) => {
-                        const selectedCode = event.target.value;
-                        const bank = banks.find((item) => item.code === selectedCode);
-                        setWithdrawState((prev) => ({
-                          ...prev,
-                          bankCode: selectedCode,
-                          bankName: bank?.name || '',
-                          accountName: ''
-                        }));
-                        setAccountVerification({
-                          status: 'idle',
-                          accountName: '',
-                          accountNumber: '',
-                          bankCode: '',
-                          error: null,
-                          payload: null
-                        });
-                      }}
-                      className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-                      disabled={banksLoading}
-                      required
-                    >
-                      <option value="">Select a bank</option>
-                      {filteredBanks.map((bank) => (
-                        <option key={bank.code} value={bank.code}>
-                          {bank.name}
-                        </option>
-                      ))}
-                    </select>
-                    {banksError ? (
-                      <p className="text-xs text-red-600">{banksError}</p>
-                    ) : selectedBank ? (
-                      <p className="text-xs text-gray-500">Selected bank: {selectedBank.name}</p>
-                    ) : null}
-                  </div>
+                  <select
+                    value={withdrawState.bankCode}
+                    onChange={(event) => {
+                      const selected = banks.find((b) => b.code === event.target.value);
+                      setWithdrawState((prev) => ({
+                        ...prev,
+                        bankCode: event.target.value,
+                        bankName: selected ? selected.name : '',
+                        accountName: ''
+                      }));
+                      if (event.target.value) {
+                        setAccountVerification((prev) => ({ ...prev, status: 'idle', accountName: '', error: null }));
+                      }
+                    }}
+                    className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                    required
+                  >
+                    <option value="">Select bank</option>
+                    {banksLoading && <option disabled>Loading banks...</option>}
+                    {!banksLoading && banks.map((bank) => (
+                      <option key={bank.code} value={bank.code}>
+                        {bank.name}
+                      </option>
+                    ))}
+                  </select>
+                  {banksError && <p className="mt-1 text-xs text-red-600">{banksError}</p>}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Account number</label>
                   <input
                     type="text"
                     inputMode="numeric"
-                    pattern="\\d*"
                     maxLength={10}
                     value={withdrawState.accountNumber}
                     onChange={(event) => {
                       const digitsOnly = event.target.value.replace(/\D/g, '').slice(0, 10);
-                      setWithdrawState((prev) => ({ ...prev, accountNumber: digitsOnly }));
+                      setWithdrawState((prev) => ({
+                        ...prev,
+                        accountNumber: digitsOnly,
+                        accountName: ''
+                      }));
+                      setAccountVerification({
+                        status: 'idle',
+                        accountName: '',
+                        accountNumber: '',
+                        bankCode: '',
+                        error: null,
+                        payload: null
+                      });
                     }}
                     className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
                     placeholder="0123456789"

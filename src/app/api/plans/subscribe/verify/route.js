@@ -24,7 +24,17 @@ export async function POST(request) {
     const verificationData = paystackResponse.data;
 
     if (verificationData.status !== 'success') {
-      return NextResponse.json({ error: 'Transaction has not been completed yet' }, { status: 400 });
+      const isFinal = ['failed', 'abandoned', 'reversed'].includes(verificationData.status);
+      return NextResponse.json(
+        {
+          error: isFinal
+            ? 'Payment was declined or cancelled on Paystack'
+            : 'Transaction has not been completed on Paystack yet',
+          paystackStatus: verificationData.status,
+          final: isFinal
+        },
+        { status: 400 }
+      );
     }
 
     const amount = Number(verificationData.amount) / 100;
@@ -230,24 +240,41 @@ export async function POST(request) {
     await user.reload();
 
     // Add user to Telegram group if plan has one and user has Telegram linked
+    let telegramWarning = null;
+
     if (plan.telegramGroupId && user.telegramUserId) {
-      try {
-        await telegramService.addUserToGroup(
-          plan.telegramGroupId,
-          parseInt(user.telegramUserId)
-        );
-        
+      const addResult = await telegramService.addUserToGroupSafe(
+        plan.telegramGroupId,
+        parseInt(user.telegramUserId)
+      );
+
+      if (addResult.ok) {
         // Send welcome message
         await telegramService.sendWelcomeMessage(
           parseInt(user.telegramUserId),
           plan.name,
           plan.telegramGroupInviteLink
         );
-        
         console.log(`✅ Added user ${user.username} to ${plan.name} Telegram group`);
-      } catch (error) {
-        console.error('❌ Error adding user to Telegram group:', error);
-        // Don't fail subscription if Telegram fails - just log it
+      } else {
+        telegramWarning = addResult.error;
+        console.error(`❌ Error adding user ${user.username} to ${plan.name} Telegram group:`, addResult.error);
+      }
+    } else if (plan.telegramGroupId) {
+      telegramWarning = 'You don\'t have a Telegram account linked. Link one in Settings to access the premium group.';
+    }
+
+    if (telegramWarning && result.subscription) {
+      try {
+        await result.subscription.update({
+          metadata: {
+            ...(result.subscription.metadata || {}),
+            telegramWarning,
+            telegramWarningAt: new Date().toISOString()
+          }
+        });
+      } catch (e) {
+        console.error('Failed to persist telegram warning:', e.message);
       }
     }
 
@@ -255,7 +282,9 @@ export async function POST(request) {
       success: true,
       subscription: result.subscription,
       referral: result.referralRecord,
-      walletBalance: Number(user.walletBalance)
+      walletBalance: Number(user.walletBalance),
+      telegramOk: !telegramWarning,
+      telegramWarning
     }, { status: 200 });
   } catch (error) {
     console.error('Subscription verification error:', error);

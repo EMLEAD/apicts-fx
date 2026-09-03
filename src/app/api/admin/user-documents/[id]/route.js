@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { authenticate } from '@/lib/middleware/auth';
 import { UserDocument, User } from '@/lib/db/models';
+import { verifyWithPrembly } from '@/lib/prembly/verification';
 
 export async function GET(request, { params }) {
   try {
@@ -50,7 +51,7 @@ export async function PATCH(request, { params }) {
 
     const { id } = params;
     const body = await request.json();
-    const { verificationStatus, rejectionReason, verificationMethod, apiResponse } = body;
+    const { verificationStatus, rejectionReason, verificationMethod, apiResponse, verifyWithApi } = body;
 
     const document = await UserDocument.findByPk(id);
     if (!document) {
@@ -58,15 +59,43 @@ export async function PATCH(request, { params }) {
     }
 
     const updateData = {};
-    
+
+    if (verifyWithApi && document.documentNumber) {
+      try {
+        const verification = await verifyWithPrembly(document.documentType, document.documentNumber, document.fullName);
+
+        if (verification.verified && verification.extractedData) {
+          updateData.verificationStatus = 'verified';
+          updateData.verificationMethod = 'api';
+          updateData.verifiedAt = new Date();
+          updateData.verifiedBy = auth.user.id;
+          updateData.fullName = verification.extractedData.fullName || document.fullName;
+          updateData.dateOfBirth = verification.extractedData.dateOfBirth || document.dateOfBirth;
+          updateData.gender = verification.extractedData.gender || document.gender;
+          updateData.apiResponse = verification.apiResponse;
+        } else {
+          updateData.verificationStatus = 'rejected';
+          updateData.verificationMethod = 'api';
+          updateData.verifiedBy = auth.user.id;
+          updateData.rejectionReason = verification.reason || 'Prembly verification failed';
+          updateData.apiResponse = verification.apiResponse;
+        }
+      } catch (error) {
+        return NextResponse.json({
+          error: 'Prembly API call failed',
+          details: error.message,
+        }, { status: 502 });
+      }
+    }
+
     if (verificationStatus) {
       updateData.verificationStatus = verificationStatus;
-      
+
       if (verificationStatus === 'verified') {
         updateData.verifiedAt = new Date();
         updateData.verifiedBy = auth.user.id;
       }
-      
+
       if (verificationStatus === 'rejected' && rejectionReason) {
         updateData.rejectionReason = rejectionReason;
       }

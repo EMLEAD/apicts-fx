@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, ArrowRight, ShoppingCart, DollarSign } from "lucide-react";
+import { Loader2, ShoppingCart, DollarSign } from "lucide-react";
 import ExchangeTradeModal from "@/Components/ExchangeTradeModal";
 
 export default function ProductTradeGrid({
@@ -68,7 +68,6 @@ export default function ProductTradeGrid({
       </div>
     );
   }
-
   if (products.length === 0) {
     return null;
   }

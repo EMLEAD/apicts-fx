@@ -30,6 +30,11 @@ module.exports = (sequelize) => {
     displayOrder: {
       type: DataTypes.INTEGER,
       defaultValue: 0
+    },
+    sellForm: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: []
     }
   }, {
     timestamps: true,

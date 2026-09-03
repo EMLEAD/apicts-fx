@@ -13,8 +13,14 @@ import {
   AlertCircle,
   CheckCircle,
   Landmark,
-  Upload
+  Upload,
+  Wallet
 } from 'lucide-react';
+import { subscribeToPaymentComplete } from '@/lib/utils/paymentChannel';
+
+const PENDING_SUBSCRIPTION_KEY = 'pending_subscription_reference';
+const MAX_VERIFICATION_ATTEMPTS = 12;
+const VERIFICATION_INTERVAL_MS = 5000;
 
 const formatCurrency = (amount, currency = 'NGN') => {
   const numericAmount = Number(amount) || 0;
@@ -64,6 +70,12 @@ export default function SubscriptionPage() {
   const [bankTransferPlan, setBankTransferPlan] = useState(null);
   const [bankTransferState, setBankTransferState] = useState({ proofFile: null, proofUrl: '', loading: false, error: null, success: false });
   const [paymentModalPlan, setPaymentModalPlan] = useState(null);
+  const [walletBalance, setWalletBalance] = useState(null);
+  const [walletSubscribing, setWalletSubscribing] = useState(false);
+  const [cardPayPlanId, setCardPayPlanId] = useState(null);
+  const [telegramGatePlan, setTelegramGatePlan] = useState(null);
+
+  const isTelegramLinked = Boolean(user && (user.telegramUserId || user.telegramId));
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
@@ -73,6 +85,20 @@ export default function SubscriptionPage() {
       } catch (err) {
         console.error('Failed to parse user data', err);
       }
+    }
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
+        .then(res => res.json())
+        .then(data => {
+          if (data.user) {
+            setUser((prev) => ({ ...(prev || {}), ...data.user }));
+            setWalletBalance(Number(data.user.walletBalance) || 0);
+            localStorage.setItem('user', JSON.stringify(data.user));
+          }
+          if (data.walletBalance) setWalletBalance(Number(data.walletBalance) || 0);
+        })
+        .catch(() => {});
     }
     // Fetch bank account for direct transfers
     fetch('/api/site-settings')
@@ -269,11 +295,12 @@ export default function SubscriptionPage() {
     }
   }, [user, fetchPlans, fetchSubscription, fetchBillingHistory]);
 
-  const MAX_VERIFICATION_ATTEMPTS = 12;
-  const VERIFICATION_INTERVAL_MS = 5000;
-
   const pollSubscriptionVerification = useCallback(async (reference, attempt = 0) => {
     if (!reference) return;
+
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.setItem(PENDING_SUBSCRIPTION_KEY, reference);
+    }
 
     setPaymentTracking({ status: 'waiting', reference, attempts: attempt, error: null });
 
@@ -299,7 +326,17 @@ export default function SubscriptionPage() {
       if (response.ok) {
         const data = await response.json();
         setPaymentTracking({ status: 'success', reference, attempts: attempt, error: null });
-        setSuccess(`Successfully subscribed to plan!`);
+        if (data.telegramWarning) {
+          setSuccess(`Subscribed successfully! Note: ${data.telegramWarning}`);
+        } else {
+          setSuccess(`Successfully subscribed to plan!`);
+        }
+        setCardPayPlanId(null);
+        setSubscribing(null);
+        
+        if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.removeItem(PENDING_SUBSCRIPTION_KEY);
+        }
         
         // Refresh subscription and billing history
         await Promise.all([fetchSubscription(), fetchBillingHistory()]);
@@ -328,8 +365,9 @@ export default function SubscriptionPage() {
 
       const result = await response.json().catch(() => ({}));
       const errorMessage = result.error || 'Payment verification failed';
+      const isFinal = result.final === true;
 
-      if (attempt + 1 < MAX_VERIFICATION_ATTEMPTS) {
+      if (!isFinal && attempt + 1 < MAX_VERIFICATION_ATTEMPTS) {
         if (paymentPollTimeout.current) {
           clearTimeout(paymentPollTimeout.current);
         }
@@ -342,6 +380,11 @@ export default function SubscriptionPage() {
       if (paymentPollTimeout.current) {
         clearTimeout(paymentPollTimeout.current);
       }
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.removeItem(PENDING_SUBSCRIPTION_KEY);
+      }
+      setCardPayPlanId(null);
+      setSubscribing(null);
       setPaymentTracking({ status: 'error', reference, attempts: attempt, error: errorMessage });
       setError(errorMessage);
       paymentPollTimeout.current = null;
@@ -358,12 +401,32 @@ export default function SubscriptionPage() {
         if (paymentPollTimeout.current) {
           clearTimeout(paymentPollTimeout.current);
         }
+        setCardPayPlanId(null);
+        setSubscribing(null);
         setPaymentTracking({ status: 'error', reference, attempts: attempt, error: message });
         setError(message);
         paymentPollTimeout.current = null;
       }
     }
   }, [fetchSubscription, fetchBillingHistory]);
+
+  useEffect(() => {
+    return subscribeToPaymentComplete((payload) => {
+      const activeReference = sessionStorage.getItem(PENDING_SUBSCRIPTION_KEY);
+      if (!activeReference || payload.reference !== activeReference) return;
+      setSuccess(null);
+      pollSubscriptionVerification(activeReference);
+    });
+  }, [pollSubscriptionVerification]);
+
+  useEffect(() => {
+    if (typeof sessionStorage === 'undefined') return;
+    const pendingRef = sessionStorage.getItem(PENDING_SUBSCRIPTION_KEY);
+    if (pendingRef) {
+      setPaymentTracking({ status: 'waiting', reference: pendingRef, attempts: 0, error: null });
+      pollSubscriptionVerification(pendingRef);
+    }
+  }, [pollSubscriptionVerification]);
 
   useEffect(() => {
     return () => {
@@ -373,9 +436,23 @@ export default function SubscriptionPage() {
     };
   }, []);
 
+  const openPaymentModal = (plan) => {
+    const isSubscribed = isSubscribedToPlan(plan.id);
+    const planHasTelegram = Boolean(plan.telegramGroupId || plan.telegramGroupName);
+
+    if (planHasTelegram && !isSubscribed && !isTelegramLinked) {
+      setTelegramGatePlan(plan);
+      return;
+    }
+
+    setTelegramGatePlan(null);
+    setPaymentModalPlan(plan);
+  };
+
   const handleSubscribe = async (planId) => {
     try {
       setSubscribing(planId);
+      setCardPayPlanId(planId);
       setError(null);
       setSuccess(null);
       setPaymentTracking({ status: 'idle', reference: null, attempts: 0, error: null });
@@ -427,6 +504,7 @@ export default function SubscriptionPage() {
     } catch (err) {
       console.error('Subscription error:', err);
       setError(err.message || 'Failed to initialize subscription payment');
+      setCardPayPlanId(null);
       setPaymentTracking({ status: 'idle', reference: null, attempts: 0, error: null });
       if (paymentPollTimeout.current) {
         clearTimeout(paymentPollTimeout.current);
@@ -434,6 +512,48 @@ export default function SubscriptionPage() {
       }
     } finally {
       setSubscribing(null);
+    }
+  };
+
+  const handleWalletSubscribe = async (planId) => {
+    try {
+      setWalletSubscribing(true);
+      setError(null);
+      setSuccess(null);
+
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Not authenticated');
+
+      const res = await fetch('/api/plans/subscribe/payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ planId, paymentMethod: 'wallet' })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Wallet payment failed');
+
+      setWalletBalance(data.walletBalance);
+      setSuccess(`Subscribed to plan using wallet! Balance: ${formatCurrency(data.walletBalance)}`);
+
+      const userResponse = await fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
+      if (userResponse.ok) {
+        const profileData = await userResponse.json();
+        if (profileData.user) {
+          localStorage.setItem('user', JSON.stringify(profileData.user));
+          setUser(profileData.user);
+        }
+      }
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('subscriptionUpdated'));
+      }
+
+      await Promise.all([fetchSubscription(), fetchBillingHistory()]);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setWalletSubscribing(false);
     }
   };
 
@@ -702,17 +822,22 @@ export default function SubscriptionPage() {
                     )}
 
                     <button
-                      onClick={() => setPaymentModalPlan(plan)}
-                      disabled={isSubscribed}
-                      className={`w-full py-3 rounded-lg font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+                      onClick={() => openPaymentModal(plan)}
+                      disabled={isSubscribed || cardPayPlanId === plan.id}
+                      className={`w-full py-3 rounded-lg font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 flex items-center justify-center gap-2 ${
                         isSubscribed
                           ? 'bg-green-600 text-white cursor-not-allowed'
+                          : cardPayPlanId === plan.id
+                          ? 'bg-red-600 text-white'
                           : isPopular
                           ? 'bg-red-600 text-white hover:bg-red-700'
                           : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
                       }`}
                     >
-                      {isSubscribed ? 'Current Plan' : 'Subscribe'}
+                      {cardPayPlanId === plan.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : null}
+                      {isSubscribed ? 'Current Plan' : cardPayPlanId === plan.id ? 'Processing payment...' : 'Subscribe'}
                     </button>
                   </div>
                 </div>
@@ -791,12 +916,47 @@ export default function SubscriptionPage() {
           )}
         </div>
       </div>
+      {/* Telegram Link Required Modal */}
+      {telegramGatePlan && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl p-6 space-y-5 text-center">
+            <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center mx-auto">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+              </svg>
+            </div>
+            <h3 className="text-lg font-bold text-gray-900">Link Telegram to Continue</h3>
+            <p className="text-sm text-gray-600">
+              The <span className="font-semibold">{telegramGatePlan.name}</span> plan includes access to our exclusive Telegram group.
+              You need to link your Telegram account before subscribing.
+            </p>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-800">
+              Go to <span className="font-semibold">Settings → Telegram Integration</span> to link your account, then come back to subscribe.
+            </div>
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setTelegramGatePlan(null)}
+                className="flex-1 border border-gray-200 text-gray-700 font-medium py-3 rounded-lg text-sm hover:bg-gray-50"
+              >
+                Close
+              </button>
+              <a
+                href="/dashboard/settings"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg text-sm transition-colors inline-flex items-center justify-center"
+              >
+                Go to Settings
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Payment Method Modal */}
       {paymentModalPlan && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl p-6 space-y-5">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold text-gray-900">Subscribe — {paymentModalPlan.name}</h3>
+              <h3 className="text-lg font-bold text-gray-900">Subscribe for {paymentModalPlan.name}</h3>
               <button onClick={() => setPaymentModalPlan(null)} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
             </div>
             <p className="text-sm text-gray-600">Choose your payment method for <span className="font-bold text-gray-900">{formatCurrency(paymentModalPlan.price, paymentModalPlan.currency)}</span></p>
@@ -827,6 +987,40 @@ export default function SubscriptionPage() {
                 )}
               </button>
 
+              {walletBalance !== null && (
+                <button
+                  onClick={() => {
+                    const plan = paymentModalPlan;
+                    setPaymentModalPlan(null);
+                    handleWalletSubscribe(plan.id);
+                  }}
+                  disabled={walletSubscribing || Number(paymentModalPlan?.price || 0) > walletBalance}
+                  className={`w-full flex items-center justify-between p-4 border rounded-xl transition-all disabled:opacity-60 ${
+                    Number(paymentModalPlan?.price || 0) > walletBalance
+                      ? 'border-gray-200 opacity-50 cursor-not-allowed'
+                      : 'border-gray-200 hover:border-blue-500 hover:bg-blue-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                      <Wallet className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-semibold text-gray-900">Wallet Balance</p>
+                      <p className="text-sm text-gray-500">
+                        {formatCurrency(walletBalance)} available
+                        {Number(paymentModalPlan?.price || 0) > walletBalance && ' — Insufficient'}
+                      </p>
+                    </div>
+                  </div>
+                  {walletSubscribing ? (
+                    <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+                  ) : (
+                    <span className="text-blue-600 font-medium text-sm">Pay &rarr;</span>
+                  )}
+                </button>
+              )}
+
               <button
                 onClick={() => {
                   const plan = paymentModalPlan;
@@ -834,7 +1028,7 @@ export default function SubscriptionPage() {
                   setBankTransferPlan(plan);
                   setBankTransferState({ proofFile: null, proofUrl: '', loading: false, error: null, success: false });
                 }}
-                className="w-full flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:border-red-500 hover:bg-red-50 transition-all"
+                className="w-full flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:border-green-500 hover:bg-green-50 transition-all"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
@@ -845,7 +1039,7 @@ export default function SubscriptionPage() {
                     <p className="text-sm text-gray-500">Pay via direct bank transfer</p>
                   </div>
                 </div>
-                <span className="text-red-600 font-medium text-sm">Choose &rarr;</span>
+                <span className="text-green-600 font-medium text-sm">Choose &rarr;</span>
               </button>
             </div>
 

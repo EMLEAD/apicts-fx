@@ -256,7 +256,7 @@ export default function ProductOrderManagement() {
                   Amount
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Cards/Sort
+                  Details
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
@@ -286,7 +286,17 @@ export default function ProductOrderManagement() {
                     ₦{parseFloat(transaction.amount).toLocaleString()} {transaction.currency}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {transaction.metadata?.cardCount || '—'}
+                    {(() => {
+                      const meta = transaction.metadata || {};
+                      const fields = Array.isArray(meta.sellFields) ? meta.sellFields : [];
+                      if (fields.length > 0) {
+                        const nonImage = fields.filter((f) => f.type !== 'image' && String(f.value || '') !== '');
+                        return nonImage.length > 0
+                          ? nonImage.map((f) => `${f.label || 'Field'}: ${f.value}`).join(', ')
+                          : (meta.images?.length ? `${meta.images.length} image(s)` : '—');
+                      }
+                      return meta.cardCount || '—';
+                    })()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -393,10 +403,27 @@ export default function ProductOrderManagement() {
                   <span className="font-bold text-gray-900">${selectedTransaction.metadata?.quantity || '—'}</span>
                 </div>
                 
-                <div className="flex justify-between items-center py-2 border-b border-gray-100 text-sm">
-                  <span className="text-gray-500 font-medium">Cards/Sort</span>
-                  <span className="font-bold text-gray-900">{selectedTransaction.metadata?.cardCount || '—'}</span>
-                </div>
+                {(() => {
+                  const fields = Array.isArray(selectedTransaction.metadata?.sellFields)
+                    ? selectedTransaction.metadata.sellFields.filter((f) => f.type !== 'image')
+                    : [];
+                  if (fields.length > 0) {
+                    return fields.map((f) => (
+                      <div key={f.key || f.label} className="flex justify-between items-start py-2 border-b border-gray-100 text-sm">
+                        <span className="text-gray-500 font-medium">{f.label || 'Field'}</span>
+                        <span className="font-bold text-gray-900 text-right break-words max-w-[60%]">
+                          {f.type === 'number' ? String(Number(f.value) || '') : String(f.value || '—')}
+                        </span>
+                      </div>
+                    ));
+                  }
+                  return (
+                    <div className="flex justify-between items-center py-2 border-b border-gray-100 text-sm">
+                      <span className="text-gray-500 font-medium">Cards/Sort</span>
+                      <span className="font-bold text-gray-900">{selectedTransaction.metadata?.cardCount || '—'}</span>
+                    </div>
+                  );
+                })()}
                 
                 <div className="flex justify-between items-center py-2 border-b border-gray-100 text-sm">
                   <span className="text-gray-500 font-medium">Creation Date</span>

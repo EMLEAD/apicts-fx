@@ -28,7 +28,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Wallet ID is required' }, { status: 400 });
     }
 
-    if (!['wallet', 'card'].includes(paymentMethod)) {
+    if (!['wallet', 'card', 'bank_transfer'].includes(paymentMethod)) {
       return NextResponse.json({ error: 'Invalid payment method' }, { status: 400 });
     }
 
@@ -93,7 +93,21 @@ export async function POST(request) {
       }, { status: 201 });
     }
 
-    // 2. Pay via Card (Paystack)
+    // 2. Pay via Bank Transfer
+    if (paymentMethod === 'bank_transfer') {
+      return NextResponse.json({
+        success: true,
+        paymentRequired: false,
+        paymentMethod: 'bank_transfer',
+        amount: costInNgn,
+        productId,
+        walletId,
+        quantity,
+        productName: product.name
+      }, { status: 201 });
+    }
+
+    // 3. Pay via Card (Paystack)
     if (paymentMethod === 'card') {
       if (!dbUser.email) {
         return NextResponse.json({ error: 'User email is required to initialize Card payment' }, { status: 400 });
